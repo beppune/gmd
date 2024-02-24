@@ -20,16 +20,26 @@ class PersonService(val db:JdbcTemplate) {
         return db.query("SELECT id,lastname,firstname FROM PERSONS", mapper)
     }
 
-    fun find(offset:Int=0, limit:Int=Int.MAX_VALUE, sortkey:String?): List<Person> {
+    fun find(offset:Int=0, limit:Int=Int.MAX_VALUE, ascending:Boolean=true, sortkey:String?, filter:String?): List<Person> {
         var query = "SELECT id,lastname,firstname FROM PERSONS "
 
-        if( sortkey != null ) {
+        if(!filter.isNullOrEmpty()) {
+            query += " WHERE lastname LIKE '%$filter%' OR firstname LIKE '%$filter%' "
+        }
+
+        if(!sortkey.isNullOrEmpty()) {
             query += " ORDER BY $sortkey "
         }
 
+        if( ascending.not() ) {
+            query += " DESC "
+        }
+
+        query += " LIMIT $limit "
+
         query += " OFFSET $offset "
 
-        query += " LIMIT $limit"
+        println(query)
 
         return db.query(query, mapper)
     }
