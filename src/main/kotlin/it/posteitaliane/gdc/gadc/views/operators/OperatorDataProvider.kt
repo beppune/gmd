@@ -1,4 +1,4 @@
-package it.posteitaliane.gdc.gadc.views.persons
+package it.posteitaliane.gdc.gadc.views.operators
 
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider
 import com.vaadin.flow.data.provider.Query
@@ -8,9 +8,9 @@ import it.posteitaliane.gdc.gadc.services.OperatorService
 import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrNull
 
-class PersonDataProvider(private val service:OperatorService) : AbstractBackEndDataProvider<Operator, PersonFilter>() {
+class OperatorDataProvider(private val service:OperatorService) : AbstractBackEndDataProvider<Operator, OperatorFilter>() {
 
-    override fun fetchFromBackEnd(query: Query<Operator, PersonFilter>?): Stream<Operator> {
+    override fun fetchFromBackEnd(query: Query<Operator, OperatorFilter>?): Stream<Operator> {
         if( query == null) return service.findAll().stream()
 
         val filter:String?= query.filter.getOrNull()?.searchTerm
@@ -38,7 +38,7 @@ class PersonDataProvider(private val service:OperatorService) : AbstractBackEndD
 
     }
 
-    override fun sizeInBackEnd(query: Query<Operator, PersonFilter>?): Int {
+    override fun sizeInBackEnd(query: Query<Operator, OperatorFilter>?): Int {
         return fetchFromBackEnd(query).count().toInt()
     }
 

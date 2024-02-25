@@ -1,4 +1,4 @@
-package it.posteitaliane.gdc.gadc.views.persons
+package it.posteitaliane.gdc.gadc.views.operators
 
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
@@ -25,15 +25,15 @@ import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.OperatorService
 
 @Route("anag")
-class PersonsView(private val ops:OperatorService, private val dcs:DatacenterService) : VerticalLayout() {
+class OperatorsView(private val ops:OperatorService, private val dcs:DatacenterService) : VerticalLayout() {
 
     private val DCS = dcs.findAll()
 
-    private val personFilter:PersonFilter
+    private val personFilter:OperatorFilter
 
-    private val dataProvider:PersonDataProvider
+    private val dataProvider:OperatorDataProvider
 
-    private val filterDataProvider: ConfigurableFilterDataProvider<Operator, Void, PersonFilter>
+    private val filterDataProvider: ConfigurableFilterDataProvider<Operator, Void, OperatorFilter>
 
     val grid: Grid<Operator>
 
@@ -55,9 +55,9 @@ class PersonsView(private val ops:OperatorService, private val dcs:DatacenterSer
 
     init {
 
-        personFilter = PersonFilter()
+        personFilter = OperatorFilter()
 
-        dataProvider = PersonDataProvider(ops)
+        dataProvider = OperatorDataProvider(ops)
 
         filterDataProvider = dataProvider.withConfigurableFilter()
 
@@ -156,8 +156,6 @@ class PersonsView(private val ops:OperatorService, private val dcs:DatacenterSer
         editColumn.setEditorComponent(actions)
 
         editor.addSaveListener {
-            println(it.item)
-            println(it.item.permissions)
             ops.update(it.item)
             ops.updatePermissions(it.item, it.item.permissions)
         }

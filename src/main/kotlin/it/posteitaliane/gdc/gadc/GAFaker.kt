@@ -1,7 +1,6 @@
 package it.posteitaliane.gdc.gadc
 
 import it.posteitaliane.gdc.gadc.model.Operator
-import it.posteitaliane.gdc.gadc.model.Person
 import net.datafaker.Faker
 import net.datafaker.providers.base.AbstractProvider
 import net.datafaker.providers.base.BaseProviders
@@ -9,15 +8,7 @@ import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
-class PersonsProvider : AbstractProvider<BaseProviders>(Faker()) {
-
-    fun person(
-        uuid:Int=Random.nextInt(),
-        lastName:String=faker.name().lastName(),
-        firstName:String=faker.name().firstName()
-        ):Person {
-        return Person(uuid,lastName,firstName)
-    }
+class GaProvider : AbstractProvider<BaseProviders>(Faker()) {
 
     fun cf(): String? {
         Random.nextBoolean().also {
@@ -79,8 +70,8 @@ class PersonsProvider : AbstractProvider<BaseProviders>(Faker()) {
 
 class GAFaker : Faker() {
 
-    fun ga(): PersonsProvider {
-        return getProvider(PersonsProvider::class.java, {PersonsProvider()}, this)
+    fun ga(): GaProvider {
+        return getProvider(GaProvider::class.java, {GaProvider()}, this)
     }
 
 }

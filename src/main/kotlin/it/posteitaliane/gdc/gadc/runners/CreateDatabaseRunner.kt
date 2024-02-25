@@ -4,47 +4,19 @@ import it.posteitaliane.gdc.gadc.GAFaker
 import org.springframework.boot.CommandLineRunner
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
-import java.util.*
 import kotlin.random.Random
 
 @Component
 class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
 
     val CREATE = """
-        
-        CREATE TABLE PERSONS (
-            id          UUID NOT NULL,
-        
-            lastname    VARCHAR(100) NOT NULL,
-            firstname   VARCHAR(100) NOT NULL,
-            
-            cf          CHAR(16) NULL UNIQUE NULLS DISTINCT,
-            birthdate   DATE NULL,
-            
-            PRIMARY KEY(id)
-        );
-        CREATE INDEX ON PERSONS(lastname);
-        CREATE INDEX ON PERSONS(firstname);
-        
+                
         CREATE TABLE DCS(
             shortname   CHAR(4) NOT NULL,
             fullname    VARCHAR(255) NOT NULL,
             
             PRIMARY KEY(shortname)
         );
-        
-        CREATE TABLE IDPAPERS(
-            number  VARCHAR(255) NOT NULL,
-            type    ENUM( 'CI', 'PASS', 'PA', 'PU' ) NOT NULL,
-            expires DATE NULL,
-            
-            owner   UUID NOT NUll,
-                        
-            PRIMARY KEY(number),
-            FOREIGN KEY(owner) REFERENCES PERSONS(id)
-        );
-        
-        CREATE VIEW PAPERS_OWNERS AS SELECT ID,LASTNAME,FIRSTNAME,CF,BIRTHDATE,TYPE,NUMBER,EXPIRES  FROM IDPAPERS JOIN PERSONS ON(OWNER=ID);
         
         CREATE TABLE LOCATIONS(
             dc      CHAR(4) NOT NULL,
@@ -105,17 +77,6 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
 
         db.update(CREATE)
 
-        for (i in 0..1000) {
-            db.update(
-                "INSERT INTO PERSONS(id, lastname, firstname, cf, birthdate) VALUES(?,?,?,?,?)",
-                UUID.randomUUID(),
-                faker.name().lastName(),
-                faker.name().firstName(),
-                faker.ga().cf(),
-                faker.ga().birthdate()
-            )
-        }
-
         for (i in 0..2) {
             db.update("INSERT INTO DCS(shortname, fullname) VALUES(?,?)", faker.ga().dcshort(), faker.ga().dcfull())
         }
@@ -131,18 +92,7 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
                 }
             }
 
-        db.queryForList("SELECT id FROM PERSONS", UUID::class.java).stream()
-            .forEach { uuid ->
-                db.update(
-                    "INSERT INTO IDPAPERS(number, type, expires, owner) VALUES(?,?,?,?)",
-                        faker.ga().idnumber(),
-                        faker.ga().idtype(),
-                        faker.ga().expiration(),
-                        uuid
-                    )
-            }
-
-        listOf("MANZOGI9", "MARTA231", "CENCIO12", "MARIA342")
+        faker.collection({faker.ga().uid()}).len(4).generate<List<String>>()
             .apply {
                 forEach { uid ->
                     db.update(
