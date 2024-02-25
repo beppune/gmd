@@ -56,9 +56,12 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
         
         CREATE TABLE OPERATORS(
             uid             CHAR(8) NOT NULL,
+            lastname        VARCHAR(100) NOT NULL,
+            firstname       VARCHAR(100) NOT NULL,
+            email           VARCHAR(256) NOT NULL UNIQUE,
             role            ENUM( 'OPERATOR','ADMIN' ) NOT NULL DEFAULT 'OPERATOR',
             active          BOOL NOT NULL DEFAULT TRUE,
-            localpassword   VARCHAR(50) NULL ,
+            localpassword   VARCHAR(50) NULL,
             
             PRIMARY KEY(uid)
         );
@@ -76,6 +79,22 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
             name    VARCHAR(250) NOT NULL,
              
             PRIMARY KEY(name)
+        );
+        
+        CREATE TABLE STORAGE(
+            item        VARCHAR(250) NOT NULL,
+            dc          CHAR(4) NOT NULL,
+            pos         VARCHAR(15) NOT NULL,
+            
+            amount      INT CHECK( amount >0 ),
+            
+            sn          VARCHAR(250) NULL UNIQUE NULLS DISTINCT,
+            pt          VARCHAR(12) NULL UNIQUE NULLS DISTINCT,
+            
+            PRIMARY KEY(item,dc,pos),
+            UNIQUE NULLS DISTINCT(sn,pt),
+            FOREIGN KEY(item) REFERENCES ITEMS(name),
+            FOREIGN KEY(dc,pos) REFERENCES LOCATIONS(dc,name)
         );
         
     """.trimIndent()
@@ -125,7 +144,15 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
 
         listOf("MANZOGI9", "MARTA231", "CENCIO12", "MARIA342")
             .apply {
-                forEach { db.update("INSERT INTO OPERATORS(uid) VALUES(?)", it) }
+                forEach { uid ->
+                    db.update(
+                        "INSERT INTO OPERATORS(uid,lastname,firstname,email) VALUES(?,?,?,?)",
+                        uid,
+                        faker.name().lastName(),
+                        faker.name().firstName(),
+                        "${uid}@${faker.internet().domainName()}"
+                    )
+                }
 
                 val admin = get(Random.nextInt(0, size))
 
@@ -145,6 +172,11 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
         faker.collection({faker.appliance().equipment()}).len(100,100).generate<List<String>>()
             .stream().sorted().distinct().forEach {
                 db.update("INSERT INTO ITEMS(name) VALUES(?)", it.uppercase())
+            }
+
+        faker.collection({faker.computer().type()}).len(10).generate<List<String>>()
+            .stream().distinct().forEach { name ->
+                db.update("INSERT INTO ITEMS(name) VALUES(?)", name.uppercase())
             }
     }
 

@@ -1,5 +1,6 @@
 package it.posteitaliane.gdc.gadc
 
+import it.posteitaliane.gdc.gadc.model.Operator
 import it.posteitaliane.gdc.gadc.model.Person
 import net.datafaker.Faker
 import net.datafaker.providers.base.AbstractProvider
@@ -35,6 +36,8 @@ class PersonsProvider : AbstractProvider<BaseProviders>(Faker()) {
 
     fun idtype() = faker.expression("#{options.option 'CI', 'PASS', 'PA', 'PU'}")
 
+    fun role() = faker.expression("#options.option 'OPERATOR', 'ADMIN'}")
+
     fun expiration() : LocalDate? {
         Random.nextBoolean().also {
             if(it) return null
@@ -51,6 +54,25 @@ class PersonsProvider : AbstractProvider<BaseProviders>(Faker()) {
 
     fun uid() : String {
         return faker.internet().username().take(8).uppercase()
+    }
+
+    fun sn() = faker.expression("#{examplify 'SN12312FDREW3432'})")
+
+    fun pt() = faker.expression("#{examplify '12345678'}")
+
+    fun operator(u:String?=null, active:Boolean=true) : Operator {
+
+        val username:String = u ?: uid()
+
+        return Operator(
+            username = username,
+            lastName = faker.name().lastName(),
+            firstName = faker.name().firstName(),
+            email = "${username}@${faker.internet().domainName()}",
+            role = role(),
+            isActive = active,
+            localPassword = null
+            )
     }
 
 }
