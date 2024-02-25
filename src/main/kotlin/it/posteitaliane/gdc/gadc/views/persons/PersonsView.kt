@@ -3,6 +3,7 @@ package it.posteitaliane.gdc.gadc.views.persons
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
+import com.vaadin.flow.component.checkbox.CheckboxGroup
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.editor.Editor
 import com.vaadin.flow.component.html.NativeLabel
@@ -18,11 +19,15 @@ import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
+import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Operator
+import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.OperatorService
 
 @Route("anag")
-class PersonsView(private val service:OperatorService) : VerticalLayout() {
+class PersonsView(private val ops:OperatorService, private val dcs:DatacenterService) : VerticalLayout() {
+
+    private val DCS = dcs.findAll()
 
     private val personFilter:PersonFilter
 
@@ -46,11 +51,13 @@ class PersonsView(private val service:OperatorService) : VerticalLayout() {
 
     private val activeField: Checkbox
 
+    private val permissionsField: CheckboxGroup<Datacenter>
+
     init {
 
         personFilter = PersonFilter()
 
-        dataProvider = PersonDataProvider(service)
+        dataProvider = PersonDataProvider(ops)
 
         filterDataProvider = dataProvider.withConfigurableFilter()
 
@@ -63,6 +70,7 @@ class PersonsView(private val service:OperatorService) : VerticalLayout() {
         val firstNameColumn = grid.addColumn(Operator::firstName, "firstName").setHeader("Nome")
         val emailColumn = grid.addColumn(Operator::email, "email").setHeader("Email")
         val activeColumn = grid.addColumn(operatorStatusRenderer()).setHeader("Active")
+        val permissionsColumn = grid.addColumn({it.permissions.map(Datacenter::short).joinToString(", ")}).setHeader("Permessi")
         val editColumn = grid.addComponentColumn { operator ->
             val editButton = Button("Edit") {
                     if( editor.isOpen ) {
@@ -107,6 +115,22 @@ class PersonsView(private val service:OperatorService) : VerticalLayout() {
             .bind({op->op.isActive},{op,isActive->op.isActive=isActive})
         activeColumn.editorComponent = activeField
 
+        permissionsField = CheckboxGroup<Datacenter>()
+            .apply {
+                setItems(DCS)
+                setItemLabelGenerator(Datacenter::short)
+            }
+        personBinder.forField(permissionsField)
+            .bind(
+                { op ->
+                    op.permissions.toSet()
+                },{ op, dcs ->
+                    op.permissions.clear()
+                    op.permissions.addAll(dcs)
+                })
+        permissionsColumn.editorComponent = permissionsField
+
+
         searchField = TextField().apply {
             width = "50%"
             placeholder = "Cerca"
@@ -115,7 +139,6 @@ class PersonsView(private val service:OperatorService) : VerticalLayout() {
             addValueChangeListener {
                 personFilter.searchTerm = it.value
                 filterDataProvider.setFilter(personFilter)
-
             }
         }
 
@@ -134,7 +157,9 @@ class PersonsView(private val service:OperatorService) : VerticalLayout() {
 
         editor.addSaveListener {
             println(it.item)
-            service.update(it.item)
+            println(it.item.permissions)
+            ops.update(it.item)
+            ops.updatePermissions(it.item, it.item.permissions)
         }
 
         add(searchField, grid)

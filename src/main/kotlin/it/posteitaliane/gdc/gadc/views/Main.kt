@@ -9,9 +9,9 @@ import it.posteitaliane.gdc.gadc.model.Datacenter
 class Main : VerticalLayout() {
 
     private fun getDcs() : List<Datacenter> = listOf(
-        Datacenter("TO1", "TORINO", listOf("SALA 1", "SALA 2", "MAGAZZINO")),
-        Datacenter("RM1", "EUROPA", listOf("SALA 1", "SALA 2")),
-        Datacenter("RMB", "CONGRESSI", listOf("HH1", "HH2"))
+        Datacenter("TO1", "TORINO").apply { locations = mutableListOf("SALA 1", "SALA 2", "MAGAZZINO") },
+        Datacenter("RM1", "EUROPA").apply { locations = mutableListOf("SALA 1", "SALA 2") },
+        Datacenter("RMB", "CONGRESSI").apply { locations = mutableListOf("HH1", "HH2") }
     )
 
     init {

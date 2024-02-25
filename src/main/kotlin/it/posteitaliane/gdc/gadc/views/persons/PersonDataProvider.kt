@@ -13,7 +13,7 @@ class PersonDataProvider(private val service:OperatorService) : AbstractBackEndD
     override fun fetchFromBackEnd(query: Query<Operator, PersonFilter>?): Stream<Operator> {
         if( query == null) return service.findAll().stream()
 
-        var filter:String?= query.filter.getOrNull()?.searchTerm
+        val filter:String?= query.filter.getOrNull()?.searchTerm
         var sort:String?=null
         var asc=true
 

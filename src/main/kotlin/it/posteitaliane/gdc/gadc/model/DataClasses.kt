@@ -5,8 +5,23 @@ import java.util.*
 
 data class Datacenter(
     val short:String,
-    val fullName:String,
-    val locations: List<String>)
+    val fullName:String) {
+        var locations: MutableList<String> = mutableListOf()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Datacenter
+
+        return short == other.short
+    }
+
+    override fun hashCode(): Int {
+        return short.hashCode()
+    }
+
+
+}
 
 data class Person(
     val uuid: Int,
@@ -47,6 +62,7 @@ data class Operator(
     var isActive:Boolean,
     var localPassword:String?=null
 ) {
+    val permissions:MutableList<Datacenter> = mutableListOf()
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
