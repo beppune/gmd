@@ -41,6 +41,12 @@ class OperatorService(val db:JdbcTemplate) {
 
     }
 
+    fun get(username:String) : Operator {
+        val ops = db.query("SELECT uid,lastname,firstnaem,email,role,active FROM OPERATORS WHERE uid = ? LIMIT 1", mapper, username)
+        fetchPermissions( ops )
+        return ops.first()
+    }
+
     fun find(offset:Int=0, limit:Int=Int.MAX_VALUE, ascending:Boolean=true, sortkey:String?, filter:String?): List<Operator> {
         var query = "SELECT uid,lastname,firstname,email,role,active,localpassword FROM OPERATORS "
 

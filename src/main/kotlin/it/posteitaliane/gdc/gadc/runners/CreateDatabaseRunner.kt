@@ -58,7 +58,7 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
             dc          CHAR(4) NOT NULL,
             pos         VARCHAR(15) NOT NULL,
             
-            amount      INT CHECK( amount >0 ),
+            amount      INT CHECK( amount >=0 ),
             
             sn          VARCHAR(250) NULL UNIQUE NULLS DISTINCT,
             pt          VARCHAR(12) NULL UNIQUE NULLS DISTINCT,
@@ -67,6 +67,22 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
             UNIQUE NULLS DISTINCT(sn,pt),
             FOREIGN KEY(item) REFERENCES ITEMS(name),
             FOREIGN KEY(dc,pos) REFERENCES LOCATIONS(dc,name)
+        );
+        
+        CREATE TABLE SUPPLIERS(
+            name        VARCHAR(200) NOT NULL,
+            legal       VARCHAR(256) NOT NULL,
+            
+            PRIMARY KEY(name)
+        );
+        
+        CREATE TABLE ADDRESSES(
+            supplier    VARCHAR(200) NOT NULL,
+            address     VARCHAR(500) NOT NULL,
+            
+            PRIMARY KEY(supplier,address),
+            FOREIGN KEY(supplier) REFERENCES SUPPLIERS(name),
+            
         );
         
     """.trimIndent()
