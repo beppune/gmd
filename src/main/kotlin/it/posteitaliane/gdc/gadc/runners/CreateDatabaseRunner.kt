@@ -2,13 +2,16 @@ package it.posteitaliane.gdc.gadc.runners
 
 import it.posteitaliane.gdc.gadc.GAFaker
 import it.posteitaliane.gdc.gadc.config.GMDConfig
+import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.services.BackOffice
 import org.springframework.boot.CommandLineRunner
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
+import java.util.UUID
 import kotlin.random.Random
 
 @Component
-class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig) : CommandLineRunner {
+class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val BO:BackOffice) : CommandLineRunner {
 
     val CREATE = """
                 
@@ -167,7 +170,7 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig) : CommandL
                 db.update("INSERT INTO ITEMS(name) VALUES(?)", it.uppercase())
             }
 
-        faker.collection({faker.computer().type()}).len(10).generate<List<String>>()
+        faker.collection({faker.computer().type()}).len(10).generate<List<String>>().distinct()
             .stream().distinct().forEach { name ->
                 db.update("INSERT INTO ITEMS(name) VALUES(?)", name.uppercase())
             }
@@ -186,6 +189,33 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig) : CommandL
 
         db.update("INSERT INTO SUPPLIERS(name,legal,piva) VALUES(?,?,?)", config.firmName, config.firmLegal, config.firmPiva)
 
+        //val items = db.queryForList("SELECT name FROM ITEMS", String::class.java)
+
+        for (i in 0..25) {
+            val op = BO.ops.findAll().random()
+            val dc = op.permissions.random()
+            //val supplier = BO.sups.findAll().random()
+            /*val item = items.random()
+            val pos = db.queryForList("SELECT name FROM LOCATIONS WHERE dc = ?", String::class.java, dc.short)
+                .random()
+            val amount = Random.nextInt(1, 6)
+            */
+
+            var o = BO.from(op).place {
+                receiveFromDc(dc)
+            }
+
+            BO.register(o)
+
+            BO.os.findAll()
+                .forEach { o ->
+                    db.update(
+                        "UPDATE ORDERS SET status = ? WHERE id = ?",
+                        Order.Status.values().random().name,
+                        o.number
+                        )
+                }
+        }
     }
 
 

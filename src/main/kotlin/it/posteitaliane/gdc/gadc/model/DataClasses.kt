@@ -77,7 +77,7 @@ data class Order(
     val issued:LocalDate,
     val type: Type,
     val subject: Subject,
-    val status: Status=Status.OPENED
+    val status: Status=Status.PENDING
 ) {
     //val lines:MutableList<OrderLine> = mutableListOf()
 
@@ -85,7 +85,7 @@ data class Order(
 
     enum class Type { INBOUND, OUTBOUND }
     enum class Subject { SUPPLIER, SUPPLIER_DC, INTERNAL  }
-    enum class Status { OPENED, PENDING, COMPLETED, CANCELED }
+    enum class Status { PENDING, COMPLETED, CANCELED }
 }
 
 /*data class OrderLine(
