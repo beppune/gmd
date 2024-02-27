@@ -66,6 +66,8 @@ class GaProvider : AbstractProvider<BaseProviders>(Faker()) {
             )
     }
 
+    fun piva() = faker.number().digits(11).toString()
+
 }
 
 class GAFaker : Faker() {

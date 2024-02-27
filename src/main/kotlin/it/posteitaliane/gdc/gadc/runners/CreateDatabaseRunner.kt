@@ -1,19 +1,21 @@
 package it.posteitaliane.gdc.gadc.runners
 
 import it.posteitaliane.gdc.gadc.GAFaker
+import it.posteitaliane.gdc.gadc.config.GMDConfig
 import org.springframework.boot.CommandLineRunner
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
 import kotlin.random.Random
 
 @Component
-class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
+class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig) : CommandLineRunner {
 
     val CREATE = """
                 
         CREATE TABLE DCS(
             shortname   CHAR(4) NOT NULL,
-            fullname    VARCHAR(255) NOT NULL,
+            fullname    VARCHAR(256) NOT NULL,
+            address     VARCHAR(256) NOT NULL,
             
             PRIMARY KEY(shortname)
         );
@@ -72,17 +74,37 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
         CREATE TABLE SUPPLIERS(
             name        VARCHAR(200) NOT NULL,
             legal       VARCHAR(256) NOT NULL,
+            piva        CHAR(11) NOT NULL,
             
             PRIMARY KEY(name)
         );
         
-        CREATE TABLE ADDRESSES(
+        CREATE TABLE SUPPLIERS_ADDRESSES(
             supplier    VARCHAR(200) NOT NULL,
             address     VARCHAR(500) NOT NULL,
             
             PRIMARY KEY(supplier,address),
-            FOREIGN KEY(supplier) REFERENCES SUPPLIERS(name),
+            FOREIGN KEY(supplier) REFERENCES SUPPLIERS(name)
             
+        );
+        
+        CREATE TABLE ORDERS (
+            id              UUID NOT NULL,
+            operator        CHAR(8) NOT NULL,
+            datacenter      CHAR(4) NOT NULL,
+            supplier        VARCHAR(200) NOT NULL,
+            issued          DATE NOT NULL,
+            type            ENUM( 'INBOUND', 'OUTBOUND' ) NOT NULL,
+            subject         ENUM( 'SUPPLIER', 'SUPPLIER_DC', 'INTERNAL') NOT NULL,
+            status          ENUM( 'OPENED', 'PENDING', 'COMPLETED', 'CANCELED' ) NOT NULL,
+            ref             VARCHAR(100) NOT NULL,
+            
+            remarks         VARCHAR(500) NULL,
+            
+            PRIMARY KEY(id),
+            FOREIGN KEY(operator) REFERENCES OPERATORS(uid),
+            FOREIGN KEY(datacenter) REFERENCES DCS(shortname),
+            FOREIGN KEY(supplier) REFERENCES SUPPLIERS(name)
         );
         
     """.trimIndent()
@@ -94,7 +116,12 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
         db.update(CREATE)
 
         for (i in 0..2) {
-            db.update("INSERT INTO DCS(shortname, fullname) VALUES(?,?)", faker.ga().dcshort(), faker.ga().dcfull())
+            db.update(
+                "INSERT INTO DCS(shortname, fullname, address) VALUES(?,?,?)",
+                faker.ga().dcshort(),
+                faker.ga().dcfull(),
+                faker.address().streetAddress()
+                )
         }
 
         db.queryForList("SELECT shortname FROM DCS", String::class.java).stream()
@@ -144,6 +171,21 @@ class CreateDatabaseRunner(val db:JdbcTemplate) : CommandLineRunner {
             .stream().distinct().forEach { name ->
                 db.update("INSERT INTO ITEMS(name) VALUES(?)", name.uppercase())
             }
+
+        faker.collection({faker.company().name().uppercase()})
+            .len(20).generate<List<String>>()
+            .forEach { company ->
+                db.update("INSERT INTO SUPPLIERS(name,legal,piva) VALUES(?,?,?)", company, faker.address().streetAddress(), faker.ga().piva())
+
+                db.update(
+                    "INSERT INTO SUPPLIERS_ADDRESSES(supplier, address) VALUES(?,?)",
+                    company,
+                    faker.address().streetAddress()
+                )
+            }
+
+        db.update("INSERT INTO SUPPLIERS(name,legal,piva) VALUES(?,?,?)", config.firmName, config.firmLegal, config.firmPiva)
+
     }
 
 

@@ -1,38 +1,31 @@
 package it.posteitaliane.gdc.gadc.views.orders
 
-import com.vaadin.flow.component.html.Div
+import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.services.BackOffice
 
 @Route("orders")
-class OrdersView(val bo:BackOffice) : VerticalLayout() {
+class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
     init {
 
+        var operator = BO.ops.findAll().first()
+        var datacenter = BO.dcs.findAll().first()
 
-        val orders = mutableListOf(
-            bo.from(bo.op.findAll().first())
-                .place {
-                    receiveFromDc(bo.dcs.findAll().first())
-                }.build(),
+        var o = BO.from(operator)
+            .place {
 
-            bo.from(bo.op.findAll().first())
-                .place {
-                    sendToDc(bo.dcs.findAll().first())
-                }.build(),
-
-            bo.from(bo.op.findAll().first())
-                .place {
-                    receiveFromSupplier(bo.sups.findAll().first())
+                receiveFromDc(datacenter)
 
 
-                }
-        )
+            }
 
-        orders.forEach {
-            add(Div(it.toString()))
+        val button = Button("Test")  {
+            BO.register(o)
         }
+
+        add(button)
     }
 
 }

@@ -1,47 +1,52 @@
 package it.posteitaliane.gdc.gadc.services
 
+import it.posteitaliane.gdc.gadc.config.GMDConfig
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Operator
 import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.model.Supplier
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
 @Service
 class BackOffice(
+    val os:OrderService,
     val dcs:DatacenterService,
-    val op:OperatorService
+    val ops:OperatorService,
+    val sups:SupplierService,
+    val config:GMDConfig
 ) {
 
-    class OrderBuilder(val op:Operator) {
+    class OrderBuilder(val op:Operator, val bo:BackOffice) {
 
         lateinit var dc:Datacenter
         lateinit var subject:Order.Subject
         lateinit var type:Order.Type
+        lateinit var supplier:Supplier
+        var ref:String?=null
 
         fun build() : Order {
             val o = Order(
-                op = op.username,
+                op = op,
                 dc = dc,
+                supplier = supplier,
                 type = type,
                 subject = subject,
                 issued = LocalDate.now()
             )
+
+            if(ref.isNullOrEmpty().not()) o.ref = ref as String
+
             return o
         }
 
-        fun place(builder:OrderBuilder.()->Unit) : OrderBuilder {
-
-            builder(this)
-            //validate() //may throw permission exception
-
-            return this
-        }
 
         fun receiveFromDc(datacenter:Datacenter) {
 
             subject = Order.Subject.INTERNAL
             type = Order.Type.INBOUND
             dc = datacenter
+            supplier = bo.sups.findByName(bo.config.firmName)
         }
 
         fun sendToDc(datacenter:Datacenter) {
@@ -51,19 +56,24 @@ class BackOffice(
             dc = datacenter
         }
 
+        fun onBehalfOf(r:String) {
+            ref = r
+        }
+
+        fun place(builder:OrderBuilder.()->Unit) : Order {
+            builder(this)
+
+            return build()
+        }
+
     }
 
-    fun from(op:Operator) = OrderBuilder(op)
+    fun from(op:Operator)  = OrderBuilder(op, this)
+    fun register(o: Order) {
+
+        os.register(o)
+
+    }
 
 }
 
-/*
-    BackOffice().from(operator).place {
-
-        inbound(dc)
-
-        supplier("IBM")
-
-
-    }
- */
