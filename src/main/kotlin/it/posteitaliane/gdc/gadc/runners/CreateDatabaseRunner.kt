@@ -102,7 +102,7 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val BO:Bac
             issued          DATE NOT NULL,
             type            ENUM( 'INBOUND', 'OUTBOUND' ) NOT NULL,
             subject         ENUM( 'SUPPLIER', 'SUPPLIER_DC', 'INTERNAL') NOT NULL,
-            status          ENUM( 'OPENED', 'PENDING', 'COMPLETED', 'CANCELED' ) NOT NULL,
+            status          ENUM( 'PENDING', 'COMPLETED', 'CANCELED' ) NOT NULL,
             ref             VARCHAR(100) NOT NULL,
             
             remarks         VARCHAR(500) NULL,
