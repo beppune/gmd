@@ -14,7 +14,11 @@ class OrdersProvider(private val service:OrderService) : AbstractBackEndDataProv
         val filter:String? = query.filter.getOrNull()
         
 
-        return service.findAll().stream()
+        return service.find(
+            offset = query.offset,
+            limit = query.limit,
+            searchKey = filter
+        ).stream()
     }
 
     override fun sizeInBackEnd(query: Query<Order, String>?): Int {

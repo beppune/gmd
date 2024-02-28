@@ -26,14 +26,14 @@ class OrderSpec {
     }
 
     fun validate(order: Order): Boolean {
-        block.invoke(order as Order)
+        block.invoke(order)
         list.forEach { bit -> bit.result = bit.predicate(order) }
 
         return list.all { bit -> bit.result }
     }
 
     fun setup(order: Order) {
-        block(order as Order)
+        block(order)
     }
 
 }

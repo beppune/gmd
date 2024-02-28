@@ -22,6 +22,7 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val BO:Bac
             
             PRIMARY KEY(shortname)
         );
+        CREATE INDEX ON DCS(fullname);
         
         CREATE TABLE LOCATIONS(
             dc      CHAR(4) NOT NULL,
@@ -42,6 +43,8 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val BO:Bac
             
             PRIMARY KEY(uid)
         );
+        CREATE INDEX ON OPERATORS(lastname);
+        CREATE INDEX ON OPERATORS(firstname);
         
         CREATE TABLE PERMISSIONS(
             operator    CHAR(8) NOT NULL,
@@ -208,11 +211,11 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val BO:Bac
             BO.register(o)
 
             BO.os.findAll()
-                .forEach { o ->
+                .forEach {
                     db.update(
                         "UPDATE ORDERS SET status = ? WHERE id = ?",
-                        Order.Status.values().random().name,
-                        o.number
+                        Order.Status.entries.toTypedArray().random().name,
+                        it.number
                         )
                 }
         }

@@ -32,6 +32,12 @@ class OrderService(val db:JdbcTemplate, val ops:OperatorService, val dcs:Datacen
     private val QUERY_ALL =
         "SELECT id,operator,datacenter,supplier,issued,type,subject,status,ref FROM ORDERS"
 
+    private val QUERY_SEARCH_KEY = """
+        SELECT id,operator,datacenter,supplier,issued,type,subject,status,ref FROM ORDERS 
+        JOIN OPERATORS ON uid=operator 
+        JOIN DCS ON shortname=datacenter
+    """.trimIndent()
+
     @Transactional
     fun register(o: Order) {
         db.update(
@@ -50,6 +56,28 @@ class OrderService(val db:JdbcTemplate, val ops:OperatorService, val dcs:Datacen
 
     fun findAll(): List<Order> {
         return db.query(QUERY_ALL, mapper)
+    }
+
+    fun find(offset: Int, limit: Int, searchKey: String?): List<Order> {
+        var query = QUERY_SEARCH_KEY
+
+        if ( searchKey != null ) {
+
+            query += " WHERE "
+            query +=  " fullname ILIKE '$searchKey%' OR "
+            query +=  " lastname ILIKE '$searchKey%' OR "
+            query +=  " operator ILIKE '$searchKey%' OR "
+            query +=  " supplier ILIKE '$searchKey%' OR "
+            query +=  " ref ILIKE '$searchKey%' "
+
+        }
+
+        query += " LIMIT $limit "
+
+        query += " OFFSET $offset"
+        println(query)
+        return db.query(query, mapper)
+
     }
 
 }

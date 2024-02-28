@@ -39,7 +39,7 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
         filterProvider = provider.withConfigurableFilter()
 
         grid = Grid(Order::class.java, false)
-        val operatorColumn = grid.addColumn({it.op.username}, "op")
+        val operatorColumn = grid.addColumn({"${it.op.firstName} ${it.op.lastName}"}, "op")
             .setHeader("Operatore")
         val typeColumn = grid.addColumn({"CARICO INTERNO"}, "type")
             .setHeader("Tipo")
