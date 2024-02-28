@@ -88,14 +88,14 @@ data class Order(
     enum class Status { PENDING, COMPLETED, CANCELED }
 }
 
-/*data class OrderLine(
+data class OrderLine(
     var order:Order,
     var item:String,
     var amount:Int,
     var position:String,
     var sn:String?=null,
     var pt:String?=null
-)*/
+)
 
 /*data class Storage(
     val item:String,

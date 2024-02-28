@@ -112,6 +112,22 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val bo:Bac
             FOREIGN KEY(supplier) REFERENCES SUPPLIERS(name)
         );
         
+        
+        
+        CREATE TABLE ORDERS_LINES(
+            ownedby         UUID NOT NULL,
+            datacenter      CHAR(8) NOT NULL,
+            item            VARCHAR(250) NOT NULL,
+            pos             VARCHAR(15) NOT NULL,
+            amount          INT NOT NULL CHECK ( amount > 0),
+            sn              VARCHAR(100) NULL UNIQUE NULLS DISTINCT,
+            
+            PRIMARY KEY(ownedby,datacenter,item,pos,amount),
+            FOREIGN KEY(item) REFERENCES ITEMS(name),
+            FOREIGN KEY(ownedby) REFERENCES ORDERS(id),
+            FOREIGN KEY(datacenter,pos) REFERENCES LOCATIONS(dc,name)
+        );
+        
     """.trimIndent()
 
     override fun run(vararg args: String?) {
@@ -217,6 +233,39 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val bo:Bac
                         it.number
                         )
                 }
+        }
+
+        val items = db.queryForList(
+            "SELECT name FROM ITEMS",
+            String::class.java
+        )
+
+        bo.os.findAll().forEach { o ->
+
+            for ( i in 0..Random.nextInt(1, 5) ) {
+
+                val i = items.random()
+                var a = Random.nextInt(1, 20)
+                var sn:String?=null
+
+                Random.nextBoolean().also {
+                    if( it ) {
+                        sn = faker.ga().sn()
+                        a = 1
+                    }
+                }
+
+                db.update(
+                    "INSERT INTO ORDERS_LINES(ownedby,datacenter,item,pos,amount,sn) VALUES(?,?,?,?,?,?)",
+                    o.number,
+                    o.dc.short,
+                    i,
+                    bo.dcs.findAll(true).find { it.short == o.dc.short }!!.locations.random(),
+                    a,
+                    sn
+                )
+            }
+
         }
     }
 
