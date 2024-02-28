@@ -7,11 +7,10 @@ import it.posteitaliane.gdc.gadc.services.BackOffice
 import org.springframework.boot.CommandLineRunner
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
-import java.util.UUID
 import kotlin.random.Random
 
 @Component
-class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val BO:BackOffice) : CommandLineRunner {
+class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val bo:BackOffice) : CommandLineRunner {
 
     val CREATE = """
                 
@@ -195,7 +194,7 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val BO:Bac
         //val items = db.queryForList("SELECT name FROM ITEMS", String::class.java)
 
         for (i in 0..25) {
-            val op = BO.ops.findAll().random()
+            val op = bo.ops.findAll().random()
             val dc = op.permissions.random()
             //val supplier = BO.sups.findAll().random()
             /*val item = items.random()
@@ -204,13 +203,13 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val BO:Bac
             val amount = Random.nextInt(1, 6)
             */
 
-            var o = BO.from(op).place {
+            val o = bo.from(op).place {
                 receiveFromDc(dc)
             }
 
-            BO.register(o)
+            bo.register(o)
 
-            BO.os.findAll()
+            bo.os.findAll()
                 .forEach {
                     db.update(
                         "UPDATE ORDERS SET status = ? WHERE id = ?",
