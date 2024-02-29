@@ -1,36 +1,31 @@
 package it.posteitaliane.gdc.gadc.views.orders
 
 import com.vaadin.flow.component.Key
-import com.vaadin.flow.component.grid.ColumnPathRenderer
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
-import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
-import it.posteitaliane.gdc.gadc.model.Operator
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.services.BackOffice
 import java.sql.Date
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 
 @Route("orders")
 class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
-    val provider: OrdersProvider
+    private val provider: OrdersProvider
 
-    val filterProvider:ConfigurableFilterDataProvider<Order, Void, String>
+    private val filterProvider:ConfigurableFilterDataProvider<Order, Void, String>
 
     val grid:Grid<Order>
 
-    val searchField:TextField
+    private val searchField:TextField
 
     init {
 
@@ -53,11 +48,14 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
         grid.setItems(filterProvider)
 
+        grid.setItemDetailsRenderer(OrderDetailsComponent.createOrderDetails())
+
+
         searchField = TextField()
             .apply {
                 prefixComponent = Icon(VaadinIcon.SEARCH)
                 placeholder = "Cerca per nome utente, datacenter, referente..."
-                setWidth("50%")
+                width = "50%"
                 addKeyUpListener {
                     if( it.key == Key.ENTER) {
                         filterProvider.setFilter(value.trim().lowercase())
@@ -90,6 +88,22 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
     fun dateFormatter(): SimpleDateFormat {
         return SimpleDateFormat("dd / MM / yyyy")
+    }
+
+    class OrderDetailsComponent: VerticalLayout() {
+
+        companion object {
+            fun createOrderDetails() : ComponentRenderer<OrderDetailsComponent, Order> {
+                return ComponentRenderer({OrderDetailsComponent()}, OrderDetailsComponent::order.setter)
+            }
+        }
+
+        var order:Order?=null
+            set(value) {
+                field = value
+                add(value.toString())
+            }
+
     }
 
 

@@ -75,7 +75,7 @@ class OrderService(val db:JdbcTemplate, val ops:OperatorService, val dcs:Datacen
         query += " LIMIT $limit "
 
         query += " OFFSET $offset"
-        println(query)
+        //println(query)
         return db.query(query, mapper)
 
     }
