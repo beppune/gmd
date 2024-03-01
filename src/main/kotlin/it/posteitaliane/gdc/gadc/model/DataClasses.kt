@@ -79,7 +79,7 @@ data class Order(
     val subject: Subject,
     val status: Status=Status.PENDING
 ) {
-    //val lines:MutableList<OrderLine> = mutableListOf()
+    val lines:MutableList<OrderLine> = mutableListOf()
 
     var ref:String = "${op.firstName} ${op.lastName}"
 

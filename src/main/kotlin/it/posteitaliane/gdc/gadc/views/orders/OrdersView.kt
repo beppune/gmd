@@ -48,7 +48,7 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
         grid.setItems(filterProvider)
 
-        grid.setItemDetailsRenderer(OrderDetailsComponent.createOrderDetails())
+        grid.setItemDetailsRenderer(OrderDetailsComponent.createOrderDetails(BO))
 
 
         searchField = TextField()
@@ -90,18 +90,22 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
         return SimpleDateFormat("dd / MM / yyyy")
     }
 
-    class OrderDetailsComponent: VerticalLayout() {
+    class OrderDetailsComponent(val BO: BackOffice) : VerticalLayout() {
 
         companion object {
-            fun createOrderDetails() : ComponentRenderer<OrderDetailsComponent, Order> {
-                return ComponentRenderer({OrderDetailsComponent()}, OrderDetailsComponent::order.setter)
+            fun createOrderDetails(BO: BackOffice) : ComponentRenderer<OrderDetailsComponent, Order> {
+                return ComponentRenderer({OrderDetailsComponent(BO)}, OrderDetailsComponent::order.setter)
             }
         }
 
         var order:Order?=null
             set(value) {
                 field = value
-                add(value.toString())
+
+                if(field != null) {
+                    BO.os.fillOrderLines(field!!)
+                    field!!.lines.forEach { add(Span( "${it.item} ${it.position} ${it.amount} ${if(it.sn!=null) it.sn else """"""}"  )) }
+                }
             }
 
     }

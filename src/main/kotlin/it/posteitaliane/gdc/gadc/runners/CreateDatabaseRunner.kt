@@ -194,7 +194,7 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val bo:Bac
             }
 
         faker.collection({faker.company().name().uppercase()})
-            .len(20).generate<List<String>>()
+            .len(20).generate<List<String>>().distinct()
             .forEach { company ->
                 db.update("INSERT INTO SUPPLIERS(name,legal,piva) VALUES(?,?,?)", company, faker.address().streetAddress(), faker.ga().piva())
 
