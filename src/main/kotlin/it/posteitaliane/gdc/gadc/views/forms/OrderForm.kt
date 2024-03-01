@@ -12,6 +12,7 @@ class OrderForm : FormLayout() {
     private var bean:OrderPresentation
 
     private var typeField:Select<Order.Type>
+    private var subjectField:Select<Order.Subject>
 
     init {
         bean = OrderPresentation()
@@ -32,11 +33,27 @@ class OrderForm : FormLayout() {
 
         binder.forField(typeField)
             .asRequired("Obbligatorio")
-            .bind({it.type}, {order, type -> order.type = type})
+            .bind({it.type}, { order, type -> order.type = type})
+
+        subjectField = Select<Order.Subject>()
+            .apply {
+                setItems(Order.Subject.values().asList())
+                setItemLabelGenerator {
+                    when(it) {
+                        Order.Subject.INTERNAL -> "INTERNO"
+                        Order.Subject.SUPPLIER -> "FORNITORE"
+                        Order.Subject.SUPPLIER_DC -> "MOVING"
+                    }
+                }
+            }
+
+        binder.forField(subjectField)
+            .asRequired("Obbligatorio")
+            .bind({it.subject}, { order, subject -> order.subject = subject})
 
         binder.readBean(bean)
 
-        add(typeField)
+        add(typeField, subjectField)
 
     }
 
