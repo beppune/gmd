@@ -1,12 +1,16 @@
 package it.posteitaliane.gdc.gadc.views.forms
 
+import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.formlayout.FormLayout
+import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout
+import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.data.binder.ValidationException
-import com.vaadin.flow.data.binder.ValidationResult
 import it.posteitaliane.gdc.gadc.config.GMDConfig
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
@@ -27,6 +31,12 @@ class OrderForm(private val dcs:List<Datacenter>, private val sups:List<Supplier
     private var refField:TextField
 
     private var supplierField:ComboBox<Supplier>
+
+    private var cancelItemsButton: Button
+
+    private var itemsButton:Button
+
+    private var itemsContainer:VerticalLayout
 
     init {
         bean = OrderPresentation()
@@ -90,6 +100,7 @@ class OrderForm(private val dcs:List<Datacenter>, private val sups:List<Supplier
 
         supplierField = ComboBox<Supplier>()
             .apply {
+                placeholder = "FORNITORE"
                 setItems(sups)
                 setItemLabelGenerator {it.name}
             }
@@ -110,8 +121,49 @@ class OrderForm(private val dcs:List<Datacenter>, private val sups:List<Supplier
             }
         }
 
-        add(typeField, subjectField, dcSelect, refField, supplierField)
+        itemsButton = Button("MERCI")
+            .apply {
+                addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS)
+                addClickListener { toggleItems() }
+            }
 
+        cancelItemsButton = Button("ANNULLA")
+            .apply {
+                addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR)
+                isEnabled = false
+                addClickListener {
+                    toggleItems()
+                    cancelItems()
+                }
+            }
+
+        itemsContainer = VerticalLayout().apply { isVisible = false }
+
+        add(
+            typeField, subjectField,
+            dcSelect, supplierField,
+            refField, Span(),
+            HorizontalLayout(itemsButton, cancelItemsButton)
+
+        )
+        add(itemsContainer, 2)
+
+    }
+
+    fun toggleItems() {
+        if( !itemsContainer.isVisible ) {
+            itemsContainer.isVisible = true
+            itemsButton.isEnabled = false
+            cancelItemsButton.isEnabled = true
+        } else {
+            cancelItemsButton.isEnabled = false
+            itemsButton.isEnabled = true
+            itemsContainer.isVisible = false
+        }
+    }
+
+    fun cancelItems() {
+        itemsContainer.removeAll()
     }
 
     fun writeBean() {
