@@ -5,18 +5,24 @@ import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
-import com.vaadin.flow.data.binder.ValidationException
 import it.posteitaliane.gdc.gadc.config.GMDConfig
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Supplier
+import it.posteitaliane.gdc.gadc.services.OrderService
 
-class OrderForm(private val dcs:List<Datacenter>, private val sups:List<Supplier>, private val config:GMDConfig) : FormLayout() {
+class OrderForm(
+    private val os:OrderService,
+    private val dcspos:List<Datacenter>,
+    private val sups:List<Supplier>,
+    private val config:GMDConfig) : FormLayout() {
 
     private val binder:Binder<OrderPresentation>
 
@@ -36,9 +42,10 @@ class OrderForm(private val dcs:List<Datacenter>, private val sups:List<Supplier
 
     private var itemsButton:Button
 
-    private var itemsContainer:VerticalLayout
+    private var linesContainer:VerticalLayout
 
     init {
+
         bean = OrderPresentation()
 
         binder = Binder(OrderPresentation::class.java, false)
@@ -67,7 +74,7 @@ class OrderForm(private val dcs:List<Datacenter>, private val sups:List<Supplier
                 setItemLabelGenerator {
                     when(it) {
                         Order.Subject.INTERNAL -> "INTERNO"
-                        Order.Subject.SUPPLIER -> "FORNITORE"
+                        Order.Subject.SUPPLIER -> "DA FORNITORE"
                         Order.Subject.SUPPLIER_DC -> "MOVING"
                     }
                 }
@@ -80,7 +87,7 @@ class OrderForm(private val dcs:List<Datacenter>, private val sups:List<Supplier
         dcSelect = Select<Datacenter>()
             .apply {
                 placeholder = "DATACENTER"
-                setItems(dcs)
+                setItems(dcspos)
                 setItemLabelGenerator {
                     "${it.short} - ${it.fullName}"
                 }
@@ -106,6 +113,7 @@ class OrderForm(private val dcs:List<Datacenter>, private val sups:List<Supplier
             }
 
         binder.forField(supplierField)
+            .asRequired("Selezionare fornitore")
             .bind({it.supplier}, { order, sup -> order.supplier = sup})
 
         binder.readBean(bean)
@@ -124,20 +132,24 @@ class OrderForm(private val dcs:List<Datacenter>, private val sups:List<Supplier
         itemsButton = Button("MERCI")
             .apply {
                 addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS)
-                addClickListener { toggleItems() }
+                addClickListener {
+                    val res = binder.validate()
+                    if( res.isOk ) {
+                        it.source!!.isEnabled = false
+                        displayLines()
+                    }
+                }
             }
 
         cancelItemsButton = Button("ANNULLA")
             .apply {
                 addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR)
                 isEnabled = false
-                addClickListener {
-                    toggleItems()
-                    cancelItems()
-                }
             }
 
-        itemsContainer = VerticalLayout().apply { isVisible = false }
+        linesContainer = VerticalLayout().apply {
+            isVisible = false
+        }
 
         add(
             typeField, subjectField,
@@ -146,32 +158,30 @@ class OrderForm(private val dcs:List<Datacenter>, private val sups:List<Supplier
             HorizontalLayout(itemsButton, cancelItemsButton)
 
         )
-        add(itemsContainer, 2)
+        add(linesContainer, 2)
 
     }
 
-    fun toggleItems() {
-        if( !itemsContainer.isVisible ) {
-            itemsContainer.isVisible = true
-            itemsButton.isEnabled = false
-            cancelItemsButton.isEnabled = true
-        } else {
-            cancelItemsButton.isEnabled = false
-            itemsButton.isEnabled = true
-            itemsContainer.isVisible = false
+    // Make OrderLinesPresentation forms list based on OrderPresentation values
+    fun displayLines(/*lines:List<OrderLinePresentation>*/) {
+        linesContainer.removeAll()
+
+        val line = makeLineForm()
+
+        linesContainer.isVisible = true
+        linesContainer.add(line)
+
+    }
+
+    private fun makeLineForm(): HorizontalLayout {
+        val hr = HorizontalLayout()
+        val line = OrderLineForm(os.findItems(), dcSelect.value.locations)
+        val button = Button(Icon(VaadinIcon.ARROWS_CROSS)) {
+            linesContainer.remove(hr)
         }
-    }
 
-    fun cancelItems() {
-        itemsContainer.removeAll()
-    }
+        hr.add(line, button)
 
-    fun writeBean() {
-        try {
-            binder.writeBean(bean)
-        } catch (ex:ValidationException) {
-            println(ex)
-        }
+        return line
     }
-
 }
