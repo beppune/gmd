@@ -17,8 +17,10 @@ import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Supplier
 import it.posteitaliane.gdc.gadc.services.OrderService
+import it.posteitaliane.gdc.gadc.services.StorageService
 
 class OrderForm(
+    private val ss:StorageService,
     private val os:OrderService,
     private val dcspos:List<Datacenter>,
     private val sups:List<Supplier>,
@@ -107,13 +109,13 @@ class OrderForm(
 
         supplierField = ComboBox<Supplier>()
             .apply {
-                placeholder = "FORNITORE"
+                placeholder = " DA FORNITORE"
                 setItems(sups)
                 setItemLabelGenerator {it.name}
             }
 
         binder.forField(supplierField)
-            .asRequired("Selezionare fornitore")
+            .asRequired("Obbligatorio")
             .bind({it.supplier}, { order, sup -> order.supplier = sup})
 
         binder.readBean(bean)
@@ -132,13 +134,6 @@ class OrderForm(
         itemsButton = Button("MERCI")
             .apply {
                 addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS)
-                addClickListener {
-                    val res = binder.validate()
-                    if( res.isOk ) {
-                        it.source!!.isEnabled = false
-                        displayLines()
-                    }
-                }
             }
 
         cancelItemsButton = Button("ANNULLA")
@@ -146,6 +141,25 @@ class OrderForm(
                 addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR)
                 isEnabled = false
             }
+
+        itemsButton.addClickListener {
+            val res = binder.validate()
+            if( res.isOk ) {
+                displayLines()
+
+                //update view
+                it.source.isEnabled = false
+                cancelItemsButton.isEnabled = true
+            }
+        }
+
+        cancelItemsButton.addClickListener {
+            undisplayLines(true)
+
+            //update view
+            it.source.isEnabled = false
+            itemsButton.isEnabled = true
+        }
 
         linesContainer = VerticalLayout().apply {
             isVisible = false
@@ -156,15 +170,19 @@ class OrderForm(
             dcSelect, supplierField,
             refField, Span(),
             HorizontalLayout(itemsButton, cancelItemsButton)
-
         )
         add(linesContainer, 2)
+
+        val addLineButton = Button("AGGIUNGI") {
+            add(makeLineForm())
+        }
+
+        add(addLineButton, 2)
 
     }
 
     // Make OrderLinesPresentation forms list based on OrderPresentation values
     fun displayLines(/*lines:List<OrderLinePresentation>*/) {
-        linesContainer.removeAll()
 
         val line = makeLineForm()
 
@@ -173,15 +191,27 @@ class OrderForm(
 
     }
 
+    fun undisplayLines(remove:Boolean=false) {
+        if( remove ) {
+            linesContainer.children.filter { it is HorizontalLayout }.forEach { linesContainer.remove(it) }
+        }
+
+        linesContainer.isVisible = false
+    }
+
     private fun makeLineForm(): HorizontalLayout {
         val hr = HorizontalLayout()
         val line = OrderLineForm(os.findItems(), dcSelect.value.locations)
-        val button = Button(Icon(VaadinIcon.ARROWS_CROSS)) {
-            linesContainer.remove(hr)
-        }
+        line.snIsRegistered = {ss.snIsRegistered(line.snField.value)}
+        val button = Button(Icon(VaadinIcon.MINUS))
 
         hr.add(line, button)
 
-        return line
+        button.addClickListener {
+            println("EH?")
+            linesContainer.remove(hr)
+        }
+
+        return hr
     }
 }

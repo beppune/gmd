@@ -12,6 +12,7 @@ class Main(bo:BackOffice, config:GMDConfig) : VerticalLayout() {
     init {
 
         val order = OrderForm(
+                bo.ss,
                 bo.os,
                 bo.dcs.findAll(true),
                 bo.sups.findAll(),

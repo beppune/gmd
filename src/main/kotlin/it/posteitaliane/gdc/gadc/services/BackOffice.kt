@@ -10,6 +10,7 @@ import java.time.LocalDate
 
 @Service
 class BackOffice(
+    val ss:StorageService,
     val os:OrderService,
     val dcs:DatacenterService,
     val ops:OperatorService,

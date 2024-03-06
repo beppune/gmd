@@ -1,7 +1,6 @@
 package it.posteitaliane.gdc.gadc.views.forms
 
 import com.vaadin.flow.component.ClickEvent
-import com.vaadin.flow.component.HasValue
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.icon.Icon
@@ -14,12 +13,14 @@ import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.data.binder.ValidationException
 import com.vaadin.flow.data.binder.ValidationResult
 import it.posteitaliane.gdc.gadc.model.Datacenter
-import kotlin.math.min
 
 class OrderLineForm(
     private val items:List<String>,
     private val positions:MutableList<String>
 ) : HorizontalLayout() {
+
+    var snIsRegistered:(String)->Boolean={false}
+    var ptIsRegistered:(String)->Boolean={false}
 
     private var positionsField: ComboBox<String>
 
@@ -31,7 +32,7 @@ class OrderLineForm(
 
     private val amountField:IntegerField
 
-    private val snField:TextField
+    val snField:TextField
 
     private val ptField:TextField
 
@@ -92,7 +93,7 @@ class OrderLineForm(
                 addBlurListener { writeBean() }
             }
 
-        uniqueButton = Button(Icon(VaadinIcon.ARROW_RIGHT)) {toggleUnique(it)}
+        uniqueButton = Button(Icon(VaadinIcon.ARROW_RIGHT)) {toggleUnique()}
 
         binder.forField(itemsField)
             .asRequired("Obbligatorio")
@@ -126,12 +127,21 @@ class OrderLineForm(
         resetButton = Button(Icon(VaadinIcon.CLOSE)) {
             bean = OrderLinePresentation()
             binder.readBean(bean)
+            toggleUnique()
         }
+
+        binder.forField(snField)
+            .withValidator { sn, _ ->
+                if( snIsRegistered.invoke(sn) ) {
+                    ValidationResult.error("S/N già presente in giacenza")
+                } else ValidationResult.ok()
+            }
+            .bind({ol -> ol.sn}, {ol, sn -> ol.sn = sn})
 
         add(itemsField, positionsField, amountField, uniqueButton, snField, ptField, saveButton, resetButton)
     }
 
-    private fun toggleUnique(event:ClickEvent<Button>) {
+    private fun toggleUnique() {
         if( snField.isVisible ) {
             snField.value = ""
             snField.isVisible = false
