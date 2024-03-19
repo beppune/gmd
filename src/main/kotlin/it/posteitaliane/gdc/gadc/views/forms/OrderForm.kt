@@ -12,13 +12,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
-import it.posteitaliane.gdc.gadc.config.GMDConfig
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Supplier
 import it.posteitaliane.gdc.gadc.services.BackOffice
-import it.posteitaliane.gdc.gadc.services.OrderService
-import it.posteitaliane.gdc.gadc.services.StorageService
 
 class OrderForm(
     private val bo:BackOffice,
@@ -43,6 +40,8 @@ class OrderForm(
     private var itemsButton:Button
 
     private var linesContainer:VerticalLayout
+
+    private val addLineButton:Button
 
     init {
 
@@ -90,7 +89,7 @@ class OrderForm(
                 setItemLabelGenerator {
                     "${it.short} - ${it.fullName}"
                 }
-                setItems(bo.dcs.findAll())
+                setItems(bo.dcs.findAll(true))
             }
 
         binder.forField(dcSelect)
@@ -163,19 +162,33 @@ class OrderForm(
             isVisible = false
         }
 
+        dcSelect.addValueChangeListener {
+            if( linesContainer.isVisible ) {
+                linesContainer.children.forEach { hr ->
+                    if( hr is HorizontalLayout ) {
+                        val form:OrderLineForm = hr.children.findFirst().get() as OrderLineForm
+                        form.reset(it.value, skipItem = true)
+                    }
+                }
+            }
+        }
+
         add(
             typeField, subjectField,
             dcSelect, supplierField,
             refField, Span(),
             HorizontalLayout(itemsButton, cancelItemsButton)
         )
-        add(linesContainer, 2)
+        add(VerticalLayout(linesContainer), 2)
 
-        val addLineButton = Button("AGGIUNGI") {
-            add(makeLineForm())
-        }
+        addLineButton = Button("AGGIUNGI")
+            .apply {
+                addClickListener { linesContainer.add(makeLineForm()) }
+                isVisible = false
+            }
 
-        add(addLineButton, 2)
+
+        add(addLineButton, 1)
 
     }
 
@@ -186,6 +199,7 @@ class OrderForm(
 
         linesContainer.isVisible = true
         linesContainer.add(line)
+        addLineButton.isVisible = true
 
     }
 
@@ -195,6 +209,7 @@ class OrderForm(
         }
 
         linesContainer.isVisible = false
+        addLineButton.isVisible = false
     }
 
     private fun makeLineForm(): HorizontalLayout {
