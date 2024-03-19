@@ -16,15 +16,13 @@ import it.posteitaliane.gdc.gadc.config.GMDConfig
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Supplier
+import it.posteitaliane.gdc.gadc.services.BackOffice
 import it.posteitaliane.gdc.gadc.services.OrderService
 import it.posteitaliane.gdc.gadc.services.StorageService
 
 class OrderForm(
-    private val ss:StorageService,
-    private val os:OrderService,
-    private val dcspos:List<Datacenter>,
-    private val sups:List<Supplier>,
-    private val config:GMDConfig) : FormLayout() {
+    private val bo:BackOffice,
+    private val defaultFirmName:String) : FormLayout() {
 
     private val binder:Binder<OrderPresentation>
 
@@ -89,10 +87,10 @@ class OrderForm(
         dcSelect = Select<Datacenter>()
             .apply {
                 placeholder = "DATACENTER"
-                setItems(dcspos)
                 setItemLabelGenerator {
                     "${it.short} - ${it.fullName}"
                 }
+                setItems(bo.dcs.findAll())
             }
 
         binder.forField(dcSelect)
@@ -110,7 +108,7 @@ class OrderForm(
         supplierField = ComboBox<Supplier>()
             .apply {
                 placeholder = " DA FORNITORE"
-                setItems(sups)
+                setItems(bo.sups.findAll())
                 setItemLabelGenerator {it.name}
             }
 
@@ -122,7 +120,7 @@ class OrderForm(
 
         subjectField.addValueChangeListener {
             if( it.source.value == Order.Subject.INTERNAL || it.source.value == Order.Subject.SUPPLIER_DC ) {
-                supplierField.value = sups.find { it.name == config.firmName }
+                supplierField.value = bo.sups.findByName(defaultFirmName)
                 supplierField.isEnabled = false
             } else {
                 supplierField.value = null
@@ -201,14 +199,14 @@ class OrderForm(
 
     private fun makeLineForm(): HorizontalLayout {
         val hr = HorizontalLayout()
-        val line = OrderLineForm(os.findItems(), dcSelect.value.locations)
-        line.snIsRegistered = {ss.snIsRegistered(line.snField.value)}
+        val line = OrderLineForm(bo.os.findItems(), dcSelect.value.locations)
+        line.snIsRegistered = {bo.ss.snIsRegistered(line.snField.value)}
+        line.ptIsRegistered = {bo.ss.ptIsRegistered(line.ptField.value)}
         val button = Button(Icon(VaadinIcon.MINUS))
 
         hr.add(line, button)
 
         button.addClickListener {
-            println("EH?")
             linesContainer.remove(hr)
         }
 

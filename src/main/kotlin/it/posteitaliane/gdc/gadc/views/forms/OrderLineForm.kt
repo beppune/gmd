@@ -35,7 +35,7 @@ class OrderLineForm(
 
     val snField:TextField
 
-    private val ptField:TextField
+    val ptField:TextField
 
     private val uniqueButton:Button
 

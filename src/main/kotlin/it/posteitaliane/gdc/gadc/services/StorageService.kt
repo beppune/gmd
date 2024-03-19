@@ -10,4 +10,8 @@ class StorageService {
         return sn == "SNISALREADYINSTORAGE"
     }
 
+    fun ptIsRegistered(pt: String): Boolean {
+        return pt == "11223344"
+    }
+
 }
