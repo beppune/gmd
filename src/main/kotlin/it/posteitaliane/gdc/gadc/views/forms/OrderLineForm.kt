@@ -3,6 +3,7 @@ package it.posteitaliane.gdc.gadc.views.forms
 import com.vaadin.flow.component.ClickEvent
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.combobox.ComboBox
+import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
@@ -15,8 +16,8 @@ import com.vaadin.flow.data.binder.ValidationResult
 import it.posteitaliane.gdc.gadc.model.Datacenter
 
 class OrderLineForm(
-    private val items:List<String>,
-    private val positions:MutableList<String>
+    items:List<String>,
+    positions:MutableList<String>
 ) : HorizontalLayout() {
 
     var snIsRegistered:(String)->Boolean={false}
@@ -38,10 +39,6 @@ class OrderLineForm(
 
     private val uniqueButton:Button
 
-    private val saveButton:Button
-
-    private val resetButton:Button
-
     init {
 
 
@@ -55,7 +52,6 @@ class OrderLineForm(
                 value = ""
                 minWidth = "75px"
                 maxWidth = "250px"
-                addBlurListener {writeBean()}
             }
 
         positionsField = ComboBox<String>()
@@ -66,7 +62,6 @@ class OrderLineForm(
                 value = ""
                 minWidth = "75px"
                 maxWidth = "250px"
-                addBlurListener {writeBean()}
             }
 
         amountField = IntegerField()
@@ -74,75 +69,62 @@ class OrderLineForm(
                 placeholder = "#"
                 value = 0
                 maxWidth = "50px"
-                addBlurListener {writeBean()}
             }
 
         snField = TextField()
             .apply {
-                placeholder = "S/N"
+                prefixComponent = Span("S/N")
                 isVisible = false
                 value = ""
-                addBlurListener {writeBean()}
             }
 
         ptField = TextField()
             .apply {
-                placeholder = "PT"
+                prefixComponent = Span("PT")
                 isVisible = false
+                maxLength = 8
+                minLength = 8
+                allowedCharPattern = "\\d"
                 value = ""
-                addBlurListener { writeBean() }
             }
 
         uniqueButton = Button(Icon(VaadinIcon.ARROW_RIGHT)) {toggleUnique()}
 
+        /* BINDINGS */
         binder.forField(itemsField)
-            .asRequired("Obbligatorio")
+            .asRequired("Campo Obbligatorio")
             .bind({it.item},{ line, value -> line.item = value })
 
         binder.forField(positionsField)
-            .asRequired("Obbligatorio")
-            .withValidator { s, valueContext ->
-                if(!positions.contains(s))
-                    ValidationResult.error("La posizione non esiste")
-                else ValidationResult.ok()
-            }
+            .asRequired("Campo Obbligatorio")
             .bind({it.position},{line, value -> line.position = value})
 
         binder.forField(amountField)
-            .withValidator { a, valueContext ->
-                if( a == null || a <= 0 ) {
-                    ValidationResult.error("Deve essere positivo")
-                } else {
-                    ValidationResult.ok()
-                }
-            }
+            .asRequired("Campo Obbligatorio")
             .bind({it.amount},{ line, value -> line.amount = value})
 
-        binder.readBean(bean)
-
-        binder.addValueChangeListener {writeBean()}
-
-        saveButton = Button(Icon(VaadinIcon.CHECK)) {writeBean()}
-
-        resetButton = Button(Icon(VaadinIcon.CLOSE)) {
-            bean = OrderLinePresentation()
-            binder.readBean(bean)
-            toggleUnique()
-        }
-
         binder.forField(snField)
-            .withValidator { sn, _ ->
-                if( snIsRegistered.invoke(sn) ) {
-                    ValidationResult.error("S/N già presente in giacenza")
-                } else ValidationResult.ok()
+            .withValidator { value, _ ->
+                if(isUnique() && value.isNullOrEmpty() && ptField.value.isNullOrEmpty()) ValidationResult.error("Obbligatorio almeno uno fra S/N e PT")
+                else ValidationResult.ok()
             }
             .bind({ol -> ol.sn}, {ol, sn -> ol.sn = sn})
 
-        add(itemsField, positionsField, amountField, uniqueButton, snField, ptField, saveButton, resetButton)
+        binder.forField(ptField)
+            .withValidator { value, _ ->
+                if(isUnique() && value.isNullOrEmpty() && snField.value.isNullOrEmpty()) ValidationResult.error("Obbligatorio almeno uno fra S/N e PT")
+                else ValidationResult.ok()
+            }
+            .bind({ol -> ol.pt}, {ol, pt -> ol.pt = pt})
+
+        binder.readBean(bean)
+
+        /* UI */
+        add(itemsField, positionsField, amountField, uniqueButton, snField, ptField)
     }
 
     private fun toggleUnique() {
-        if( snField.isVisible ) {
+        if( isUnique() ) {
             snField.value = ""
             snField.isVisible = false
 
@@ -168,21 +150,37 @@ class OrderLineForm(
             binder.writeBean(bean)
 
         } catch (ex: ValidationException) {
-            Notification.show(ex.toString()).position = Notification.Position.MIDDLE
+            Notification.show(ex.toString()).position = Notification.Position.TOP_CENTER
         }
     }
 
 
-    fun reset(dc:Datacenter?) {
-        itemsField.value = ""
-        if( dc != null ) {
-            positions.clear()
-            positions.addAll(dc.locations)
+    fun reset(dc:Datacenter?=null, skipItem:Boolean=false) {
+        bean = OrderLinePresentation()
+        if( isUnique() ) {
+            bean.amount = 1
         }
+
+        if( skipItem ) {
+            bean.item = itemsField.value
+        }
+
+        bean.amount = amountField.value
+
+        if( dc != null ) {
+            positionsField.clear()
+            positionsField.setItems(dc.locations)
+
+            bean.sn = snField.value
+            bean.pt = ptField.value
+        }
+        binder.readBean(bean)
     }
 
     fun validate() {
         binder.validate()
     }
+
+    private fun isUnique() : Boolean = snField.isVisible
 
 }

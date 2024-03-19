@@ -8,7 +8,8 @@ data class OrderLinePresentation(
     var item:String?=null,
     var position:String?=null,
     var amount:Int?=null,
-    var sn:String?=null
+    var sn:String?=null,
+    var pt:String?=null
 ) {
 
     override fun equals(other: Any?): Boolean {
