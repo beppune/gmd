@@ -97,7 +97,7 @@ data class OrderLine(
     var pt:String?=null
 )
 
-/*data class Storage(
+data class Storage(
     val item:String,
     val dc:Datacenter,
     val pos:String,
@@ -106,4 +106,4 @@ data class OrderLine(
 
     var sn:String?=null,
     var pt:String?=null
-)*/
+)

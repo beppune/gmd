@@ -2,3 +2,7 @@
 input {
     text-transform: uppercase
 }
+
+vaadin-text-field.search input {
+    text-transform: none
+}

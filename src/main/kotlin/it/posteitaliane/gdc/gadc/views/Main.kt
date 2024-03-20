@@ -6,7 +6,7 @@ import it.posteitaliane.gdc.gadc.config.GMDConfig
 import it.posteitaliane.gdc.gadc.services.BackOffice
 import it.posteitaliane.gdc.gadc.views.forms.OrderForm
 
-@Route
+@Route("test")
 class Main(bo:BackOffice, config:GMDConfig) : VerticalLayout() {
 
     init {

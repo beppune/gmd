@@ -29,4 +29,8 @@ class DatacenterService(val db:JdbcTemplate) {
             }
     }
 
+    fun findByShortName(short:String) : Datacenter? {
+        return db.queryForObject("SELECT shortname,fullname FROM DCS WHERE shortname LIKE ?", mapper, short)
+    }
+
 }

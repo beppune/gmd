@@ -56,6 +56,7 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
                 prefixComponent = Icon(VaadinIcon.SEARCH)
                 placeholder = "Cerca per nome utente, datacenter, referente..."
                 width = "50%"
+                classNames.add("search")
                 addKeyUpListener {
                     if( it.key == Key.ENTER) {
                         filterProvider.setFilter(value.trim().lowercase())

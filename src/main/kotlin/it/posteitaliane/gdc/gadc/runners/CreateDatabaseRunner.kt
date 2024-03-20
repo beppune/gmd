@@ -65,13 +65,15 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val bo:Bac
             dc          CHAR(4) NOT NULL,
             pos         VARCHAR(15) NOT NULL,
             
-            amount      INT CHECK( amount >=0 ),
+            amount      INT CHECK( amount > 0 ),
             
             sn          VARCHAR(250) NULL UNIQUE NULLS DISTINCT,
             pt          VARCHAR(12) NULL UNIQUE NULLS DISTINCT,
             
             PRIMARY KEY(item,dc,pos),
             UNIQUE NULLS DISTINCT(sn,pt),
+            UNIQUE NULLS DISTINCT(sn),
+            UNIQUE NULLS DISTINCT(pt),
             FOREIGN KEY(item) REFERENCES ITEMS(name),
             FOREIGN KEY(dc,pos) REFERENCES LOCATIONS(dc,name)
         );
@@ -267,6 +269,37 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val bo:Bac
             }
 
         }
+
+        items.subList(0, Random.nextInt(items.size))
+            .distinct()
+            .forEach { item ->
+                var dc = bo.dcs.findAll(true).random()
+
+                db.update(
+                    "INSERT INTO STORAGE(item, dc, pos, amount) VALUES(?,?,?,?)",
+                        item,
+                        dc.short,
+                        dc.locations.random(),
+                        Random.nextInt(1, 10)
+                    )
+            }
+
+        items.subList(0, Random.nextInt(items.size))
+            .distinct()
+            .take(3)
+            .forEach { item ->
+                var dc = bo.dcs.findAll(true).random()
+
+                db.update(
+                    "INSERT INTO STORAGE(item, dc, pos, amount, sn, pt) VALUES(?,?,?,?,?,?)",
+                    item,
+                    dc.short,
+                    dc.locations.random(),
+                    1,
+                    faker.ga().sn(),
+                    faker.ga().pt()
+                )
+            }
     }
 
 
