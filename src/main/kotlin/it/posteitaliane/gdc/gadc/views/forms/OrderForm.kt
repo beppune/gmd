@@ -14,12 +14,18 @@ import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.model.Supplier
 import it.posteitaliane.gdc.gadc.services.BackOffice
+import java.time.LocalDate
 
 class OrderForm(
-    private val bo:BackOffice,
-    private val defaultFirmName:String) : FormLayout() {
+    private val bo: BackOffice,
+    private val defaultFirmName: String,
+    type: Order.Type? = null
+) : FormLayout() {
+
+    var isValid: Boolean = false
 
     private val binder:Binder<OrderPresentation>
 
@@ -190,6 +196,16 @@ class OrderForm(
 
         add(addLineButton, 1)
 
+        if( type != null ) {
+            typeField.value = type
+        }
+
+    }
+
+    fun reset() {
+        undisplayLines(true)
+        bean = OrderPresentation()
+        binder.readBean(bean)
     }
 
     // Make OrderLinesPresentation forms list based on OrderPresentation values
@@ -215,8 +231,8 @@ class OrderForm(
     private fun makeLineForm(): HorizontalLayout {
         val hr = HorizontalLayout()
         val line = OrderLineForm(bo.os.findItems(), dcSelect.value.locations)
-        line.snIsRegistered = {bo.ss.snIsRegistered(line.snField.value)}
-        line.ptIsRegistered = {bo.ss.ptIsRegistered(line.ptField.value)}
+        line.snIsRegistered = { bo.ss.snIsRegistered(line.snField.value) }
+        line.ptIsRegistered = { bo.ss.ptIsRegistered(line.ptField.value) }
         val button = Button(Icon(VaadinIcon.MINUS))
 
         hr.add(line, button)
@@ -226,5 +242,42 @@ class OrderForm(
         }
 
         return hr
+    }
+
+    private fun linesForms() = linesContainer.children.filter { it is HorizontalLayout }
+        .map { (it as HorizontalLayout).children.findFirst().get() as OrderLineForm }
+
+    fun validate() : Boolean {
+        var lines = linesForms()
+            .allMatch { it.validate(); it.binder.isValid }
+        isValid = lines && binder.validate().isOk
+        return  isValid
+    }
+
+    fun compileOrder() : Order {
+        var order = Order(
+            type = binder.bean.type!!,
+            op = bo.ops.findAll().first(),
+            issued = LocalDate.now(),
+            dc = binder.bean.datacenter!!,
+            subject = binder.bean.subject!!,
+            supplier = binder.bean.supplier!!,
+            status = Order.Status.PENDING
+        )
+
+        linesForms().forEach {
+            var line = OrderLine(
+                order = order,
+                item = it.binder.bean.item!!,
+                position = it.binder.bean.position!!,
+                amount = it.binder.bean.amount!!,
+                sn = it.binder.bean.sn,
+                pt = it.binder.bean.pt
+            )
+
+            order.lines.add(line)
+        }
+
+        return order
     }
 }

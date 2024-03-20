@@ -25,7 +25,7 @@ class OrderLineForm(
 
     private var positionsField: ComboBox<String>
 
-    private val binder:Binder<OrderLinePresentation>
+    val binder:Binder<OrderLinePresentation>
 
     private var bean = OrderLinePresentation()
 
@@ -86,6 +86,10 @@ class OrderLineForm(
                 minLength = 8
                 allowedCharPattern = "\\d"
                 value = ""
+
+                addBlurListener {
+
+                }
             }
 
         uniqueButton = Button(Icon(VaadinIcon.ARROW_RIGHT)) {toggleUnique()}
