@@ -81,7 +81,7 @@ class OrderService(val db:JdbcTemplate, val ops:OperatorService, val dcs:Datacen
         return db.queryForObject(QUERY_BY_ID, orderMapper, uuid)!!
     }
 
-    fun find(offset: Int, limit: Int, searchKey: String?): List<Order> {
+    fun find(offset: Int, limit: Int, searchKey: String?, sortKey:String?, ascending:Boolean): List<Order> {
         var query = QUERY_SEARCH_KEY
 
         if ( searchKey != null ) {
@@ -93,6 +93,14 @@ class OrderService(val db:JdbcTemplate, val ops:OperatorService, val dcs:Datacen
             query +=  " supplier ILIKE '$searchKey%' OR "
             query +=  " ref ILIKE '$searchKey%' "
 
+        }
+
+        if( sortKey != null ) {
+            query += " ORDER BY $sortKey "
+
+            if( ascending.not() ) {
+                query += " DESC "
+            }
         }
 
         query += " LIMIT $limit "

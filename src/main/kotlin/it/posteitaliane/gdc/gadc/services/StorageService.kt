@@ -3,7 +3,6 @@ package it.posteitaliane.gdc.gadc.services
 import it.posteitaliane.gdc.gadc.model.Storage
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.queryForObject
 import org.springframework.stereotype.Service
 
 @Service
@@ -27,12 +26,20 @@ class StorageService(val db:JdbcTemplate, val dcs:DatacenterService) {
         return db.query(QUERY_ALL, storageMapper)
     }
 
-    fun find(offset: Int, limit: Int, searchKey: String?) : List<Storage> {
+    fun find(offset: Int, limit: Int, searchKey: String?, ascending: Boolean, sortKey: String?) : List<Storage> {
         var query = QUERY_ALL
 
         if ( searchKey != null ) {
             query += " WHERE "
             query += " item ILIKE '$searchKey%'"
+        }
+
+        if( sortKey != null ) {
+            query += " ORDER BY $sortKey "
+
+            if( !ascending ) {
+                query += " DESC "
+            }
         }
 
         query += " LIMIT $limit "

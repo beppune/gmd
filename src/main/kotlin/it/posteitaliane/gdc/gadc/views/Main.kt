@@ -22,7 +22,7 @@ class Main : AppLayout() {
 
         val toggle = DrawerToggle()
 
-        val title = H1("GMDC")
+        val title = H1("Gestione Magazzino Datacenter")
         title.style.set("font-size", "var(--lumo-font-size-l)")
             .set("margin", "0")
 

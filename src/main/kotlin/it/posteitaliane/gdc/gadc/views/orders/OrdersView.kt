@@ -35,17 +35,17 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
         filterProvider = provider.withConfigurableFilter()
 
         grid = Grid(Order::class.java, false)
-        val operatorColumn = grid.addColumn({"${it.op.firstName} ${it.op.lastName}"}, "op")
+        val operatorColumn = grid.addColumn({"${it.op.firstName} ${it.op.lastName}"}, "operator")
             .setHeader("Operatore")
         val typeColumn = grid.addColumn({"CARICO INTERNO"}, "type")
             .setHeader("Tipo")
-        val datacenterColumn = grid.addColumn({it.dc.fullName}, "dc")
+        val datacenterColumn = grid.addColumn({it.dc.fullName}, "datacenter")
             .setHeader("DC")
         val issuedColumn = grid.addColumn({dateFormatter().format(Date.valueOf(it.issued))}, "issued")
             .setHeader("Data")
         val statusColumn = grid.addColumn(ComponentRenderer({Span()}, statusComponent()))
-                .setHeader("Stato")
-        val refColumn = grid.addColumn("ref").setHeader("Referente")
+                .setHeader("Stato").setSortProperty("status")
+        val refColumn = grid.addColumn("ref").setHeader("Referente").setSortProperty("ref")
 
         grid.setItems(filterProvider)
 

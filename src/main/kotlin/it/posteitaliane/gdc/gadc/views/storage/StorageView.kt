@@ -29,7 +29,7 @@ class StorageView(BO:BackOffice) : VerticalLayout() {
         filterProvider = provider.withConfigurableFilter()
 
         grid = Grid(Storage::class.java, false)
-        val dcColumn = grid.addColumn({"${it.dc.fullName} - ${it.dc.fullName}"}, "dc")
+        val dcColumn = grid.addColumn({"${it.dc.short} - ${it.dc.fullName}"}, "dc")
             .setHeader("Datacenter")
         val itemColumn = grid.addColumn("item")
             .setHeader("Merce")
