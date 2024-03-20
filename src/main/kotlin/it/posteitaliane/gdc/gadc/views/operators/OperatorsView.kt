@@ -23,8 +23,9 @@ import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Operator
 import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.OperatorService
+import it.posteitaliane.gdc.gadc.views.Main
 
-@Route("anag")
+@Route(value = "anag", layout = Main::class)
 class OperatorsView(private val ops:OperatorService, private val dcs:DatacenterService) : VerticalLayout() {
 
     private val DCS = dcs.findAll()

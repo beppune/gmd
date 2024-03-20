@@ -13,10 +13,11 @@ import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.services.BackOffice
+import it.posteitaliane.gdc.gadc.views.Main
 import java.sql.Date
 import java.text.SimpleDateFormat
 
-@Route("orders")
+@Route(value = "orders", layout = Main::class)
 class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
     private val provider: OrdersProvider
