@@ -134,7 +134,8 @@ class OperatorsView(private val ops:OperatorService, private val dcs:DatacenterS
 
         searchField = TextField().apply {
             width = "50%"
-            placeholder = "Cerca"
+            placeholder = "Cerca per username, cognome, nome, email..."
+            classNames.add("search")
             prefixComponent = Icon(VaadinIcon.SEARCH)
             valueChangeMode = ValueChangeMode.EAGER
             addValueChangeListener {

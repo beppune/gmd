@@ -3,7 +3,6 @@ package it.posteitaliane.gdc.gadc.services
 import it.posteitaliane.gdc.gadc.model.Supplier
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.queryForObject
 import org.springframework.stereotype.Service
 
 @Service
