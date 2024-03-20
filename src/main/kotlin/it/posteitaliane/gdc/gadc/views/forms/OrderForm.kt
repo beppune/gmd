@@ -12,12 +12,18 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
-import it.posteitaliane.gdc.gadc.model.Datacenter
-import it.posteitaliane.gdc.gadc.model.Order
-import it.posteitaliane.gdc.gadc.model.OrderLine
-import it.posteitaliane.gdc.gadc.model.Supplier
+import it.posteitaliane.gdc.gadc.model.*
 import it.posteitaliane.gdc.gadc.services.BackOffice
 import java.time.LocalDate
+
+data class OrderPresentation(
+    var operator: Operator?=null,
+    var type:Order.Type?=null,
+    var subject:Order.Subject?=null,
+    var ref:String?=null,
+    var supplier:Supplier?=null,
+    var datacenter:Datacenter?=null
+)
 
 class OrderForm(
     private val bo: BackOffice,
