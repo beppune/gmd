@@ -127,8 +127,6 @@ class OrderForm(
             .asRequired("Obbligatorio")
             .bind({it.supplier}, { order, sup -> order.supplier = sup})
 
-        binder.readBean(bean)
-
         subjectField.addValueChangeListener {
             if( it.source.value == Order.Subject.INTERNAL || it.source.value == Order.Subject.SUPPLIER_DC ) {
                 supplierField.value = bo.sups.findByName(defaultFirmName)
@@ -184,6 +182,8 @@ class OrderForm(
                 }
             }
         }
+
+        binder.bean = bean
 
         add(
             typeField, subjectField,
@@ -254,6 +254,7 @@ class OrderForm(
         .map { (it as HorizontalLayout).children.findFirst().get() as OrderLineForm }
 
     fun validate() : Boolean {
+
         var lines = linesForms()
             .allMatch { it.validate(); it.binder.isValid }
         isValid = lines && binder.validate().isOk
@@ -261,6 +262,9 @@ class OrderForm(
     }
 
     fun compileOrder() : Order {
+
+        binder.writeBean(bean)
+
         var order = Order(
             type = binder.bean.type!!,
             op = bo.ops.findAll().first(),
@@ -272,6 +276,7 @@ class OrderForm(
         )
 
         linesForms().forEach {
+            it.validate()
             var line = OrderLine(
                 order = order,
                 item = it.binder.bean.item!!,

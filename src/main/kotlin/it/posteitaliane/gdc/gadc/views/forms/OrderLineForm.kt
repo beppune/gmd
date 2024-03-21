@@ -144,7 +144,7 @@ class OrderLineForm(
             }
             .bind({ol -> ol.pt}, {ol, pt -> ol.pt = pt})
 
-        binder.readBean(bean)
+        binder.bean = bean
 
         /* UI */
         add(itemsField, positionsField, amountField, uniqueButton, snField, ptField)
@@ -205,6 +205,7 @@ class OrderLineForm(
     }
 
     fun validate() {
+        writeBean()
         binder.validate()
     }
 

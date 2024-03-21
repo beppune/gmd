@@ -6,3 +6,7 @@ input {
 vaadin-text-field.search input {
     text-transform: none
 }
+
+.pointer {
+    cursor: pointer
+}
