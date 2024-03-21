@@ -206,11 +206,14 @@ class OrderForm(
             typeField.value = type
         }
 
+        reset(type)
+
     }
 
-    fun reset() {
+    fun reset(type: Order.Type?=null) {
         undisplayLines(true)
         bean = OrderPresentation()
+        bean.type = type
         binder.readBean(bean)
     }
 

@@ -46,6 +46,12 @@ class Main(op: Operator, bo:BackOffice, config:GMDConfig) : AppLayout() {
                     style.set("margin-inline-end", "auto");
                     addClickListener { dialog.close() }
                 },
+            Button("Reset")
+                .apply {
+                    addClickListener {
+                        form.reset()
+                    }
+                },
             Button("Conferma")
                 .apply {
                     addClickListener {
