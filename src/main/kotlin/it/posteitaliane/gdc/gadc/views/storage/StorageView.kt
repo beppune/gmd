@@ -10,9 +10,9 @@ import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.model.Storage
 import it.posteitaliane.gdc.gadc.services.BackOffice
-import it.posteitaliane.gdc.gadc.views.Main
+import it.posteitaliane.gdc.gadc.views.MainLayout
 
-@Route(value = "", layout = Main::class)
+@Route(value = "", layout = MainLayout::class)
 class StorageView(BO:BackOffice) : VerticalLayout() {
 
     private val provider: StorageProvider

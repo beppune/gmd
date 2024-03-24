@@ -10,7 +10,6 @@ import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
-import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.Scroller
 import com.vaadin.flow.component.sidenav.SideNav
@@ -25,7 +24,7 @@ import it.posteitaliane.gdc.gadc.views.operators.OperatorsView
 import it.posteitaliane.gdc.gadc.views.orders.OrdersView
 import it.posteitaliane.gdc.gadc.views.storage.StorageView
 
-class Main(op: Operator, bo:BackOffice, config:GMDConfig) : AppLayout() {
+class MainLayout(op: Operator, bo:BackOffice, config:GMDConfig) : AppLayout() {
 
     val dialog:Dialog
     init {
