@@ -2,14 +2,24 @@ package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.OrderLine
+import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
+import org.springframework.transaction.UnexpectedRollbackException
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
+import java.sql.SQLException
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
-class OrderService(val db:JdbcTemplate, val ops:OperatorService, val dcs:DatacenterService, val sups:SupplierService) {
+class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:OperatorService, val dcs:DatacenterService, val sups:SupplierService) {
+
+    data class Result(val order:Order?, val error:String?) {
+        val isOk get() = error.isNullOrEmpty().not()
+        val isError get() = order != null
+    }
 
     val orderMapper = RowMapper { rs, _ ->
         Order(
@@ -118,6 +128,61 @@ class OrderService(val db:JdbcTemplate, val ops:OperatorService, val dcs:Datacen
 
     fun findItems(): List<String> {
         return db.queryForList(QUERY_ITEMS, String::class.java)
+    }
+
+
+    private val QUERY_SUBMIT_ORDER = "INSERT INTO ORDERS(id,operator,datacenter,supplier,issued,type,subject,status,ref) " +
+            "VALUES(?,?,?,?,?,?,?,?,?)"
+    private val QUERY_SUBMIT_LINE = "INSERT INTO ORDERS_LINES(ownedby,datacenter,item,pos,amount,sn) " +
+            "VALUES(?,?,?,?,?,?)"
+
+    @Transactional
+    fun submit(o: Order): Result {
+
+        var result:Result? = Result(null,"")
+        //validate order
+        //save order
+        result = tr.execute { status ->
+            try {
+                db.update(
+                    QUERY_SUBMIT_ORDER,
+                    o.number,
+                    o.op.username,
+                    o.dc.short,
+                    o.supplier.name,
+                    LocalDateTime.now(),
+                    o.type.name,
+                    o.subject.name,
+                    o.status.name,
+                    o.ref
+                )
+
+                for (i in o.lines.indices) {
+                    db.update(
+                        QUERY_SUBMIT_LINE,
+                        o.number,
+                        o.dc.short,
+                        o.lines[i].item,
+                        o.lines[i].position,
+                        o.lines[i].amount,
+                        o.lines[i].sn
+                    )
+                }
+
+                return@execute Result(o, null)
+            } catch (ex:RuntimeException) {
+                status.setRollbackOnly()
+                print(ex.message)
+                return@execute Result(null, ex.message)
+            }
+        }
+
+        if(result!!.isError) return result
+
+        //save lines
+        //update storage
+        //update transactions log
+        return result
     }
 
 }

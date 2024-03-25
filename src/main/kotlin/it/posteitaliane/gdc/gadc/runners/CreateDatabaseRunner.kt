@@ -100,7 +100,7 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val bo:Bac
             operator        CHAR(8) NOT NULL,
             datacenter      CHAR(4) NOT NULL,
             supplier        VARCHAR(200) NOT NULL,
-            issued          DATE NOT NULL,
+            issued          DATETIME NOT NULL,
             type            ENUM( 'INBOUND', 'OUTBOUND' ) NOT NULL,
             subject         ENUM( 'SUPPLIER', 'SUPPLIER_DC', 'INTERNAL') NOT NULL,
             status          ENUM( 'PENDING', 'COMPLETED', 'CANCELED' ) NOT NULL,
@@ -128,6 +128,14 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val bo:Bac
             FOREIGN KEY(item) REFERENCES ITEMS(name),
             FOREIGN KEY(ownedby) REFERENCES ORDERS(id),
             FOREIGN KEY(datacenter,pos) REFERENCES LOCATIONS(dc,name)
+        );
+        
+        CREATE TABLE TRANSACTIONS(
+            id              IDENTITY,
+            operator        CHAR(8) NOT NULL,
+            type            ENUM( 'SUBMIT' ) NOT NULL,
+            timestamp       DATE NOT NULL,
+            log             VARCHAR(200)
         );
         
     """.trimIndent()

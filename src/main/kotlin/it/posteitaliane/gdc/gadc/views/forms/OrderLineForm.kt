@@ -60,17 +60,23 @@ class OrderLineForm(
 
     private val uniqueButton:Button
 
-    var SNExternalValidator:(String, ValueContext)->ValidationResult = { value, _ ->
-        if( parent==null ) ValidationResult.ok()
+    var SNExternalValidator:(String, ValueContext)->ValidationResult = {_,_->ValidationResult.ok()}
+        /*{ value, _ ->
+        if( isUnique().not() ) ValidationResult.ok()
+
+        if( parent==null) ValidationResult.ok()
 
         val l = parent!!.linesForms().filter { it != this }.map { it.snField.value }.toList()
 
         if( l.contains(value) ) ValidationResult.error("Duplicated SN")
         else ValidationResult.ok()
 
-    }
+    }*/
 
-    var PTExternalValidator:(String, ValueContext)->ValidationResult = { value, _ ->
+    var PTExternalValidator:(String, ValueContext)->ValidationResult = {_,_->ValidationResult.ok()}
+    /*{ value, _ ->
+        if( isUnique().not() ) ValidationResult.ok()
+
         if( parent==null ) ValidationResult.ok()
 
         val l = parent!!.linesForms().filter { it != this }.map { it.ptField.value }.toList()
@@ -78,7 +84,7 @@ class OrderLineForm(
         if( l.contains(value) ) ValidationResult.error("Duplicated PT")
         else ValidationResult.ok()
 
-    }
+    }*/
 
     init {
 

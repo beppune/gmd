@@ -57,12 +57,18 @@ class  MainLayout(op: Operator, bo:BackOffice, config:GMDConfig) : AppLayout() {
                         addThemeVariants(ButtonVariant.LUMO_PRIMARY)
 
                         if( form.validate() ) {
-                            Notification.show("Service", 2, Notification.Position.TOP_CENTER)
-                            form.compileOrder().also {
-                                /*println(it)
-                                println(it.lines)*/
+                            val o = form.compileOrder()
+
+                            val (result, error) = bo.os.submit(o)
+                            if(result == null) {
+                                Notification.show(error)
+                                println(error)
+                                return@addClickListener
                             }
+
                             dialog.close()
+                        } else {
+                            print("Order form non valido")
                         }
                     }
                 }

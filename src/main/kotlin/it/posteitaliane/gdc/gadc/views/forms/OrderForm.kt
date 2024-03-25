@@ -34,7 +34,7 @@ class OrderForm(
 
     var isValid: Boolean = false
 
-    private val binder:Binder<OrderPresentation>
+    val binder:Binder<OrderPresentation>
 
     private var bean:OrderPresentation
 
@@ -287,8 +287,8 @@ class OrderForm(
                 item = it.bean.item!!,
                 position = it.bean.position!!,
                 amount = it.bean.amount!!,
-                sn = it.bean.sn,
-                pt = it.bean.pt
+                sn = if(it.bean.sn.isNullOrEmpty()) null else it.bean.sn,
+                pt = if(it.bean.pt.isNullOrEmpty()) null else it.bean.pt,
             )
 
             order.lines.add(line)
