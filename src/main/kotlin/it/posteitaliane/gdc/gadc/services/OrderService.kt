@@ -2,19 +2,16 @@ package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.OrderLine
-import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
-import org.springframework.transaction.UnexpectedRollbackException
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
-import java.sql.SQLException
 import java.time.LocalDateTime
 import java.util.*
 
 @Service
-class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:OperatorService, val dcs:DatacenterService, val sups:SupplierService) {
+class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:OperatorService, val dcs:DatacenterService, val sups:SupplierService, val ss:StorageService) {
 
     data class Result(val order:Order?, val error:String?) {
         val isOk get() = error.isNullOrEmpty().not()
@@ -66,22 +63,6 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
     private val QUERY_LINES = "SELECT ownedby,item,pos,amount,sn FROM ORDERS_LINES WHERE ownedby = ?"
 
     private val QUERY_ITEMS = "SELECT name FROM ITEMS"
-
-    @Transactional
-    fun register(o: Order) {
-        db.update(
-            REGISTER_ORDER_SQL,
-            o.number,
-            o.op.username,
-            o.dc.short,
-            o.supplier.name,
-            o.issued,
-            o.type.name,
-            o.subject.name,
-            o.status.name,
-            o.ref
-        )
-    }
 
     fun findAll(): List<Order> {
         return db.query(QUERY_ALL, orderMapper)
@@ -136,6 +117,10 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
     private val QUERY_SUBMIT_LINE = "INSERT INTO ORDERS_LINES(ownedby,datacenter,item,pos,amount,sn) " +
             "VALUES(?,?,?,?,?,?)"
 
+    private val QUERY_SUBMIT_STORAGE = "INSERT INTO STORAGE(item,dc,pos,amount,sn,pt) VALUES(?,?,?,?,NULL,NULL)"
+    private val QUERY_UPDATE_STORAGE = "UPDATE STORAGE SET amount = ? WHERE item = ? AND dc = ? AND pos = ?"
+    private val QUERY_DELETE_STORAGE = "DELETE STORAGE WHERE item = ? AND dc = ? AND pos = ?"
+
     @Transactional
     fun submit(o: Order): Result {
 
@@ -169,6 +154,51 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
                     )
                 }
 
+                for (i in o.lines.indices) {
+
+                    val line = o.lines[i]
+
+                    when(o.type) {
+                        Order.Type.INBOUND -> {
+                            val s = ss.findForCount(line.item, o.dc.short, line.position)
+
+                            if( s == null ) {
+                                db.update(
+                                    QUERY_SUBMIT_STORAGE,
+                                    line.item, o.dc.short, line.position, line.amount
+                                )
+                            } else {
+                                db.update(
+                                    QUERY_UPDATE_STORAGE,
+                                    s.amount + line.amount, line.item, o.dc.short, line.position
+                                )
+                            }
+
+                        }
+                        Order.Type.OUTBOUND -> {
+                            val s = ss.findForCount(line.item, o.dc.short, line.position)
+
+                            if( s!!.amount > line.amount) {
+                                db.update(
+                                    QUERY_UPDATE_STORAGE,
+                                    s.amount - line.amount, line.item, o.dc.short, line.position
+                                )
+                            } else if ( s.amount == line.amount ) {
+                                db.update(
+                                    QUERY_DELETE_STORAGE,
+                                    line.item, o.dc.short, line.position
+                                )
+                            } else {
+                                println("Errore: quantità non disponibile: $line")
+                            }
+                        }
+                    }
+
+                }
+
+                //update transactions log
+
+
                 return@execute Result(o, null)
             } catch (ex:RuntimeException) {
                 status.setRollbackOnly()
@@ -178,10 +208,6 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
         }
 
         if(result!!.isError) return result
-
-        //save lines
-        //update storage
-        //update transactions log
         return result
     }
 

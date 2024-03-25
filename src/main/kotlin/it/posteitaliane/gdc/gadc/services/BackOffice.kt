@@ -70,11 +70,6 @@ class BackOffice(
     }
 
     fun from(op:Operator)  = OrderBuilder(op, this)
-    fun register(o: Order) {
-
-        os.register(o)
-
-    }
 
 }
 

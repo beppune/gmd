@@ -59,6 +59,10 @@ class  MainLayout(op: Operator, bo:BackOffice, config:GMDConfig) : AppLayout() {
                         if( form.validate() ) {
                             val o = form.compileOrder()
 
+                            if( o.subject != Order.Subject.SUPPLIER ) {
+                                o.status = Order.Status.COMPLETED
+                            }
+
                             val (result, error) = bo.os.submit(o)
                             if(result == null) {
                                 Notification.show(error)
@@ -74,7 +78,9 @@ class  MainLayout(op: Operator, bo:BackOffice, config:GMDConfig) : AppLayout() {
                 }
         )
 
-        val button = Button("CARICO") { dialog.open() }
+        val button = Button("ESEGUI UN'OPERAZIONE") { dialog.open() }
+
+        button.addClassNames(LumoUtility.Margin.Left.MEDIUM)
 
         val toggle = DrawerToggle()
 

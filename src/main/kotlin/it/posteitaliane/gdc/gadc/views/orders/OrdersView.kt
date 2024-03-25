@@ -28,6 +28,21 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
     private val searchField:TextField
 
+    private fun makeTypeLabel(o:Order): String {
+        var label =""
+        when(o.type) {
+            Order.Type.INBOUND -> label += "CARICO"
+            Order.Type.OUTBOUND -> label += "SCARICO"
+        }
+
+        when(o.subject) {
+            Order.Subject.INTERNAL -> label += " INTERNO"
+            Order.Subject.SUPPLIER -> label += " DA FORNITORE"
+            Order.Subject.SUPPLIER_DC -> label += " DA MOVING"
+        }
+        return label
+    }
+
     init {
 
         provider = OrdersProvider(BO.os)
@@ -37,7 +52,7 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
         grid = Grid(Order::class.java, false)
         val operatorColumn = grid.addColumn({"${it.op.firstName} ${it.op.lastName}"}, "operator")
             .setHeader("Operatore")
-        val typeColumn = grid.addColumn({"CARICO INTERNO"}, "type")
+        val typeColumn = grid.addColumn({makeTypeLabel(it)}, "type")
             .setHeader("Tipo")
         val datacenterColumn = grid.addColumn({it.dc.fullName}, "datacenter")
             .setHeader("DC")

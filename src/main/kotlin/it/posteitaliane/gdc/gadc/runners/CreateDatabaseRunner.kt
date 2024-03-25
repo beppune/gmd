@@ -219,7 +219,7 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val bo:Bac
 
         //val items = db.queryForList("SELECT name FROM ITEMS", String::class.java)
 
-        for (i in 0..25) {
+        /*for (i in 0..25) {
             val op = bo.ops.findAll().random()
             val dc = op.permissions.random()
             //val supplier = BO.sups.findAll().random()
@@ -307,7 +307,7 @@ class CreateDatabaseRunner(val db:JdbcTemplate, val config:GMDConfig, val bo:Bac
                     faker.ga().sn(),
                     faker.ga().pt()
                 )
-            }
+            }*/
     }
 
 

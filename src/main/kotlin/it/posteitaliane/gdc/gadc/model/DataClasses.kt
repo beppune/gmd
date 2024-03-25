@@ -77,7 +77,7 @@ data class Order(
     val issued:LocalDate,
     val type: Type,
     val subject: Subject,
-    val status: Status=Status.PENDING
+    var status: Status=Status.PENDING
 ) {
     val lines:MutableList<OrderLine> = mutableListOf()
 

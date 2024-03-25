@@ -20,10 +20,24 @@ class StorageService(val db:JdbcTemplate, val dcs:DatacenterService) {
 
     private val QUERY_ALL = "SELECT item,dc,pos,amount,sn FROM STORAGE"
 
+    private val QUERY_FOR_COUNT = "SELECT item,dc,pos,amount,sn,pt FROM STORAGE" +
+            " WHERE item = ? AND dc = ? AND pos = ?"
+
     private val QUERY_FOR_SN = "$QUERY_ALL WHERE sn = ?"
 
     fun findAll() : List<Storage> {
         return db.query(QUERY_ALL, storageMapper)
+    }
+
+    fun findForCount(item:String, dc:String, pos:String): Storage? {
+        val one = db.query(
+            QUERY_FOR_COUNT,
+            storageMapper,
+            item, dc, pos
+        )
+
+        if ( one.size == 1 ) return one.get(0)
+        else return null
     }
 
     fun find(offset: Int, limit: Int, searchKey: String?, ascending: Boolean, sortKey: String?) : List<Storage> {
