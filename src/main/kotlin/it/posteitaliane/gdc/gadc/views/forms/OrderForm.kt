@@ -55,6 +55,9 @@ class OrderForm(
 
     private val addLineButton:Button
 
+    private val formSn = mutableListOf<String>()
+    private val formPt = mutableListOf<String>()
+
     init {
 
         bean = OrderPresentation()
@@ -240,8 +243,6 @@ class OrderForm(
     private fun makeLineForm(): HorizontalLayout {
         val hr = HorizontalLayout()
         val line = OrderLineForm(bo.os.findItems(), dcSelect.value.locations)
-        line.snIsRegistered = { bo.ss.snIsRegistered(line.snField.value) }
-        line.ptIsRegistered = { bo.ss.ptIsRegistered(line.ptField.value) }
         val button = Button(Icon(VaadinIcon.MINUS))
 
         hr.add(line, button)
@@ -269,12 +270,12 @@ class OrderForm(
         binder.writeBean(bean)
 
         var order = Order(
-            type = binder.bean.type!!,
+            type = bean.type!!,
             op = bo.ops.findAll().first(),
             issued = LocalDate.now(),
-            dc = binder.bean.datacenter!!,
-            subject = binder.bean.subject!!,
-            supplier = binder.bean.supplier!!,
+            dc = bean.datacenter!!,
+            subject = bean.subject!!,
+            supplier = bean.supplier!!,
             status = Order.Status.PENDING
         )
 
@@ -282,11 +283,11 @@ class OrderForm(
             it.validate()
             var line = OrderLine(
                 order = order,
-                item = it.binder.bean.item!!,
-                position = it.binder.bean.position!!,
-                amount = it.binder.bean.amount!!,
-                sn = it.binder.bean.sn,
-                pt = it.binder.bean.pt
+                item = it.bean.item!!,
+                position = it.bean.position!!,
+                amount = it.bean.amount!!,
+                sn = it.bean.sn,
+                pt = it.bean.pt
             )
 
             order.lines.add(line)
