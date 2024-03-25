@@ -11,6 +11,7 @@ import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.data.binder.Validator
+import com.vaadin.flow.data.binder.ValueContext
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import java.util.*
 
@@ -38,6 +39,7 @@ data class OrderLinePresentation(
 }
 
 class OrderLineForm(
+    parent:OrderForm?=null,
     items:List<String>,
     positions:MutableList<String>
 ) : HorizontalLayout() {
@@ -57,6 +59,26 @@ class OrderLineForm(
     val ptField:TextField
 
     private val uniqueButton:Button
+
+    var SNExternalValidator:(String, ValueContext)->ValidationResult = { value, _ ->
+        if( parent==null ) ValidationResult.ok()
+
+        val l = parent!!.linesForms().filter { it != this }.map { it.snField.value }.toList()
+
+        if( l.contains(value) ) ValidationResult.error("Duplicated SN")
+        else ValidationResult.ok()
+
+    }
+
+    var PTExternalValidator:(String, ValueContext)->ValidationResult = { value, _ ->
+        if( parent==null ) ValidationResult.ok()
+
+        val l = parent!!.linesForms().filter { it != this }.map { it.ptField.value }.toList()
+
+        if( l.contains(value) ) ValidationResult.error("Duplicated PT")
+        else ValidationResult.ok()
+
+    }
 
     init {
 
@@ -137,6 +159,7 @@ class OrderLineForm(
                 else ValidationResult.ok()
             }
             .withValidator(SNNotRegistered)
+            .withValidator(SNExternalValidator)
             .bind({ol -> ol.sn}, {ol, sn -> ol.sn = sn})
 
         binder.forField(ptField)
@@ -145,6 +168,7 @@ class OrderLineForm(
                 else ValidationResult.ok()
             }
             .withValidator(PTNotRegistered)
+            .withValidator(PTExternalValidator)
             .bind({ol -> ol.pt}, {ol, pt -> ol.pt = pt})
 
         reset()

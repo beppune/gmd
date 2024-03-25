@@ -24,7 +24,7 @@ import it.posteitaliane.gdc.gadc.views.operators.OperatorsView
 import it.posteitaliane.gdc.gadc.views.orders.OrdersView
 import it.posteitaliane.gdc.gadc.views.storage.StorageView
 
-class MainLayout(op: Operator, bo:BackOffice, config:GMDConfig) : AppLayout() {
+class  MainLayout(op: Operator, bo:BackOffice, config:GMDConfig) : AppLayout() {
 
     val dialog:Dialog
     init {
@@ -59,8 +59,8 @@ class MainLayout(op: Operator, bo:BackOffice, config:GMDConfig) : AppLayout() {
                         if( form.validate() ) {
                             Notification.show("Service", 2, Notification.Position.TOP_CENTER)
                             form.compileOrder().also {
-                                println(it)
-                                println(it.lines)
+                                /*println(it)
+                                println(it.lines)*/
                             }
                             dialog.close()
                         }

@@ -12,6 +12,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
+import com.vaadin.flow.data.binder.ValidationResult
 import it.posteitaliane.gdc.gadc.model.*
 import it.posteitaliane.gdc.gadc.services.BackOffice
 import java.time.LocalDate
@@ -242,7 +243,7 @@ class OrderForm(
 
     private fun makeLineForm(): HorizontalLayout {
         val hr = HorizontalLayout()
-        val line = OrderLineForm(bo.os.findItems(), dcSelect.value.locations)
+        val line = OrderLineForm(this, bo.os.findItems(), dcSelect.value.locations)
         val button = Button(Icon(VaadinIcon.MINUS))
 
         hr.add(line, button)
@@ -254,7 +255,7 @@ class OrderForm(
         return hr
     }
 
-    private fun linesForms() = linesContainer.children.filter { it is HorizontalLayout }
+    fun linesForms() = linesContainer.children.filter { it is HorizontalLayout }
         .map { (it as HorizontalLayout).children.findFirst().get() as OrderLineForm }
 
     fun validate() : Boolean {
