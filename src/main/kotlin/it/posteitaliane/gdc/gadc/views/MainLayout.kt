@@ -77,6 +77,9 @@ class  MainLayout(bo:BackOffice, config:GMDConfig) : AppLayout() {
                             (content as? StorageView)?.refresh()
 
                             dialog.close()
+
+                            if(content is StorageView) (content as StorageView).reloadStorage()
+
                         } else {
                             print("Order form non valido")
                         }

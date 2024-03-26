@@ -61,4 +61,8 @@ class StorageView(BO:BackOffice) : VerticalLayout() {
         add(searchField)
         add(grid)
     }
+
+    fun reloadStorage() {
+        grid.dataProvider.refreshAll()
+    }
 }
