@@ -14,6 +14,9 @@ import it.posteitaliane.gdc.gadc.views.MainLayout
 
 @Route(value = "", layout = MainLayout::class)
 class StorageView(BO:BackOffice) : VerticalLayout() {
+    fun refresh() {
+        grid.dataProvider.refreshAll()
+    }
 
     private val provider: StorageProvider
 

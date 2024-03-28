@@ -141,7 +141,14 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
                         o.lines[i].position,
                         o.lines[i].amount
                     )
+
+                    ss.updateStorage(o.lines[i]).also { res ->
+                        if(res.isError()) {
+                            return@execute Result(null, "OrderService::submit: ${res.error}")
+                        }
+                    }
                 }
+
 
                 return@execute Result(o, null)
             } catch (ex:TransactionException) {

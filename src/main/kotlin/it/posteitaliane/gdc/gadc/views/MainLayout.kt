@@ -67,12 +67,14 @@ class  MainLayout(bo:BackOffice, config:GMDConfig) : AppLayout() {
                                 o.status = Order.Status.COMPLETED
                             }
 
-                            val (result, error) = bo.os.submit(o)
-                            if(result == null) {
-                                Notification.show(error)
-                                println(error)
+                            val result = bo.os.submit(o)
+                            if(result.isError()) {
+                                Notification.show(result.error)
+                                println(result.error)
                                 return@addClickListener
                             }
+
+                            (content as? StorageView)?.refresh()
 
                             dialog.close()
                         } else {

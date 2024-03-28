@@ -16,11 +16,19 @@ import org.springframework.transaction.UnexpectedRollbackException
 import kotlin.random.Random
 
 @Component
-class CreateDatabaseRunner(val bo:BackOffice, val ctx:ApplicationContext) : CommandLineRunner {
+class CreateDatabaseRunner(val bo:BackOffice, val ctx:ApplicationContext, val config:GMDConfig) : CommandLineRunner {
 
     fun exit() = SpringApplication.exit(ctx)
 
     override fun run(vararg args: String?) {
+
+        val firm = Supplier(
+            name = config.firmName,
+            legal = config.firmLegal,
+            piva = config.firmPiva
+        )
+
+        bo.sups.create(firm)
 
         val faker = GAFaker()
 
@@ -74,7 +82,7 @@ class CreateDatabaseRunner(val bo:BackOffice, val ctx:ApplicationContext) : Comm
         }
 
         val orders = faker.collection({
-            faker.ga().order(items, dcs, ops, suppliers, s = Order.Subject.INTERNAL)
+            faker.ga().order(items, dcs, ops, suppliers, s = Order.Subject.INTERNAL, t = Order.Type.INBOUND)
         }).len(10).generate<List<Order>>()
 
         orders.forEach { o ->
