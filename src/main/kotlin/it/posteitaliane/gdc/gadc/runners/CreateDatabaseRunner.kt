@@ -11,6 +11,7 @@ import org.springframework.boot.SpringApplication
 import org.springframework.context.ApplicationContext
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
+import org.springframework.transaction.CannotCreateTransactionException
 import org.springframework.transaction.UnexpectedRollbackException
 import kotlin.random.Random
 
@@ -77,10 +78,14 @@ class CreateDatabaseRunner(val bo:BackOffice, val ctx:ApplicationContext) : Comm
         }).len(10).generate<List<Order>>()
 
         orders.forEach { o ->
-            val result = bo.os.submit(o)
-            if (result.isError()) {
-                println(result.error)
-                exit()
+            try {
+                val result = bo.os.submit(o)
+                if (result.isError()) {
+                    println(result.error)
+                    exit()
+                }
+            }catch (ex:CannotCreateTransactionException) {
+                ex.printStackTrace()
             }
         }
 

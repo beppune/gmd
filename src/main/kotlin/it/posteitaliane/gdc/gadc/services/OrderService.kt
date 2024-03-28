@@ -143,53 +143,6 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
                     )
                 }
 
-                /*for (i in o.lines.indices) {
-
-                    val line = o.lines[i]
-
-                    when(o.type) {
-                        Order.Type.INBOUND -> {
-                            val s = ss.findForCount(line.item, o.dc.short, line.position)
-
-                            if( s == null ) {
-                                db.update(
-                                    QUERY_SUBMIT_STORAGE,
-                                    line.item, o.dc.short, line.position, line.amount
-                                )
-                            } else {
-                                db.update(
-                                    QUERY_UPDATE_STORAGE,
-                                    s.amount + line.amount, line.item, o.dc.short, line.position
-                                )
-                            }
-
-                        }
-                        Order.Type.OUTBOUND -> {
-                            var s = ss.findForCount(line.item, o.dc.short, line.position)
-
-                            if( s == null ) {
-                                s = Storage(line.item, o.dc, line.position, 0)
-                            }
-
-                            if( s.amount > line.amount) {
-                                db.update(
-                                    QUERY_UPDATE_STORAGE,
-                                    s.amount - line.amount, line.item, o.dc.short, line.position
-                                )
-                            } else if ( s.amount == line.amount ) {
-                                db.update(
-                                    QUERY_DELETE_STORAGE,
-                                    line.item, o.dc.short, line.position
-                                )
-                            } else {
-                                it.setRollbackOnly()
-                                return@execute Result(null,"Errore: quantità non disponibile: $line")
-                            }
-                        }
-                    }
-
-                }*/
-
                 return@execute Result(o, null)
             } catch (ex:TransactionException) {
                 it.setRollbackOnly()
