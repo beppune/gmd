@@ -24,10 +24,14 @@ import it.posteitaliane.gdc.gadc.views.operators.OperatorsView
 import it.posteitaliane.gdc.gadc.views.orders.OrdersView
 import it.posteitaliane.gdc.gadc.views.storage.StorageView
 
-class  MainLayout(op: Operator, bo:BackOffice, config:GMDConfig) : AppLayout() {
+class  MainLayout(bo:BackOffice, config:GMDConfig) : AppLayout() {
 
     val dialog:Dialog
+
+    val op:Operator
     init {
+
+        op = bo.ops.findAll().find { it.role == Operator.Role.ADMIN }!!
 
         val form = OrderForm(bo, config.firmName, Order.Type.INBOUND)
 

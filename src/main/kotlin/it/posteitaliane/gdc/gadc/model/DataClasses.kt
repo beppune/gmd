@@ -1,11 +1,14 @@
 package it.posteitaliane.gdc.gadc.model
 
 import java.time.LocalDate
-import java.util.*
 
 data class Datacenter(
     val short:String,
-    val fullName:String) {
+    val fullName:String,
+    val legal: String
+    ) {
+
+
         var locations: MutableList<String> = mutableListOf()
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -28,10 +31,11 @@ data class Operator(
     var lastName:String,
     var firstName:String,
     var email:String,
-    var role:String,
+    var role:Role,
     var isActive:Boolean,
     var localPassword:String?=null
 ) {
+    enum class Role { OPERATOR, ADMIN }
     val permissions:MutableList<Datacenter> = mutableListOf()
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -60,7 +64,7 @@ data class Supplier(
 
         other as Supplier
 
-        return piva == other.piva
+        return name == other.name
     }
 
     override fun hashCode(): Int {
@@ -70,7 +74,7 @@ data class Supplier(
 }
 
 data class Order(
-    val number:UUID = UUID.randomUUID(),
+    var number:Int=-1,
     val op:Operator,
     val dc: Datacenter,
     val supplier:Supplier,

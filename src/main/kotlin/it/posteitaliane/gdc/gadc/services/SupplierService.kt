@@ -1,12 +1,15 @@
 package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Supplier
+import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
+import org.springframework.transaction.TransactionException
+import org.springframework.transaction.support.TransactionTemplate
 
 @Service
-class SupplierService(val db:JdbcTemplate) {
+class SupplierService(val db:JdbcTemplate, val tr:TransactionTemplate) {
 
     companion object {
         val mapper = RowMapper { rs, _ ->
@@ -36,5 +39,24 @@ class SupplierService(val db:JdbcTemplate) {
     fun findByName(name: String): Supplier {
         return db.queryForObject(QUERY_BY_NAME, mapper, name)!!
     }
+
+    private val CREATE_SUPPLIER_SQL = "INSERT INTO SUPPLIERS(name,legal,piva) VALUES(?,?,?)"
+    private val ADD_SUPPLIER_ADDRESS = "INSERT INTO SUPPLIERS_ADDRESSES(supplier,address) VALUES(?,?)"
+    fun create(s:Supplier) : Result<Supplier> = tr.execute {
+        try {
+
+            db.update(CREATE_SUPPLIER_SQL, s.name.uppercase(), s.legal, s.piva)
+
+            s.addresses.forEach { addr ->
+                db.update(ADD_SUPPLIER_ADDRESS, s.name.uppercase(), addr)
+            }
+
+            return@execute Result(s)
+        } catch (ex:TransactionException ) {
+            it.setRollbackOnly()
+            println("SupplierService::create: ${ex.message}")
+            return@execute Result(null, "SupplierService::create ${ex.message}")
+        }
+    }!!
 
 }

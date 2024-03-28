@@ -1,12 +1,15 @@
 package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Storage
+import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
+import org.springframework.transaction.TransactionException
+import org.springframework.transaction.support.TransactionTemplate
 
 @Service
-class StorageService(val db:JdbcTemplate, val dcs:DatacenterService) {
+class StorageService(val db:JdbcTemplate, val dcs:DatacenterService, val tr:TransactionTemplate) {
 
     val storageMapper = RowMapper { rs, _ ->
         Storage(
@@ -71,5 +74,21 @@ class StorageService(val db:JdbcTemplate, val dcs:DatacenterService) {
     fun ptIsRegistered(pt: String): Boolean {
         return pt == "11223344"
     }
+
+    private val CREATE_ITEM_SQL = "INSERT INTO ITEMS(name) VALUES(?)"
+    fun addItem(i:String) : Result<String> = tr.execute {
+
+        try {
+
+            db.update(CREATE_ITEM_SQL, i.uppercase())
+
+            return@execute Result(i.uppercase())
+        } catch (ex:TransactionException) {
+            it.setRollbackOnly()
+            println("StorageService::addItem: ${ex.message}")
+            return@execute Result(null, "StorageService::addItem: ${ex.message}")
+        }
+
+    }!!
 
 }

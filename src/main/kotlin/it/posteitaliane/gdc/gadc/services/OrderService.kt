@@ -2,9 +2,12 @@ package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.OrderLine
+import it.posteitaliane.gdc.gadc.model.Storage
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.queryForObject
 import org.springframework.stereotype.Service
+import org.springframework.transaction.TransactionException
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
@@ -13,14 +16,9 @@ import java.util.*
 @Service
 class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:OperatorService, val dcs:DatacenterService, val sups:SupplierService, val ss:StorageService) {
 
-    data class Result(val order:Order?, val error:String?) {
-        val isOk get() = error.isNullOrEmpty().not()
-        val isError get() = order != null
-    }
-
     val orderMapper = RowMapper { rs, _ ->
         Order(
-            number = rs.getObject("id", UUID::class.java),
+            number = rs.getInt("id"),
             op = ops.findAll().find { it.username == rs.getString("operator") }!!,
             dc = dcs.findAll(locations = false).find { it.short == rs.getString("datacenter") }!!,
             supplier = sups.findByName(rs.getString("supplier")),
@@ -35,16 +33,13 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
 
     var lineMapper = RowMapper { rs, _ ->
         OrderLine(
-            order = findByOrderId(rs.getObject("ownedby", UUID::class.java)),
+            order = findByOrderId(rs.getObject("ownedby", Int::class.java)),
             item = rs.getString("item"),
             amount = rs.getInt("amount"),
             position = rs.getString("pos")
         )
     }
 
-    private val REGISTER_ORDER_SQL =
-        "INSERT INTO ORDERS(id,operator,datacenter,supplier,issued,type,subject,status,ref)" +
-                "VALUES(?,?,?,?,?,?,?,?,?)"
 
     private val QUERY_ALL =
         "SELECT id,operator,datacenter,supplier,issued,type,subject,status,ref FROM ORDERS"
@@ -60,7 +55,7 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
         WHERE id = ?
     """.trimIndent()
 
-    private val QUERY_LINES = "SELECT ownedby,item,pos,amount,sn FROM ORDERS_LINES WHERE ownedby = ?"
+    private val QUERY_LINES = "SELECT ownedby,item,pos,amount FROM ORDERS_LINES WHERE ownedby = ?"
 
     private val QUERY_ITEMS = "SELECT name FROM ITEMS"
 
@@ -68,8 +63,8 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
         return db.query(QUERY_ALL, orderMapper)
     }
 
-    private fun findByOrderId(uuid: UUID) : Order {
-        return db.queryForObject(QUERY_BY_ID, orderMapper, uuid)!!
+    private fun findByOrderId(id: Int) : Order {
+        return db.queryForObject(QUERY_BY_ID, orderMapper, id)!!
     }
 
     fun find(offset: Int, limit: Int, searchKey: String?, sortKey:String?, ascending:Boolean): List<Order> {
@@ -112,26 +107,19 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
     }
 
 
-    private val QUERY_SUBMIT_ORDER = "INSERT INTO ORDERS(id,operator,datacenter,supplier,issued,type,subject,status,ref) " +
-            "VALUES(?,?,?,?,?,?,?,?,?)"
-    private val QUERY_SUBMIT_LINE = "INSERT INTO ORDERS_LINES(ownedby,datacenter,item,pos,amount,sn) " +
-            "VALUES(?,?,?,?,?,?)"
+    private val QUERY_SUBMIT_ORDER = "INSERT INTO ORDERS(operator,datacenter,supplier,issued,type,subject,status,ref) " +
+            "VALUES(?,?,?,?,?,?,?,?)"
+    private val QUERY_SUBMIT_LINE = "INSERT INTO ORDERS_LINES(ownedby,datacenter,item,pos,amount) " +
+            "VALUES(?,?,?,?,?)"
 
     private val QUERY_SUBMIT_STORAGE = "INSERT INTO STORAGE(item,dc,pos,amount,sn,pt) VALUES(?,?,?,?,NULL,NULL)"
     private val QUERY_UPDATE_STORAGE = "UPDATE STORAGE SET amount = ? WHERE item = ? AND dc = ? AND pos = ?"
     private val QUERY_DELETE_STORAGE = "DELETE STORAGE WHERE item = ? AND dc = ? AND pos = ?"
 
-    @Transactional
-    fun submit(o: Order): Result {
-
-        var result:Result? = Result(null,"")
-        //validate order
-        //save order
-        result = tr.execute { status ->
-            try {
+    fun submit(o: Order): Result<Order>  = tr.execute {
+        try {
                 db.update(
                     QUERY_SUBMIT_ORDER,
-                    o.number,
                     o.op.username,
                     o.dc.short,
                     o.supplier.name,
@@ -142,6 +130,8 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
                     o.ref
                 )
 
+                o.number = db.queryForObject("SELECT LAST_INSERT_ID()", Int::class.java)!!
+
                 for (i in o.lines.indices) {
                     db.update(
                         QUERY_SUBMIT_LINE,
@@ -149,12 +139,11 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
                         o.dc.short,
                         o.lines[i].item,
                         o.lines[i].position,
-                        o.lines[i].amount,
-                        o.lines[i].sn
+                        o.lines[i].amount
                     )
                 }
 
-                for (i in o.lines.indices) {
+                /*for (i in o.lines.indices) {
 
                     val line = o.lines[i]
 
@@ -176,9 +165,13 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
 
                         }
                         Order.Type.OUTBOUND -> {
-                            val s = ss.findForCount(line.item, o.dc.short, line.position)
+                            var s = ss.findForCount(line.item, o.dc.short, line.position)
 
-                            if( s!!.amount > line.amount) {
+                            if( s == null ) {
+                                s = Storage(line.item, o.dc, line.position, 0)
+                            }
+
+                            if( s.amount > line.amount) {
                                 db.update(
                                     QUERY_UPDATE_STORAGE,
                                     s.amount - line.amount, line.item, o.dc.short, line.position
@@ -189,26 +182,20 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
                                     line.item, o.dc.short, line.position
                                 )
                             } else {
-                                println("Errore: quantità non disponibile: $line")
+                                it.setRollbackOnly()
+                                return@execute Result(null,"Errore: quantità non disponibile: $line")
                             }
                         }
                     }
 
-                }
-
-                //update transactions log
-
+                }*/
 
                 return@execute Result(o, null)
-            } catch (ex:RuntimeException) {
-                status.setRollbackOnly()
-                print(ex.message)
+            } catch (ex:TransactionException) {
+                it.setRollbackOnly()
+                println("OrderService::submit: ${ex.message}")
                 return@execute Result(null, ex.message)
             }
-        }
-
-        if(result!!.isError) return result
-        return result
-    }
+        }!!
 
 }

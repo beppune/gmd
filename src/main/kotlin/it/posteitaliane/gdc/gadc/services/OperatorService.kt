@@ -2,12 +2,15 @@ package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Operator
+import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
+import org.springframework.transaction.TransactionException
+import org.springframework.transaction.support.TransactionTemplate
 
 @Service
-class OperatorService(val db:JdbcTemplate) {
+class OperatorService(val db:JdbcTemplate, val tr:TransactionTemplate) {
 
     companion object {
         val mapper = RowMapper { rs, _ ->
@@ -16,7 +19,7 @@ class OperatorService(val db:JdbcTemplate) {
                 rs.getString("lastname"),
                 rs.getString("firstname"),
                 rs.getString("email"),
-                rs.getString("role"),
+                Operator.Role.valueOf(rs.getString("role")),
                 rs.getBoolean("active"),
                 rs.getString("localpassword")
 
@@ -27,7 +30,7 @@ class OperatorService(val db:JdbcTemplate) {
     private fun fetchPermissions(ops:MutableList<Operator>) {
         ops.forEach { op ->
             val perms = db.query(
-                "SELECT shortname, fullname FROM DCS JOIN PERMISSIONS ON shortname=dc WHERE operator = ?",
+                "SELECT shortname,fullname,legal FROM DCS JOIN PERMISSIONS ON shortname=dc WHERE operator = ?",
                 DatacenterService.mapper,
                 op.username
             )
@@ -88,5 +91,29 @@ class OperatorService(val db:JdbcTemplate) {
         }
         return affected
     }
+
+    private val CREATE_OPERATOR_SQL = "INSERT INTO OPERATORS(uid,lastname,firstname,email,role,active)" +
+            " VALUES(?,?,?,?,?,?)"
+    private val ADD_OPERATOR_PERMISSION = "INSERT INTO PERMISSIONS(operator,dc) VALUES(?,?)"
+    fun create(op:Operator) : Result<Operator> = tr.execute {
+
+        try {
+            db.update(
+                CREATE_OPERATOR_SQL,
+                op.username.uppercase(), op.lastName, op.firstName, op.email, op.role.name, op.isActive
+                )
+
+            op.permissions.forEach { dc ->
+                db.update(ADD_OPERATOR_PERMISSION, op.username.uppercase(), dc.short)
+            }
+
+            return@execute Result(op)
+        } catch (ex:TransactionException) {
+            it.setRollbackOnly()
+            println("OperatorService::create: ${ex.message}")
+            return@execute Result(null, "OperatorService::create: ${ex.message}")
+        }
+
+    }!!
 
 }

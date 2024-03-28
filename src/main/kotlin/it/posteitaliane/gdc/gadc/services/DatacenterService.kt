@@ -1,25 +1,30 @@
 package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Datacenter
+import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
+import org.springframework.transaction.TransactionException
+import org.springframework.transaction.support.TransactionTemplate
 
 @Service
-class DatacenterService(val db:JdbcTemplate) {
+class DatacenterService(val db:JdbcTemplate, val tr:TransactionTemplate) {
+
 
     companion object {
 
         val mapper = RowMapper { rs, _ ->
             Datacenter(
                 short = rs.getString("shortname"),
-                fullName = rs.getString("fullname")
+                fullName = rs.getString("fullname"),
+                legal = rs.getString("legal")
             )
         }
     }
 
     fun findAll(locations:Boolean=false) : List<Datacenter> {
-        return db.query("SELECT shortname,fullname FROM DCS", mapper)
+        return db.query("SELECT shortname,fullname,legal FROM DCS", mapper)
             .apply {
                 if(locations) {
                     forEach { dc ->
@@ -30,7 +35,25 @@ class DatacenterService(val db:JdbcTemplate) {
     }
 
     fun findByShortName(short:String) : Datacenter? {
-        return db.queryForObject("SELECT shortname,fullname FROM DCS WHERE shortname LIKE ?", mapper, short)
+        return db.queryForObject("SELECT shortname,fullname,legal FROM DCS WHERE shortname LIKE ?", mapper, short)
     }
+
+    private val CREATE_DATACENTER_SQL = "INSERT INTO DCS(shortname,fullname,legal) VALUES(?,?,?)"
+    private val CREATE_LOCATIONS_SQL = "INSERT INTO LOCATIONS(dc,name) VALUES(?,?)"
+    fun create(dc: Datacenter) : Result<Datacenter> = tr.execute {
+
+        try {
+
+            db.update(CREATE_DATACENTER_SQL, dc.short.uppercase(), dc.fullName, dc.legal)
+            dc.locations.forEach {
+                db.update(CREATE_LOCATIONS_SQL, dc.short.uppercase(), it)
+            }
+
+            return@execute Result(dc)
+        } catch (ex:TransactionException) {
+            it.setRollbackOnly()
+            return@execute Result<Datacenter>(null,"DatacenterService::create: ${ex.message}")
+        }
+    }!!
 
 }
