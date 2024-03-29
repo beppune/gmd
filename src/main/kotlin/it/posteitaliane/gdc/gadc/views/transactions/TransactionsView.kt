@@ -47,7 +47,7 @@ class TransactionsView(BO:BackOffice) : VerticalLayout() {
 
         grid.addColumn("operator").setSortProperty("operator")
         grid.addColumn("type").isSortable = false
-        grid.addColumn({defaultFormatter.format(it.timestamp)}).setSortProperty("timestamp")
+        grid.addColumn({defaultFormatter.format(it.timestamp)}).setHeader("Data").setSortProperty("timestamp")
         grid.addColumn("item").setSortProperty("item")
         grid.addColumn("dc").setSortProperty("dc")
         grid.addColumn("pos").setSortProperty("dc")
