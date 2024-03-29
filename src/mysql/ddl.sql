@@ -117,9 +117,14 @@
         
         CREATE TABLE TRANSACTIONS(
             id              INTEGER AUTO_INCREMENT PRIMARY KEY,
-            operator        CHAR(8) NOT NULL,
-            type            ENUM( 'SUBMIT' ) NOT NULL,
-            timestamp       DATE NOT NULL,
-            log             VARCHAR(200)
+            operator        TEXT NOT NULL
+            type            TEXT NOT NULL,
+            timestamp       DATETIME NOT NULL,
+            item            TEXT NOT NULL,
+            dc              TEXT NOT NULL,
+            pos             TEXT NOT NULL,
+            amount          INTEGER NOT NULL CHECK(amount > 0),
+            sn              TEXT NULL,
+            pt              TEXT NULL
         );
         

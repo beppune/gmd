@@ -113,3 +113,29 @@ data class Storage(
     var sn:String?=null,
     var pt:String?=null
 )
+
+data class Transaction(
+    val id:Int,
+    val operator:String,
+    val type:String,
+    val timestamp:LocalDateTime,
+    val item:String,
+    val dc:String,
+    val pos:String,
+    val amount:Int,
+    val sn:String,
+    val pt:String
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Transaction
+
+        return id == other.id
+    }
+
+    override fun hashCode(): Int {
+        return id
+    }
+}
