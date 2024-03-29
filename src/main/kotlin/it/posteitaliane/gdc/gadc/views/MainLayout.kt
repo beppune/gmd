@@ -23,6 +23,7 @@ import it.posteitaliane.gdc.gadc.views.forms.OrderForm
 import it.posteitaliane.gdc.gadc.views.operators.OperatorsView
 import it.posteitaliane.gdc.gadc.views.orders.OrdersView
 import it.posteitaliane.gdc.gadc.views.storage.StorageView
+import it.posteitaliane.gdc.gadc.views.transactions.TransactionsView
 
 class  MainLayout(bo:BackOffice, config:GMDConfig) : AppLayout() {
 
@@ -109,6 +110,7 @@ class  MainLayout(bo:BackOffice, config:GMDConfig) : AppLayout() {
         nav.addItem(SideNavItem("Giacenze", StorageView::class.java))
         nav.addItem(SideNavItem("Ordini", OrdersView::class.java))
         nav.addItem(SideNavItem("Utenze", OperatorsView::class.java))
+        nav.addItem(SideNavItem("Transazioni", TransactionsView::class.java))
 
         val scroller = Scroller(nav)
         scroller.className = LumoUtility.Padding.SMALL

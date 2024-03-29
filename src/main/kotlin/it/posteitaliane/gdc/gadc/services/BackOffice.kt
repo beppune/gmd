@@ -15,6 +15,7 @@ class BackOffice(
     val dcs:DatacenterService,
     val ops:OperatorService,
     val sups:SupplierService,
+    val trs:TransactionsService,
     val config:GMDConfig
 ) {
 

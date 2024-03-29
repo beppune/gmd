@@ -10,7 +10,14 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
 
 @Service
-class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:OperatorService, val dcs:DatacenterService, val sups:SupplierService, val ss:StorageService) {
+class OrderService(
+    val db:JdbcTemplate, val tr:TransactionTemplate,
+    val ops:OperatorService,
+    val dcs:DatacenterService,
+    val sups:SupplierService,
+    val ss:StorageService,
+    val trs:TransactionsService
+) {
 
     val orderMapper = RowMapper { rs, _ ->
         Order(
@@ -147,6 +154,8 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
                             return@execute Result(null, "OrderService::submit: ${res.error}")
                         }
                     }
+
+                    trs.logTransaction(o.lines[i])
                 }
 
 
