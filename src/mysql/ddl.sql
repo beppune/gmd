@@ -117,7 +117,7 @@
         
         CREATE TABLE TRANSACTIONS(
             id              INTEGER AUTO_INCREMENT PRIMARY KEY,
-            operator        TEXT NOT NULL
+            operator        TEXT NOT NULL,
             type            TEXT NOT NULL,
             timestamp       DATETIME NOT NULL,
             item            TEXT NOT NULL,

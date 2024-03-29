@@ -9,10 +9,13 @@ import it.posteitaliane.gdc.gadc.services.BackOffice
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ApplicationContext
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Component
 import org.springframework.transaction.CannotCreateTransactionException
 import kotlin.random.Random
 
-//@Component
+@Component
+@Profile("initdb")
 class CreateDatabaseRunner(val bo:BackOffice, val ctx:ApplicationContext, val config:GMDConfig) : CommandLineRunner {
 
     fun exit() = SpringApplication.exit(ctx)
