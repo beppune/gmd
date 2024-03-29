@@ -78,11 +78,11 @@ class OrderService(
         if ( searchKey != null ) {
 
             query += " WHERE "
-            query +=  " fullname ILIKE '$searchKey%' OR "
-            query +=  " lastname ILIKE '$searchKey%' OR "
-            query +=  " operator ILIKE '$searchKey%' OR "
-            query +=  " supplier ILIKE '$searchKey%' OR "
-            query +=  " ref ILIKE '$searchKey%' "
+            query +=  " fullname LIKE '$searchKey%' OR "
+            query +=  " lastname LIKE '$searchKey%' OR "
+            query +=  " operator LIKE '$searchKey%' OR "
+            query +=  " supplier LIKE '$searchKey%' OR "
+            query +=  " ref LIKE '$searchKey%' "
 
         }
 

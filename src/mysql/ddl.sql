@@ -8,7 +8,7 @@
             legal     VARCHAR(256) NOT NULL,
             
             PRIMARY KEY(shortname)
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         CREATE FULLTEXT INDEX dcs_fullname_fulltext ON DCS(fullname);
         
         CREATE TABLE LOCATIONS(
@@ -17,7 +17,7 @@
             
             PRIMARY KEY(dc,name),
             FOREIGN KEY(dc) REFERENCES DCS(shortname)
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         
         CREATE TABLE OPERATORS(
             uid             CHAR(8) NOT NULL,
@@ -29,7 +29,7 @@
             localpassword   VARCHAR(50) NULL,
             
             PRIMARY KEY(uid)
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         
         CREATE TABLE PERMISSIONS(
             operator    CHAR(8) NOT NULL,
@@ -38,13 +38,13 @@
             PRIMARY KEY(operator,dc),
             FOREIGN KEY (operator) REFERENCES OPERATORS(uid),
             FOREIGN KEY (dc) REFERENCES DCS(shortname)
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         
         CREATE TABLE ITEMS(
             name    VARCHAR(250) NOT NULL,
              
             PRIMARY KEY(name)
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         
         CREATE TABLE STORAGE(
             item        VARCHAR(250) NOT NULL,
@@ -59,7 +59,7 @@
             PRIMARY KEY(item,dc,pos),
             FOREIGN KEY(item) REFERENCES ITEMS(name),
             FOREIGN KEY(dc,pos) REFERENCES LOCATIONS(dc,name)
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         CREATE UNIQUE INDEX storage_sn_pt_unique ON STORAGE(sn,pt);
         
         CREATE TABLE SUPPLIERS(
@@ -68,7 +68,7 @@
             piva        CHAR(11) NOT NULL,
             
             PRIMARY KEY(name)
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         
         CREATE TABLE SUPPLIERS_ADDRESSES(
             supplier    VARCHAR(200) NOT NULL,
@@ -77,7 +77,7 @@
             PRIMARY KEY(supplier,address),
             FOREIGN KEY(supplier) REFERENCES SUPPLIERS(name)
             
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         
         CREATE TABLE ORDERS (
             id              INTEGER AUTO_INCREMENT,
@@ -96,7 +96,7 @@
             FOREIGN KEY(operator) REFERENCES OPERATORS(uid),
             FOREIGN KEY(datacenter) REFERENCES DCS(shortname),
             FOREIGN KEY(supplier) REFERENCES SUPPLIERS(name)
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         
         
         
@@ -113,7 +113,7 @@
             FOREIGN KEY(item) REFERENCES ITEMS(name),
             FOREIGN KEY(ownedby) REFERENCES ORDERS(id),
             FOREIGN KEY(datacenter,pos) REFERENCES LOCATIONS(dc,name)
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         
         CREATE TABLE TRANSACTIONS(
             id              INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -126,5 +126,5 @@
             amount          INTEGER NOT NULL CHECK(amount > 0),
             sn              TEXT NULL,
             pt              TEXT NULL
-        );
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         

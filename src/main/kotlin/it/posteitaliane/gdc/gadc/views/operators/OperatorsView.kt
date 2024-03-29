@@ -55,6 +55,7 @@ class OperatorsView(private val ops:OperatorService, private val dcs:DatacenterS
     private val permissionsField: CheckboxGroup<Datacenter>
 
     init {
+        setHeightFull()
 
         personFilter = OperatorFilter()
 

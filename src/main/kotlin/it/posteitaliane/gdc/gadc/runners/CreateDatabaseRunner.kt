@@ -82,7 +82,7 @@ class CreateDatabaseRunner(val bo:BackOffice, val ctx:ApplicationContext, val co
         }
 
         val orders = faker.collection({
-            faker.ga().order(items, dcs, ops, suppliers, s = Order.Subject.INTERNAL, t = Order.Type.INBOUND)
+            faker.ga().order(items, dcs, ops, suppliers, s = Order.Subject.INTERNAL, t = Order.Type.INBOUND, withUnique = true)
         }).len(10).generate<List<Order>>()
 
         orders.forEach { o ->

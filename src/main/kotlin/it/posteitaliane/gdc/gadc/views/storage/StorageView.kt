@@ -27,6 +27,7 @@ class StorageView(BO:BackOffice) : VerticalLayout() {
     private val searchField:TextField
 
     init {
+        setHeightFull()
         provider = StorageProvider(BO.ss)
 
         filterProvider = provider.withConfigurableFilter()
@@ -42,6 +43,7 @@ class StorageView(BO:BackOffice) : VerticalLayout() {
             .setHeader("Quantità")
         val snColumn = grid.addColumn("sn")
             .setHeader("S/N")
+        val ptColumn = grid.addColumn("pt")
 
         grid.setItems(filterProvider)
 
@@ -51,12 +53,18 @@ class StorageView(BO:BackOffice) : VerticalLayout() {
                 placeholder = "Cerca per nome merce"
                 width = "50%"
                 classNames.add("search")
-                addKeyUpListener {
-                    if( it.key == Key.ENTER ) {
-                        filterProvider.setFilter(value.trim().lowercase())
-                    }
-                }
             }
+
+        searchField.addKeyUpListener {
+            if( it.key == Key.ENTER ) {
+                filterProvider.setFilter(searchField.value.lowercase().trim())
+            }
+
+            if( it.key.toString() == "Escape" || it.key.toString() == "Delete" ) {
+                searchField.clear()
+                filterProvider.setFilter(null)
+            }
+        }
 
         add(searchField)
         add(grid)

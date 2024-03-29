@@ -94,7 +94,7 @@ class GaProvider : AbstractProvider<BaseProviders>(Faker()) {
         }
     }
 
-    fun order(items:List<String>, dcs:List<Datacenter>, ops:List<Operator>, sups:List<Supplier>, t: Order.Type?=null, s:Order.Subject?=null) : Order {
+    fun order(items:List<String>, dcs:List<Datacenter>, ops:List<Operator>, sups:List<Supplier>, t: Order.Type?=null, s:Order.Subject?=null, withUnique:Boolean=false) : Order {
         return Order(
             dc = dcs.random(),
             op = ops.random(),
@@ -107,6 +107,16 @@ class GaProvider : AbstractProvider<BaseProviders>(Faker()) {
             lines.add( orderline(this, items, dc) )
             lines.add( orderline(this, items, dc) )
             lines.add( orderline(this, items, dc) )
+
+            if(withUnique) {
+                lines.add(
+                    orderline(this, items, dc).apply {
+                        sn = sn()
+                        pt = pt()
+                        amount = 1
+                    }
+                )
+            }
         }
     }
 

@@ -44,6 +44,8 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
     init {
 
+        setHeightFull()
+
         provider = OrdersProvider(BO.os)
 
         filterProvider = provider.withConfigurableFilter()
@@ -64,7 +66,6 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
         grid.setItems(filterProvider)
 
         grid.setItemDetailsRenderer(OrderDetailsComponent.createOrderDetails(BO))
-
 
         searchField = TextField()
             .apply {

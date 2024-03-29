@@ -49,7 +49,7 @@ class StorageService(val db:JdbcTemplate, val dcs:DatacenterService, val tr:Tran
 
         if ( searchKey != null ) {
             query += " WHERE "
-            query += " item ILIKE '$searchKey%'"
+            query += " item LIKE '$searchKey%'"
         }
 
         if( sortKey != null ) {
@@ -98,7 +98,7 @@ class StorageService(val db:JdbcTemplate, val dcs:DatacenterService, val tr:Tran
     }!!
 
 
-    private val CREATE_STORAGE_SQL = "INSERT INTO STORAGE(item,dc,pos,amount) VALUES(?,?,?,?)"
+    private val CREATE_STORAGE_SQL = "INSERT INTO STORAGE(item,dc,pos,amount,sn,pt) VALUES(?,?,?,?,?,?)"
     private val UPDATE_STORAGE_SQL = "UPDATE STORAGE SET amount = ? " +
             " WHERE item = ? AND dc = ? AND pos = ?"
     private val DELETE_STORAGE_SQL = "DELETE FROM STORAGE WHERE item = ? AND dc = ? AND pos = ?"
@@ -113,7 +113,7 @@ class StorageService(val db:JdbcTemplate, val dcs:DatacenterService, val tr:Tran
                     if (s == null) {
                         db.update(
                             CREATE_STORAGE_SQL,
-                            line.item, line.order.dc.short, line.position, line.amount
+                            line.item, line.order.dc.short, line.position, line.amount, line.sn, line.pt
                         )
                     } else {
                         s.amount += line.amount

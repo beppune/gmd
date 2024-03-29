@@ -34,6 +34,7 @@ class TransactionsView(BO:BackOffice) : VerticalLayout() {
     val defaultFormatter:DateTimeFormatter
 
     init {
+        setHeightFull()
 
         filter = TransactionFilter()
 
