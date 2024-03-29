@@ -71,14 +71,18 @@ class StorageService(val db:JdbcTemplate, val dcs:DatacenterService, val tr:Tran
     private val QUERY_FOR_SN = "$QUERY_ALL WHERE sn = ?"
     fun findBySn(sn:String?): Storage? {
         if(sn.isNullOrEmpty()) return null
-        return db.queryForObject(QUERY_FOR_SN, storageMapper, sn)
+        val list = db.query(QUERY_FOR_SN, storageMapper, sn)
+        if( list.size == 0 ) return null
+        return list[0]
     }
 
 
     private val QUERY_FOR_PT = "$QUERY_ALL WHERE pt = ?"
     fun findByPt(pt:String?): Storage? {
         if(pt.isNullOrEmpty()) return null
-        return db.queryForObject(QUERY_FOR_PT, storageMapper, pt)
+        val list = db.query(QUERY_FOR_PT, storageMapper, pt)
+        if( list.size == 0 ) return null
+        return list[0]
     }
 
     private val CREATE_ITEM_SQL = "INSERT INTO ITEMS(name) VALUES(?)"

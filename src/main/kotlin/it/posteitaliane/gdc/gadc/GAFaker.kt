@@ -48,7 +48,7 @@ class GaProvider : AbstractProvider<BaseProviders>(Faker()) {
         return faker.internet().username().take(8).uppercase()
     }
 
-    fun sn() = faker.expression("#{examplify 'SN12312FDREW3432'})")
+    fun sn() = faker.expression("#{examplify 'SN12312FDREW3432'}")
 
     fun pt() = faker.expression("#{examplify '12345678'}")
 
