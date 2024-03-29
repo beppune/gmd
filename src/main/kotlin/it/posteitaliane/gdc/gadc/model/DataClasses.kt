@@ -1,6 +1,6 @@
 package it.posteitaliane.gdc.gadc.model
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class Datacenter(
     val short:String,
@@ -78,7 +78,7 @@ data class Order(
     val op:Operator,
     val dc: Datacenter,
     val supplier:Supplier,
-    val issued:LocalDate,
+    val issued:LocalDateTime,
     val type: Type,
     val subject: Subject,
     var status: Status=Status.PENDING
@@ -99,7 +99,9 @@ data class OrderLine(
     var position:String,
     var sn:String?=null,
     var pt:String?=null
-)
+) {
+    val isUnique:Boolean get() = sn.isNullOrEmpty().not() || pt.isNullOrEmpty().not()
+}
 
 data class Storage(
     val item:String,

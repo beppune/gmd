@@ -74,7 +74,8 @@ class  MainLayout(bo:BackOffice, config:GMDConfig) : AppLayout() {
                                 return@addClickListener
                             }
 
-                            (content as? StorageView)?.refresh()
+                            if (content is StorageView) (content as StorageView).refresh()
+                            if (content is OrdersView) (content as OrdersView).refresh()
 
                             dialog.close()
 

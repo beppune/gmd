@@ -6,7 +6,7 @@ import it.posteitaliane.gdc.gadc.model.Operator
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Supplier
 import org.springframework.stereotype.Service
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class BackOffice(
@@ -33,7 +33,7 @@ class BackOffice(
                 supplier = supplier,
                 type = type,
                 subject = subject,
-                issued = LocalDate.now()
+                issued = LocalDateTime.now()
             )
 
             if(ref.isNullOrEmpty().not()) o.ref = ref as String

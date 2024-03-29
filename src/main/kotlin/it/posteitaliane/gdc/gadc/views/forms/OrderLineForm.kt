@@ -13,6 +13,7 @@ import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.data.binder.Validator
 import com.vaadin.flow.data.binder.ValueContext
 import it.posteitaliane.gdc.gadc.model.Datacenter
+import it.posteitaliane.gdc.gadc.services.StorageService
 import java.util.*
 
 data class OrderLinePresentation(
@@ -39,9 +40,9 @@ data class OrderLinePresentation(
 }
 
 class OrderLineForm(
-    parent:OrderForm?=null,
     items:List<String>,
-    positions:MutableList<String>
+    positions:MutableList<String>,
+    ss:StorageService
 ) : HorizontalLayout() {
 
     private var positionsField: ComboBox<String>
@@ -135,12 +136,22 @@ class OrderLineForm(
             }
 
         val PTNotRegistered = Validator<String> { value, _ ->
-            if( value == "PTREGISTERED" ) ValidationResult.error("PT must not be registered")
+            if( ss.findByPt(value) != null ) ValidationResult.error("PT must not be registered")
             else ValidationResult.ok()
         }
 
         val SNNotRegistered = Validator<String> { value, _ ->
-            if( value == "SNREGISTERED" ) ValidationResult.error("SN must not be registered")
+            if( ss.findBySn(value) != null ) ValidationResult.error("SN must not be registered")
+            else ValidationResult.ok()
+        }
+
+        val PTRegistered = Validator<String> { value, _ ->
+            if( ss.findByPt(value) == null ) ValidationResult.error("PT must be registered")
+            else ValidationResult.ok()
+        }
+
+        val SNRegistered = Validator<String> { value, _ ->
+            if( ss.findBySn(value) == null ) ValidationResult.error("SN must be registered")
             else ValidationResult.ok()
         }
 
@@ -173,7 +184,6 @@ class OrderLineForm(
                 if(isUnique() && value.isNullOrEmpty() && snField.value.isNullOrEmpty()) ValidationResult.error("Obbligatorio almeno uno fra S/N e PT")
                 else ValidationResult.ok()
             }
-            .withValidator(PTNotRegistered)
             .withValidator(PTExternalValidator)
             .bind({ol -> ol.pt}, {ol, pt -> ol.pt = pt})
 

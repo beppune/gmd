@@ -2,16 +2,12 @@ package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.OrderLine
-import it.posteitaliane.gdc.gadc.model.Storage
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.queryForObject
 import org.springframework.stereotype.Service
 import org.springframework.transaction.TransactionException
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
-import java.util.*
 
 @Service
 class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:OperatorService, val dcs:DatacenterService, val sups:SupplierService, val ss:StorageService) {
@@ -22,7 +18,7 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
             op = ops.findAll().find { it.username == rs.getString("operator") }!!,
             dc = dcs.findAll(locations = false).find { it.short == rs.getString("datacenter") }!!,
             supplier = sups.findByName(rs.getString("supplier")),
-            issued = rs.getDate("issued").toLocalDate(),
+            issued = rs.getTimestamp("issued").toLocalDateTime(),
             type = Order.Type.valueOf(rs.getString("type")),
             subject = Order.Subject.valueOf(rs.getString("subject")),
             status = Order.Status.valueOf(rs.getString("status")),
@@ -36,7 +32,9 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
             order = findByOrderId(rs.getObject("ownedby", Int::class.java)),
             item = rs.getString("item"),
             amount = rs.getInt("amount"),
-            position = rs.getString("pos")
+            position = rs.getString("pos"),
+            sn = rs.getString("sn"),
+            pt = rs.getString("pt")
         )
     }
 
@@ -55,7 +53,7 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
         WHERE id = ?
     """.trimIndent()
 
-    private val QUERY_LINES = "SELECT ownedby,item,pos,amount FROM ORDERS_LINES WHERE ownedby = ?"
+    private val QUERY_LINES = "SELECT ownedby,item,pos,amount,sn,pt FROM ORDERS_LINES WHERE ownedby = ?"
 
     private val QUERY_ITEMS = "SELECT name FROM ITEMS"
 
@@ -109,14 +107,11 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
 
     private val QUERY_SUBMIT_ORDER = "INSERT INTO ORDERS(operator,datacenter,supplier,issued,type,subject,status,ref) " +
             "VALUES(?,?,?,?,?,?,?,?)"
-    private val QUERY_SUBMIT_LINE = "INSERT INTO ORDERS_LINES(ownedby,datacenter,item,pos,amount) " +
-            "VALUES(?,?,?,?,?)"
-
-    private val QUERY_SUBMIT_STORAGE = "INSERT INTO STORAGE(item,dc,pos,amount,sn,pt) VALUES(?,?,?,?,NULL,NULL)"
-    private val QUERY_UPDATE_STORAGE = "UPDATE STORAGE SET amount = ? WHERE item = ? AND dc = ? AND pos = ?"
-    private val QUERY_DELETE_STORAGE = "DELETE STORAGE WHERE item = ? AND dc = ? AND pos = ?"
+    private val QUERY_SUBMIT_LINE = "INSERT INTO ORDERS_LINES(ownedby,datacenter,item,pos,amount,sn,pt) " +
+            "VALUES(?,?,?,?,?,?,?)"
 
     fun submit(o: Order): Result<Order>  = tr.execute {
+
         try {
                 db.update(
                     QUERY_SUBMIT_ORDER,
@@ -133,13 +128,18 @@ class OrderService(val db:JdbcTemplate, val tr:TransactionTemplate, val ops:Oper
                 o.number = db.queryForObject("SELECT LAST_INSERT_ID()", Int::class.java)!!
 
                 for (i in o.lines.indices) {
+                    if(o.lines[i].isUnique) {
+                        o.lines[i].amount = 1
+                    }
                     db.update(
                         QUERY_SUBMIT_LINE,
                         o.number,
                         o.dc.short,
                         o.lines[i].item,
                         o.lines[i].position,
-                        o.lines[i].amount
+                        o.lines[i].amount,
+                        o.lines[i].sn?.uppercase(),
+                        o.lines[i].pt?.uppercase()
                     )
 
                     ss.updateStorage(o.lines[i]).also { res ->

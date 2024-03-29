@@ -14,8 +14,7 @@ import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.services.BackOffice
 import it.posteitaliane.gdc.gadc.views.MainLayout
-import java.sql.Date
-import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 
 @Route(value = "orders", layout = MainLayout::class)
 class OrdersView(val BO:BackOffice) : VerticalLayout() {
@@ -56,7 +55,7 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
             .setHeader("Tipo")
         val datacenterColumn = grid.addColumn({it.dc.fullName}, "datacenter")
             .setHeader("DC")
-        val issuedColumn = grid.addColumn({dateFormatter().format(Date.valueOf(it.issued))}, "issued")
+        val issuedColumn = grid.addColumn({dateFormatter().format(it.issued)}, "issued")
             .setHeader("Data")
         val statusColumn = grid.addColumn(ComponentRenderer({Span()}, statusComponent()))
                 .setHeader("Stato").setSortProperty("status")
@@ -103,8 +102,12 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
         }
     }
 
-    fun dateFormatter(): SimpleDateFormat {
-        return SimpleDateFormat("dd / MM / yyyy")
+    fun dateFormatter(): DateTimeFormatter {
+        return DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss")
+    }
+
+    fun refresh() {
+        grid.dataProvider.refreshAll()
     }
 
     class OrderDetailsComponent(val BO: BackOffice) : VerticalLayout() {
@@ -121,7 +124,10 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
                 if(field != null) {
                     BO.os.fillOrderLines(field!!)
-                    field!!.lines.forEach { add(Span( "${it.item} ${it.position} ${it.amount} ${if(it.sn!=null) it.sn else """"""}"  )) }
+                    field!!.lines.forEach { add(Span( "${it.item} ${it.position} ${it.amount}" +
+                            " ${if(it.sn!=null) it.sn else ""}" +
+                            " ${if(it.pt!=null) it.pt else ""}"
+                    ))}
                 }
             }
 

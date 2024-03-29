@@ -5,6 +5,7 @@ import net.datafaker.Faker
 import net.datafaker.providers.base.AbstractProvider
 import net.datafaker.providers.base.BaseProviders
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -101,7 +102,7 @@ class GaProvider : AbstractProvider<BaseProviders>(Faker()) {
             subject = s ?: Order.Subject.values().random(),
             supplier = sups.random(),
             status = Order.Status.COMPLETED,
-            issued = LocalDate.now()
+            issued = LocalDateTime.now()
         ).apply {
             lines.add( orderline(this, items, dc) )
             lines.add( orderline(this, items, dc) )

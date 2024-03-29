@@ -12,10 +12,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
-import com.vaadin.flow.data.binder.ValidationResult
 import it.posteitaliane.gdc.gadc.model.*
 import it.posteitaliane.gdc.gadc.services.BackOffice
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class OrderPresentation(
     var operator: Operator?=null,
@@ -38,7 +37,7 @@ class OrderForm(
 
     private var bean:OrderPresentation
 
-    private var typeField:Select<Order.Type>
+    var typeField:Select<Order.Type>
 
     private var subjectField:Select<Order.Subject>
 
@@ -243,7 +242,7 @@ class OrderForm(
 
     private fun makeLineForm(): HorizontalLayout {
         val hr = HorizontalLayout()
-        val line = OrderLineForm(this, bo.os.findItems(), dcSelect.value.locations)
+        val line = OrderLineForm( bo.os.findItems(), dcSelect.value.locations, bo.ss)
         val button = Button(Icon(VaadinIcon.MINUS))
 
         hr.add(line, button)
@@ -273,7 +272,7 @@ class OrderForm(
         var order = Order(
             type = bean.type!!,
             op = bo.ops.findAll().first(),
-            issued = LocalDate.now(),
+            issued = LocalDateTime.now(),
             dc = bean.datacenter!!,
             subject = bean.subject!!,
             supplier = bean.supplier!!,
