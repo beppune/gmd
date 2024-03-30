@@ -165,3 +165,4 @@ build/
 /frontend/generated/vaadin-featureflags.js
 /mvnw
 /mvnw.cmd
+/src/mysql/temp.sql
