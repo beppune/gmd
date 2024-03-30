@@ -3,10 +3,12 @@ package it.posteitaliane.gdc.gadc.views.transactions
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.datepicker.DatePicker
 import com.vaadin.flow.component.grid.Grid
+import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
+import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.Datacenter
@@ -48,7 +50,7 @@ class TransactionsView(BO:BackOffice) : VerticalLayout() {
 
         grid.addColumn("operator").setSortProperty("operator")
         grid.addColumn("type").isSortable = false
-        grid.addColumn({defaultFormatter.format(it.timestamp)}).setHeader("Data").setSortProperty("timestamp")
+        val timeStampColumn = grid.addColumn({defaultFormatter.format(it.timestamp)}).setHeader("Data").setSortProperty("timestamp")
         grid.addColumn("item").setSortProperty("item")
         grid.addColumn("dc").setSortProperty("dc")
         grid.addColumn("pos").setSortProperty("dc")
@@ -57,6 +59,8 @@ class TransactionsView(BO:BackOffice) : VerticalLayout() {
         grid.addColumn("pt").isSortable = false
 
         grid.setItems(filterProvider)
+
+        grid.sort(mutableListOf(GridSortOrder(timeStampColumn, SortDirection.DESCENDING)))
 
         filters = HorizontalLayout().apply {
 

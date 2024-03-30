@@ -2,11 +2,13 @@ package it.posteitaliane.gdc.gadc.views.storage
 
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.grid.Grid
+import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
+import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.model.Storage
 import it.posteitaliane.gdc.gadc.services.BackOffice
@@ -46,6 +48,8 @@ class StorageView(BO:BackOffice) : VerticalLayout() {
         val ptColumn = grid.addColumn("pt")
 
         grid.setItems(filterProvider)
+
+        grid.sort(mutableListOf(GridSortOrder(itemColumn, SortDirection.ASCENDING)))
 
         searchField = TextField()
             .apply {

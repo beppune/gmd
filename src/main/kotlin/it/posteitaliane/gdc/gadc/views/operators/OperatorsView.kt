@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.checkbox.CheckboxGroup
 import com.vaadin.flow.component.grid.Grid
+import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.grid.editor.Editor
 import com.vaadin.flow.component.html.NativeLabel
 import com.vaadin.flow.component.html.Span
@@ -15,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
+import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.function.SerializableBiConsumer
@@ -67,7 +69,7 @@ class OperatorsView(private val ops:OperatorService, private val dcs:DatacenterS
 
         editor = grid.editor
 
-        /*val uidColumn = */grid.addColumn(Operator::username, "uid").setHeader("Username")
+        val uidColumn = grid.addColumn(Operator::username, "uid").setHeader("Username")
         val lastNameColumn = grid.addColumn(Operator::lastName, "lastName").setHeader("Cognome")
         val firstNameColumn = grid.addColumn(Operator::firstName, "firstName").setHeader("Nome")
         val emailColumn = grid.addColumn(Operator::email, "email").setHeader("Email")
@@ -83,6 +85,8 @@ class OperatorsView(private val ops:OperatorService, private val dcs:DatacenterS
         }.setWidth("150px").setFlexGrow(0).setHeader(VaadinIcon.EDIT.create())
 
         grid.setItems(filterDataProvider)
+
+        grid.sort(mutableListOf(GridSortOrder(uidColumn, SortDirection.ASCENDING)))
 
         personBinder = Binder(Operator::class.java)
         editor.binder = personBinder

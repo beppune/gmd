@@ -77,7 +77,7 @@ data class Order(
     var number:Int=-1,
     val op:Operator,
     val dc: Datacenter,
-    val supplier:Supplier,
+    var supplier:Supplier,
     val issued:LocalDateTime,
     val type: Type,
     val subject: Subject,

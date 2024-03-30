@@ -10,7 +10,10 @@ import org.springframework.transaction.TransactionException
 import org.springframework.transaction.support.TransactionTemplate
 
 @Service
-class StorageService(val db:JdbcTemplate, val dcs:DatacenterService, val tr:TransactionTemplate) {
+class StorageService(
+    val db:JdbcTemplate,
+    val dcs:DatacenterService,
+    val trs:TransactionTemplate) {
 
     val storageMapper = RowMapper { rs, _ ->
         Storage(
@@ -86,7 +89,7 @@ class StorageService(val db:JdbcTemplate, val dcs:DatacenterService, val tr:Tran
     }
 
     private val CREATE_ITEM_SQL = "INSERT INTO ITEMS(name) VALUES(?)"
-    fun addItem(i:String) : Result<String> = tr.execute {
+    fun addItem(i:String) : Result<String> = trs.execute {
 
         try {
 
@@ -106,11 +109,13 @@ class StorageService(val db:JdbcTemplate, val dcs:DatacenterService, val tr:Tran
     private val UPDATE_STORAGE_SQL = "UPDATE STORAGE SET amount = ? " +
             " WHERE item = ? AND dc = ? AND pos = ?"
     private val DELETE_STORAGE_SQL = "DELETE FROM STORAGE WHERE item = ? AND dc = ? AND pos = ?"
-    fun updateStorage(line:OrderLine) : Result<Storage> = tr.execute {
+    fun updateStorage(line:OrderLine) : Result<Storage> = trs.execute {
 
         try {
 
-            val s = findForCount(line.item, line.order.dc.short, line.position)
+            val s = if(line.isUnique.not())
+                findForCount(line.item, line.order.dc.short, line.position)
+            else findByPt(line.pt) ?: findBySn(line.sn)
 
             when(line.order.type) {
                 Order.Type.INBOUND -> {

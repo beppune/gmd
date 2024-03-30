@@ -2,12 +2,14 @@ package it.posteitaliane.gdc.gadc.views.orders
 
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.grid.Grid
+import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
+import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
@@ -64,6 +66,8 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
         val refColumn = grid.addColumn("ref").setHeader("Referente").setSortProperty("ref")
 
         grid.setItems(filterProvider)
+
+        grid.sort(mutableListOf(GridSortOrder(issuedColumn, SortDirection.DESCENDING)))
 
         grid.setItemDetailsRenderer(OrderDetailsComponent.createOrderDetails(BO))
 

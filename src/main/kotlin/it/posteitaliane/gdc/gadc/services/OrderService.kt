@@ -2,6 +2,7 @@ package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.OrderLine
+import it.posteitaliane.gdc.gadc.services.specs.SpecService
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
@@ -16,7 +17,8 @@ class OrderService(
     val dcs:DatacenterService,
     val sups:SupplierService,
     val ss:StorageService,
-    val trs:TransactionsService
+    val trs:TransactionsService,
+    val specs: SpecService
 ) {
 
     val orderMapper = RowMapper { rs, _ ->
@@ -117,7 +119,16 @@ class OrderService(
     private val QUERY_SUBMIT_LINE = "INSERT INTO ORDERS_LINES(ownedby,datacenter,item,pos,amount,sn,pt) " +
             "VALUES(?,?,?,?,?,?,?)"
 
-    fun submit(o: Order): Result<Order>  = tr.execute {
+    fun submit(o: Order): Result<Order>  = tr.execute { it ->
+
+        val (_, no) = specs.run(o)
+
+        if( no.isNotEmpty() ) {
+            println("Specs failed for $o")
+            no.forEach { println(it.name) }
+            it.setRollbackOnly()
+            return@execute Result(null, "Specs failed")
+        }
 
         try {
                 db.update(
