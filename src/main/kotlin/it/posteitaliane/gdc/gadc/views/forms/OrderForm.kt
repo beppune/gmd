@@ -13,7 +13,7 @@ import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import it.posteitaliane.gdc.gadc.model.*
-import it.posteitaliane.gdc.gadc.services.BackOffice
+import it.posteitaliane.gdc.gadc.services.*
 import java.time.LocalDateTime
 
 data class OrderPresentation(
@@ -26,8 +26,12 @@ data class OrderPresentation(
 )
 
 class OrderForm(
-    private val bo: BackOffice,
     private val defaultFirmName: String,
+    private val dcs:DatacenterService,
+    private val sups:SupplierService,
+    private val os:OrderService,
+    private val ss:StorageService,
+    private val ops:OperatorService,
     type: Order.Type? = null
 ) : FormLayout() {
 
@@ -55,9 +59,6 @@ class OrderForm(
 
     private val addLineButton:Button
 
-    private val formSn = mutableListOf<String>()
-    private val formPt = mutableListOf<String>()
-
     init {
 
         bean = OrderPresentation()
@@ -72,6 +73,7 @@ class OrderForm(
                     when(it) {
                         Order.Type.INBOUND -> "CARICO"
                         Order.Type.OUTBOUND -> "SCARICO"
+                        else -> null
                     }
                 }
 
@@ -79,17 +81,18 @@ class OrderForm(
 
         binder.forField(typeField)
             .asRequired("Obbligatorio")
-            .bind({it.type}, { order, type -> order.type = type})
+            .bind({it.type}, { order, value -> order.type = value})
 
         subjectField = Select<Order.Subject>()
             .apply {
                 placeholder = "TIPO DI ORDINE"
-                setItems(Order.Subject.values().asList())
+                setItems(Order.Subject.entries)
                 setItemLabelGenerator {
                     when(it) {
                         Order.Subject.INTERNAL -> "INTERNO"
                         Order.Subject.SUPPLIER -> "DA FORNITORE"
                         Order.Subject.SUPPLIER_DC -> "MOVING"
+                        else -> null
                     }
                 }
             }
@@ -104,7 +107,7 @@ class OrderForm(
                 setItemLabelGenerator {
                     "${it.short} - ${it.fullName}"
                 }
-                setItems(bo.dcs.findAll(true))
+                setItems(dcs.findAll(true))
             }
 
         binder.forField(dcSelect)
@@ -122,7 +125,7 @@ class OrderForm(
         supplierField = ComboBox<Supplier>()
             .apply {
                 placeholder = " DA FORNITORE"
-                setItems(bo.sups.findAll())
+                setItems(sups.findAll())
                 setItemLabelGenerator {it.name}
             }
 
@@ -132,7 +135,7 @@ class OrderForm(
 
         subjectField.addValueChangeListener {
             if( it.source.value == Order.Subject.INTERNAL || it.source.value == Order.Subject.SUPPLIER_DC ) {
-                supplierField.value = bo.sups.findByName(defaultFirmName)
+                supplierField.value = sups.findByName(defaultFirmName)
                 supplierField.isEnabled = false
             } else {
                 supplierField.value = null
@@ -242,7 +245,7 @@ class OrderForm(
 
     private fun makeLineForm(): HorizontalLayout {
         val hr = HorizontalLayout()
-        val line = OrderLineForm( bo.os.findItems(), dcSelect.value.locations, bo.ss)
+        val line = OrderLineForm( os.findItems(), dcSelect.value.locations, ss)
         val button = Button(Icon(VaadinIcon.MINUS))
 
         hr.add(line, button)
@@ -259,7 +262,7 @@ class OrderForm(
 
     fun validate() : Boolean {
 
-        var lines = linesForms()
+        val lines = linesForms()
             .allMatch { it.validate(); it.binder.isValid }
         isValid = lines && binder.validate().isOk
         return  isValid
@@ -269,9 +272,9 @@ class OrderForm(
 
         binder.writeBean(bean)
 
-        var order = Order(
+        val order = Order(
             type = bean.type!!,
-            op = bo.ops.findAll().first(),
+            op = ops.findAll().first(),
             issued = LocalDateTime.now(),
             dc = bean.datacenter!!,
             subject = bean.subject!!,
@@ -281,7 +284,7 @@ class OrderForm(
 
         linesForms().forEach {
             it.validate()
-            var line = OrderLine(
+            val line = OrderLine(
                 order = order,
                 item = it.bean.item!!,
                 position = it.bean.position!!,

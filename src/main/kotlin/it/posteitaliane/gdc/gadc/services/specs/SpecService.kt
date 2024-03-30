@@ -8,9 +8,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class SpecService(
-    val config:GMDConfig,
-    val sups:SupplierService,
-    val ss:StorageService
+    private val config:GMDConfig,
+
+    private val sups:SupplierService,
+    private val ss:StorageService
 ) {
 
     private val UNIQUE_MUST_NOT_BE_IN_STORAGE: OrderPredicate = {

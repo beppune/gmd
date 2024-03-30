@@ -11,11 +11,13 @@ import org.springframework.transaction.support.TransactionTemplate
 
 @Service
 class StorageService(
-    val db:JdbcTemplate,
-    val dcs:DatacenterService,
-    val trs:TransactionTemplate) {
+    private val db:JdbcTemplate,
+    private val trs:TransactionTemplate,
 
-    val storageMapper = RowMapper { rs, _ ->
+    private val dcs:DatacenterService
+) {
+
+    private val storageMapper = RowMapper { rs, _ ->
         Storage(
             item = rs.getString("item"),
             dc = dcs.findByShortName(rs.getString("dc"))!!,
@@ -122,7 +124,7 @@ class StorageService(
                     if (s == null) {
                         db.update(
                             CREATE_STORAGE_SQL,
-                            line.item, line.order.dc.short, line.position, line.amount, line.sn, line.pt
+                            line.item, line.order.dc.short, line.position, line.amount, line.sn?.uppercase() ?: null, line.pt
                         )
                     } else {
                         s.amount += line.amount
@@ -163,7 +165,7 @@ class StorageService(
                 }
             }
 
-            return@execute Result(null,"error")
+            //return@execute Result(null,"error")
         } catch (ex:TransactionException) {
             it.setRollbackOnly()
             println("StorageService::updateStorage: ${ex.message}")

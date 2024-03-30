@@ -28,7 +28,10 @@ import it.posteitaliane.gdc.gadc.services.OperatorService
 import it.posteitaliane.gdc.gadc.views.MainLayout
 
 @Route(value = "anag", layout = MainLayout::class)
-class OperatorsView(private val ops:OperatorService, private val dcs:DatacenterService) : VerticalLayout() {
+class OperatorsView(
+    dcs:DatacenterService,
+    private val ops:OperatorService
+) : VerticalLayout() {
 
     private val DCS = dcs.findAll()
 
@@ -130,9 +133,9 @@ class OperatorsView(private val ops:OperatorService, private val dcs:DatacenterS
             .bind(
                 { op ->
                     op.permissions.toSet()
-                },{ op, dcs ->
+                },{ op, permissions ->
                     op.permissions.clear()
-                    op.permissions.addAll(dcs)
+                    op.permissions.addAll(permissions)
                 })
         permissionsColumn.editorComponent = permissionsField
 

@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
-class TransactionsService(val db:JdbcTemplate) {
+class TransactionsService(
+    private val db:JdbcTemplate
+) {
 
     companion object {
         val mapper = RowMapper { rs, _ ->
@@ -37,26 +39,18 @@ class TransactionsService(val db:JdbcTemplate) {
         return list
     }
 
-    fun findFromTo(from:LocalDateTime, to:LocalDateTime) : List<Transaction> {
-        val query = "$QUERY_ALL WHERE timestamp BETWEEN ? AND ?"
-
-        val list = db.query(query, mapper, from, to)
-        return list
-    }
-
     fun logTransaction(line:OrderLine) {
 
         val o = line.order
 
-        var type = ""
-        when(o.type) {
-            Order.Type.INBOUND -> type += "CARICO"
-            Order.Type.OUTBOUND -> type += "SCARICO"
+        var type = when(o.type) {
+            Order.Type.INBOUND -> "CARICO"
+            Order.Type.OUTBOUND -> "SCARICO"
         }
-        when(o.subject) {
-            Order.Subject.INTERNAL -> type += " INTERNO"
-            Order.Subject.SUPPLIER -> type += " FORNITORE"
-            Order.Subject.SUPPLIER_DC -> type += " MOVING"
+        type += when(o.subject) {
+            Order.Subject.INTERNAL -> " INTERNO"
+            Order.Subject.SUPPLIER -> " FORNITORE"
+            Order.Subject.SUPPLIER_DC -> " MOVING"
         }
 
         db.update(

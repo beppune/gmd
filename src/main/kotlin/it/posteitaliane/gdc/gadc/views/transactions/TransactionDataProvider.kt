@@ -8,7 +8,9 @@ import it.posteitaliane.gdc.gadc.services.TransactionsService
 import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrNull
 
-class TransactionDataProvider(val service:TransactionsService) : AbstractBackEndDataProvider<Transaction, TransactionFilter>() {
+class TransactionDataProvider(
+    private val service:TransactionsService
+) : AbstractBackEndDataProvider<Transaction, TransactionFilter>() {
 
     override fun fetchFromBackEnd(query: Query<Transaction, TransactionFilter>?): Stream<Transaction> {
         var list = service.findAll()

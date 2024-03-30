@@ -13,15 +13,16 @@ import com.vaadin.flow.router.Route
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Transaction
-import it.posteitaliane.gdc.gadc.services.BackOffice
+import it.posteitaliane.gdc.gadc.services.DatacenterService
+import it.posteitaliane.gdc.gadc.services.TransactionsService
 import it.posteitaliane.gdc.gadc.views.MainLayout
 import java.time.format.DateTimeFormatter
 
 @Route(value = "transactions", layout = MainLayout::class)
-class TransactionsView(BO:BackOffice) : VerticalLayout() {
-    fun refresh() {
-        grid.dataProvider.refreshAll()
-    }
+class TransactionsView(
+    dcs:DatacenterService,
+    trs:TransactionsService
+) : VerticalLayout() {
 
     private var filter:TransactionFilter
 
@@ -42,7 +43,7 @@ class TransactionsView(BO:BackOffice) : VerticalLayout() {
 
         defaultFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss")
 
-        provider = TransactionDataProvider(BO.trs)
+        provider = TransactionDataProvider(trs)
 
         filterProvider = provider.withConfigurableFilter()
 
@@ -67,7 +68,7 @@ class TransactionsView(BO:BackOffice) : VerticalLayout() {
             val dcSelect = Select<Datacenter>().apply {
                 placeholder = "Datacenter"
                 setItemLabelGenerator { dc -> "${dc.short} - ${dc.fullName}" }
-                setItems(BO.dcs.findAll())
+                setItems(dcs.findAll())
                 addValueChangeListener {
                     if(it.value != null) {
                         filter.dc = it.value
@@ -117,7 +118,4 @@ class TransactionsView(BO:BackOffice) : VerticalLayout() {
         add(grid)
     }
 
-    fun reloadStorage() {
-        grid.dataProvider.refreshAll()
-    }
 }

@@ -1,7 +1,6 @@
 package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Datacenter
-import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
@@ -9,7 +8,10 @@ import org.springframework.transaction.TransactionException
 import org.springframework.transaction.support.TransactionTemplate
 
 @Service
-class DatacenterService(val db:JdbcTemplate, val tr:TransactionTemplate) {
+class DatacenterService(
+    private val db:JdbcTemplate,
+    private val tr:TransactionTemplate
+) {
 
 
     companion object {

@@ -8,7 +8,9 @@ import it.posteitaliane.gdc.gadc.services.OrderService
 import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrNull
 
-class OrdersProvider(private val service:OrderService) : AbstractBackEndDataProvider<Order, String>() {
+class OrdersProvider(
+    private val service:OrderService
+) : AbstractBackEndDataProvider<Order, String>() {
     override fun fetchFromBackEnd(query: Query<Order, String>?): Stream<Order> {
         if( query == null ) return service.findAll().stream()
 

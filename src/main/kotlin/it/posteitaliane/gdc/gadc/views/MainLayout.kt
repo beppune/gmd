@@ -18,23 +18,30 @@ import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.config.GMDConfig
 import it.posteitaliane.gdc.gadc.model.Operator
 import it.posteitaliane.gdc.gadc.model.Order
-import it.posteitaliane.gdc.gadc.services.BackOffice
+import it.posteitaliane.gdc.gadc.services.*
 import it.posteitaliane.gdc.gadc.views.forms.OrderForm
 import it.posteitaliane.gdc.gadc.views.operators.OperatorsView
 import it.posteitaliane.gdc.gadc.views.orders.OrdersView
 import it.posteitaliane.gdc.gadc.views.storage.StorageView
 import it.posteitaliane.gdc.gadc.views.transactions.TransactionsView
 
-class  MainLayout(bo:BackOffice, config:GMDConfig) : AppLayout() {
+class  MainLayout(
+    config:GMDConfig,
+    os:OrderService,
+    dcs: DatacenterService,
+    sups: SupplierService,
+    ss: StorageService,
+    ops: OperatorService,
+) : AppLayout() {
 
     val dialog:Dialog
 
     val op:Operator
     init {
 
-        op = bo.ops.findAll().find { it.role == Operator.Role.ADMIN }!!
+        op = ops.findAll().find { it.role == Operator.Role.ADMIN }!!
 
-        val form = OrderForm(bo, config.firmName, Order.Type.INBOUND)
+        val form = OrderForm(config.firmName, dcs, sups, os, ss, ops, Order.Type.INBOUND)
 
         dialog = Dialog()
             .apply {
@@ -47,7 +54,7 @@ class  MainLayout(bo:BackOffice, config:GMDConfig) : AppLayout() {
             Button("ANNULLA")
                 .apply {
                     addThemeVariants(ButtonVariant.LUMO_ERROR)
-                    style.set("margin-inline-end", "auto");
+                    style.set("margin-inline-end", "auto")
                     addClickListener { dialog.close() }
                 },
             Button("Reset")
@@ -68,7 +75,7 @@ class  MainLayout(bo:BackOffice, config:GMDConfig) : AppLayout() {
                                 o.status = Order.Status.COMPLETED
                             }
 
-                            val result = bo.os.submit(o)
+                            val result = os.submit(o)
                             if(result.isError()) {
                                 Notification.show(result.error)
                                 println(result.error)
@@ -99,7 +106,7 @@ class  MainLayout(bo:BackOffice, config:GMDConfig) : AppLayout() {
         title.style.set("font-size", "var(--lumo-font-size-l)")
             .set("margin", "0")
 
-        var operatorWidget = HorizontalLayout(
+        val operatorWidget = HorizontalLayout(
             Icon(VaadinIcon.USER),
             Span(op.username)
         ).apply {

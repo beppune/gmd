@@ -14,12 +14,14 @@ import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.model.Order
-import it.posteitaliane.gdc.gadc.services.BackOffice
+import it.posteitaliane.gdc.gadc.services.OrderService
 import it.posteitaliane.gdc.gadc.views.MainLayout
 import java.time.format.DateTimeFormatter
 
 @Route(value = "orders", layout = MainLayout::class)
-class OrdersView(val BO:BackOffice) : VerticalLayout() {
+class OrdersView(
+    os:OrderService
+) : VerticalLayout() {
 
     private val provider: OrdersProvider
 
@@ -31,15 +33,15 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
     private fun makeTypeLabel(o:Order): String {
         var label =""
-        when(o.type) {
-            Order.Type.INBOUND -> label += "CARICO"
-            Order.Type.OUTBOUND -> label += "SCARICO"
+        label += when(o.type) {
+            Order.Type.INBOUND -> "CARICO"
+            Order.Type.OUTBOUND -> "SCARICO"
         }
 
-        when(o.subject) {
-            Order.Subject.INTERNAL -> label += " INTERNO"
-            Order.Subject.SUPPLIER -> label += " DA FORNITORE"
-            Order.Subject.SUPPLIER_DC -> label += " DA MOVING"
+        label += when(o.subject) {
+            Order.Subject.INTERNAL -> " INTERNO"
+            Order.Subject.SUPPLIER -> " DA FORNITORE"
+            Order.Subject.SUPPLIER_DC -> " DA MOVING"
         }
         return label
     }
@@ -48,28 +50,28 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
         setHeightFull()
 
-        provider = OrdersProvider(BO.os)
+        provider = OrdersProvider(os)
 
         filterProvider = provider.withConfigurableFilter()
 
         grid = Grid(Order::class.java, false)
-        val operatorColumn = grid.addColumn({"${it.op.firstName} ${it.op.lastName}"}, "operator")
+        grid.addColumn({"${it.op.firstName} ${it.op.lastName}"}, "operator")
             .setHeader("Operatore")
-        val typeColumn = grid.addColumn({makeTypeLabel(it)}, "type")
+        grid.addColumn({makeTypeLabel(it)}, "type")
             .setHeader("Tipo")
-        val datacenterColumn = grid.addColumn({it.dc.fullName}, "datacenter")
+        grid.addColumn({it.dc.fullName}, "datacenter")
             .setHeader("DC")
         val issuedColumn = grid.addColumn({dateFormatter().format(it.issued)}, "issued")
             .setHeader("Data")
-        val statusColumn = grid.addColumn(ComponentRenderer({Span()}, statusComponent()))
+        grid.addColumn(ComponentRenderer({Span()}, statusComponent()))
                 .setHeader("Stato").setSortProperty("status")
-        val refColumn = grid.addColumn("ref").setHeader("Referente").setSortProperty("ref")
+        grid.addColumn("ref").setHeader("Referente").setSortProperty("ref")
 
         grid.setItems(filterProvider)
 
         grid.sort(mutableListOf(GridSortOrder(issuedColumn, SortDirection.DESCENDING)))
 
-        grid.setItemDetailsRenderer(OrderDetailsComponent.createOrderDetails(BO))
+        grid.setItemDetailsRenderer(OrderDetailsComponent.createOrderDetails(os))
 
         searchField = TextField()
             .apply {
@@ -113,13 +115,17 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
 
     fun refresh() {
         grid.dataProvider.refreshAll()
+        /*val o = grid.dataCommunicator.getItem(1)
+        grid.select(o)*/
     }
 
-    class OrderDetailsComponent(val BO: BackOffice) : VerticalLayout() {
+    class OrderDetailsComponent(
+        private val os:OrderService
+    ) : VerticalLayout() {
 
         companion object {
-            fun createOrderDetails(BO: BackOffice) : ComponentRenderer<OrderDetailsComponent, Order> {
-                return ComponentRenderer({OrderDetailsComponent(BO)}, OrderDetailsComponent::order.setter)
+            fun createOrderDetails(os:OrderService) : ComponentRenderer<OrderDetailsComponent, Order> {
+                return ComponentRenderer({OrderDetailsComponent(os)}, OrderDetailsComponent::order.setter)
             }
         }
 
@@ -128,7 +134,7 @@ class OrdersView(val BO:BackOffice) : VerticalLayout() {
                 field = value
 
                 if(field != null) {
-                    BO.os.fillOrderLines(field!!)
+                    os.fillOrderLines(field!!)
                     field!!.lines.forEach { add(Span( "${it.item} ${it.position} ${it.amount}" +
                             " ${if(it.sn!=null) it.sn else ""}" +
                             " ${if(it.pt!=null) it.pt else ""}"

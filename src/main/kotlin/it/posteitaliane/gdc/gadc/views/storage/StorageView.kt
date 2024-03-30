@@ -11,11 +11,13 @@ import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.model.Storage
-import it.posteitaliane.gdc.gadc.services.BackOffice
+import it.posteitaliane.gdc.gadc.services.StorageService
 import it.posteitaliane.gdc.gadc.views.MainLayout
 
 @Route(value = "", layout = MainLayout::class)
-class StorageView(BO:BackOffice) : VerticalLayout() {
+class StorageView(
+    ss:StorageService
+) : VerticalLayout() {
     fun refresh() {
         grid.dataProvider.refreshAll()
     }
@@ -30,22 +32,22 @@ class StorageView(BO:BackOffice) : VerticalLayout() {
 
     init {
         setHeightFull()
-        provider = StorageProvider(BO.ss)
+        provider = StorageProvider(ss)
 
         filterProvider = provider.withConfigurableFilter()
 
         grid = Grid(Storage::class.java, false)
-        val dcColumn = grid.addColumn({"${it.dc.short} - ${it.dc.fullName}"}, "dc")
+        grid.addColumn({"${it.dc.short} - ${it.dc.fullName}"}, "dc")
             .setHeader("Datacenter")
         val itemColumn = grid.addColumn("item")
             .setHeader("Merce")
-        val posColumn = grid.addColumn("pos")
+        grid.addColumn("pos")
             .setHeader("Position")
-        val amountColumn = grid.addColumn("amount")
+        grid.addColumn("amount")
             .setHeader("Quantità")
-        val snColumn = grid.addColumn("sn")
+        grid.addColumn("sn")
             .setHeader("S/N")
-        val ptColumn = grid.addColumn("pt")
+        grid.addColumn("pt")
 
         grid.setItems(filterProvider)
 

@@ -145,12 +145,12 @@ class OrderLineForm(
             else ValidationResult.ok()
         }
 
-        val PTRegistered = Validator<String> { value, _ ->
+        Validator<String> { value, _ ->
             if( ss.findByPt(value) == null ) ValidationResult.error("PT must be registered")
             else ValidationResult.ok()
         }
 
-        val SNRegistered = Validator<String> { value, _ ->
+        Validator<String> { value, _ ->
             if( ss.findBySn(value) == null ) ValidationResult.error("SN must be registered")
             else ValidationResult.ok()
         }
@@ -184,6 +184,7 @@ class OrderLineForm(
                 if(isUnique() && value.isNullOrEmpty() && snField.value.isNullOrEmpty()) ValidationResult.error("Obbligatorio almeno uno fra S/N e PT")
                 else ValidationResult.ok()
             }
+            .withValidator(PTNotRegistered)
             .withValidator(PTExternalValidator)
             .bind({ol -> ol.pt}, {ol, pt -> ol.pt = pt})
 

@@ -8,7 +8,9 @@ import it.posteitaliane.gdc.gadc.services.OperatorService
 import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrNull
 
-class OperatorDataProvider(private val service:OperatorService) : AbstractBackEndDataProvider<Operator, OperatorFilter>() {
+class OperatorDataProvider(
+    private val service:OperatorService
+) : AbstractBackEndDataProvider<Operator, OperatorFilter>() {
 
     override fun fetchFromBackEnd(query: Query<Operator, OperatorFilter>?): Stream<Operator> {
         if( query == null) return service.findAll().stream()

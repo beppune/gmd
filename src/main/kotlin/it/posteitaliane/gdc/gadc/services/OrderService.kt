@@ -12,13 +12,15 @@ import java.time.LocalDateTime
 
 @Service
 class OrderService(
-    val db:JdbcTemplate, val tr:TransactionTemplate,
-    val ops:OperatorService,
-    val dcs:DatacenterService,
-    val sups:SupplierService,
-    val ss:StorageService,
-    val trs:TransactionsService,
-    val specs: SpecService
+    private val db:JdbcTemplate,
+    private val tr:TransactionTemplate,
+
+    private val ops:OperatorService,
+    private val dcs:DatacenterService,
+    private val sups:SupplierService,
+    private val ss:StorageService,
+    private val trs:TransactionsService,
+    private val specs: SpecService
 ) {
 
     val orderMapper = RowMapper { rs, _ ->

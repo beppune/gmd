@@ -8,7 +8,9 @@ import it.posteitaliane.gdc.gadc.services.StorageService
 import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrNull
 
-class StorageProvider(private val service:StorageService) : AbstractBackEndDataProvider<Storage, String>() {
+class StorageProvider(
+    private val service:StorageService
+) : AbstractBackEndDataProvider<Storage, String>() {
     override fun fetchFromBackEnd(query: Query<Storage, String>?): Stream<Storage> {
         if( query == null ) return service.findAll().stream()
 
