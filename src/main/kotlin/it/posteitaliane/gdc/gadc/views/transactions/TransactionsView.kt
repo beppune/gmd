@@ -4,6 +4,7 @@ import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.datepicker.DatePicker
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
+import com.vaadin.flow.component.html.Anchor
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
@@ -110,7 +111,10 @@ class TransactionsView(
 
             setWidthFull()
 
+            val anchor = Anchor("/reports", "Reports")
+
             add(dcSelect,fromPicker, toPicker)
+            add(anchor)
             add(clearButton)
         }
 
