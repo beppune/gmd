@@ -1,5 +1,8 @@
 package it.posteitaliane.gdc.gadc.views
 
+import com.vaadin.flow.component.ComponentEvent
+import com.vaadin.flow.component.ComponentUtil
+import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.applayout.AppLayout
 import com.vaadin.flow.component.applayout.DrawerToggle
 import com.vaadin.flow.component.button.Button
@@ -12,10 +15,12 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.Scroller
+import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.sidenav.SideNav
 import com.vaadin.flow.component.sidenav.SideNavItem
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.config.GMDConfig
+import it.posteitaliane.gdc.gadc.events.EditOrderEvent
 import it.posteitaliane.gdc.gadc.model.Operator
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.services.*
@@ -71,10 +76,6 @@ class  MainLayout(
                         if( form.validate() ) {
                             val o = form.compileOrder()
 
-                            if( o.subject != Order.Subject.SUPPLIER ) {
-                                o.status = Order.Status.COMPLETED
-                            }
-
                             val result = os.submit(o)
                             if(result.isError()) {
                                 Notification.show(result.error)
@@ -125,7 +126,12 @@ class  MainLayout(
         addToDrawer(scroller)
         addToNavbar(toggle, title, button, operatorWidget)
 
-
+        addAttachListener {
+            ComponentUtil.addListener(ui.get(), EditOrderEvent::class.java) {
+                form.editOrder(it.o)
+                dialog.open()
+            }
+        }
     }
 
 }

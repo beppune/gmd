@@ -2,6 +2,7 @@ package it.posteitaliane.gdc.gadc.views.forms
 
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
+import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.Span
@@ -58,6 +59,8 @@ class OrderForm(
     private var linesContainer:VerticalLayout
 
     private val addLineButton:Button
+
+    private val optionPending:Checkbox
 
     init {
 
@@ -189,12 +192,14 @@ class OrderForm(
             }
         }
 
+        optionPending = Checkbox("In Sospeso", false)
+
         binder.bean = bean
 
         add(
             typeField, subjectField,
             dcSelect, supplierField,
-            refField, Span(),
+            refField, HorizontalLayout(optionPending),
             HorizontalLayout(itemsButton, cancelItemsButton)
         )
         add(VerticalLayout(linesContainer), 2)
@@ -298,4 +303,23 @@ class OrderForm(
 
         return order
     }
+
+    fun editOrder(o: Order) {
+
+        val op = OrderPresentation(
+            operator = o.op,
+            type = o.type,
+            subject = o.subject,
+            ref = o.ref,
+            supplier = o.supplier,
+            datacenter = o.dc
+        )
+
+        optionPending.value = true
+
+        binder.bean = op
+    }
 }
+
+
+

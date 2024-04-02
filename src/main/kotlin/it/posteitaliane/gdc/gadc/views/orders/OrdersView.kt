@@ -1,6 +1,9 @@
 package it.posteitaliane.gdc.gadc.views.orders
 
+import com.vaadin.flow.component.ComponentEvent
+import com.vaadin.flow.component.ComponentUtil
 import com.vaadin.flow.component.Key
+import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.html.Span
@@ -13,6 +16,7 @@ import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
+import it.posteitaliane.gdc.gadc.events.EditOrderEvent
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.services.OrderService
 import it.posteitaliane.gdc.gadc.views.MainLayout
@@ -134,6 +138,15 @@ class OrdersView(
                 field = value
 
                 if(field != null) {
+
+                    if( field!!.status == Order.Status.PENDING ) {
+                        val edit = Button("MODIFICA ORDINE") {
+                            println("FIRE EVENT")
+                            ComponentUtil.fireEvent(ui.get(), EditOrderEvent(this, false, field!!))
+                        }
+                        add(edit)
+                    }
+
                     os.fillOrderLines(field!!)
                     field!!.lines.forEach { add(Span( "${it.item} ${it.position} ${it.amount}" +
                             " ${if(it.sn!=null) it.sn else ""}" +

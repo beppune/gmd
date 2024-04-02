@@ -162,9 +162,11 @@ class OrderService(
                         o.lines[i].pt?.uppercase()
                     )
 
-                    ss.updateStorage(o.lines[i]).also { res ->
-                        if(res.isError()) {
-                            return@execute Result(null, "OrderService::submit: ${res.error}")
+                    if( o.status == Order.Status.COMPLETED ) {
+                        ss.updateStorage(o.lines[i]).also { res ->
+                            if(res.isError()) {
+                                return@execute Result(null, "OrderService::submit: ${res.error}")
+                            }
                         }
                     }
 
