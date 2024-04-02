@@ -1,24 +1,18 @@
 package it.posteitaliane.gdc.gadc.services
 
-import com.lowagie.text.pdf.codec.Base64.InputStream
 import jakarta.annotation.PreDestroy
 import org.eclipse.birt.core.framework.Platform
-import org.eclipse.birt.report.engine.api.EXCELRenderOption
-import org.eclipse.birt.report.engine.api.EngineConfig
-import org.eclipse.birt.report.engine.api.EngineConstants
-import org.eclipse.birt.report.engine.api.IReportEngine
-import org.eclipse.birt.report.engine.api.IReportEngineFactory
-import org.eclipse.birt.report.engine.api.PDFRenderOption
+import org.eclipse.birt.report.engine.api.*
 import org.eclipse.core.internal.registry.RegistryProviderFactory
 import org.springframework.stereotype.Service
 import org.springframework.util.ResourceUtils
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.OutputStream
 import javax.sql.DataSource
 
 @Service
-class ReportService(private val ds:DataSource
+class ReportService(
+    private val ds:DataSource
 ) {
 
     val engine:IReportEngine

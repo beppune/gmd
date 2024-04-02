@@ -1,5 +1,6 @@
 package it.posteitaliane.gdc.gadc.views.transactions
 
+import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.datepicker.DatePicker
 import com.vaadin.flow.component.grid.Grid
@@ -11,18 +12,24 @@ import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.server.InputStreamFactory
+import com.vaadin.flow.server.StreamResource
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Transaction
 import it.posteitaliane.gdc.gadc.services.DatacenterService
+import it.posteitaliane.gdc.gadc.services.ReportService
 import it.posteitaliane.gdc.gadc.services.TransactionsService
 import it.posteitaliane.gdc.gadc.views.MainLayout
+import java.io.InputStream
 import java.time.format.DateTimeFormatter
 
 @Route(value = "transactions", layout = MainLayout::class)
 class TransactionsView(
     dcs:DatacenterService,
-    trs:TransactionsService
+    trs:TransactionsService,
+
+    private val rpt:ReportService
 ) : VerticalLayout() {
 
     private var filter:TransactionFilter
@@ -111,15 +118,34 @@ class TransactionsView(
 
             setWidthFull()
 
-            val anchor = Anchor("/reports", "Reports")
+            val reportButton = Button("Report Excel") {
+                val sr = StreamResource("Report Transazioni.xlsx", InputStreamFactory {transactionReportStream(null)})
+                sr.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                val hidden = Anchor(sr, "Report Excel").apply {
+                    element.setAttribute("style", "display:none")
+                    element.classList.add("report_anchor")
+                }
+
+                UI.getCurrent().element.appendChild(hidden.element)
+                UI.getCurrent().page.executeJs("$0.click()", hidden.element)
+            }
+
+            UI.getCurrent().addAfterNavigationListener {
+                val els = UI.getCurrent().element.children.filter { el -> el.classList.contains("report_anchor") }
+                UI.getCurrent().element.removeChild(els.toList())
+            }
 
             add(dcSelect,fromPicker, toPicker)
-            add(anchor)
+            add(reportButton)
             add(clearButton)
         }
 
         add(filters)
         add(grid)
+    }
+
+    private fun transactionReportStream(filter:TransactionFilter?) : InputStream {
+        return rpt.runreport()
     }
 
 }
