@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service
 import org.springframework.util.ResourceUtils
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
 @Service
@@ -17,6 +19,8 @@ class ReportService(
 ) {
 
     val engine:IReportEngine
+
+    val formatter:DateTimeFormatter
 
     init {
 
@@ -28,6 +32,7 @@ class ReportService(
             .createFactoryObject(IReportEngineFactory.EXTENSION_REPORT_ENGINE_FACTORY) as IReportEngineFactory)
             .createReportEngine(config)
 
+        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss")
     }
 
     fun runreport(filter: TransactionFilter): ByteArrayInputStream {
@@ -40,7 +45,12 @@ class ReportService(
         task.appContext.put("OdaJDBCDriverPassInConnection", ds.connection)
         task.appContext.put("OdaJDBCDriverPassInConnectionCloseAfterUse", false);
 
+        val from = filter.from ?: LocalDateTime.of(2000, 1, 1, 0, 0, 0)
+        val to = filter.to ?: LocalDateTime.of(2050, 12, 31, 23, 59, 59)
+
         task.setParameterValue("dcParam", "${filter?.dc?.short ?: '%'}%")
+        task.setParameterValue("fromParam", from.format(formatter))
+        task.setParameterValue("toParam", to.format(formatter))
 
         val out = ByteArrayOutputStream()
 

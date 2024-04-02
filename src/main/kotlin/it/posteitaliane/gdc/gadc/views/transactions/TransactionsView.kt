@@ -119,7 +119,7 @@ class TransactionsView(
             setWidthFull()
 
             val reportButton = Button("Report Excel") {
-                val f = TransactionFilter(dc = dcSelect.value)
+                val f = TransactionFilter(dc = dcSelect.value, from = fromPicker.value?.atStartOfDay())
                 println("VIEW: $filter")
                 val sr = StreamResource("Report Transazioni.xlsx", InputStreamFactory {transactionReportStream(f)})
                 sr.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
