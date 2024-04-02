@@ -1,5 +1,6 @@
 package it.posteitaliane.gdc.gadc.services
 
+import it.posteitaliane.gdc.gadc.views.transactions.TransactionFilter
 import jakarta.annotation.PreDestroy
 import org.eclipse.birt.core.framework.Platform
 import org.eclipse.birt.report.engine.api.*
@@ -29,9 +30,9 @@ class ReportService(
 
     }
 
-    fun runreport() : ByteArrayInputStream {
-        println("TEST REPORT")
-        val report = engine.openReportDesign( ResourceUtils.getFile ("classpath:transactions.rptdesign").path )
+    fun runreport(filter: TransactionFilter): ByteArrayInputStream {
+        println("SERVICE: $filter")
+        val report = engine.openReportDesign( ResourceUtils.getFile ("classpath:transactions2.rptdesign").path )
 
         val task = engine.createRunAndRenderTask(report)
 
@@ -39,10 +40,7 @@ class ReportService(
         task.appContext.put("OdaJDBCDriverPassInConnection", ds.connection)
         task.appContext.put("OdaJDBCDriverPassInConnectionCloseAfterUse", false);
 
-        val pdfOptions = PDFRenderOption().apply {
-            outputFormat = "pdf"
-            outputFileName = "test.pdf"
-        }
+        task.setParameterValue("dcParam", "${filter?.dc?.short ?: '%'}%")
 
         val out = ByteArrayOutputStream()
 

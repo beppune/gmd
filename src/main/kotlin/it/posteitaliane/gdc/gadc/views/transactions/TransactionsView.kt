@@ -119,7 +119,9 @@ class TransactionsView(
             setWidthFull()
 
             val reportButton = Button("Report Excel") {
-                val sr = StreamResource("Report Transazioni.xlsx", InputStreamFactory {transactionReportStream(null)})
+                val f = TransactionFilter(dc = dcSelect.value)
+                println("VIEW: $filter")
+                val sr = StreamResource("Report Transazioni.xlsx", InputStreamFactory {transactionReportStream(f)})
                 sr.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 val hidden = Anchor(sr, "Report Excel").apply {
                     element.setAttribute("style", "display:none")
@@ -144,8 +146,9 @@ class TransactionsView(
         add(grid)
     }
 
-    private fun transactionReportStream(filter:TransactionFilter?) : InputStream {
-        return rpt.runreport()
+    private fun transactionReportStream(filter:TransactionFilter) : InputStream {
+        println("METHOD: $filter")
+        return rpt.runreport(filter)
     }
 
 }
