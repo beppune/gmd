@@ -1,20 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.23" id="1">
     <property name="createdBy">Eclipse BIRT Designer Version 4.15.0.v202403270652</property>
-    <list-property name="propertyBindings">
-        <structure>
-            <property name="name">queryText</property>
-            <property name="id">6</property>
-        </structure>
-        <structure>
-            <property name="name">queryTimeOut</property>
-            <property name="id">6</property>
-        </structure>
-        <structure>
-            <property name="name">rowFetchSize</property>
-            <property name="id">6</property>
-        </structure>
-    </list-property>
     <property name="units">in</property>
     <property name="iconFile">/templates/blank_report.gif</property>
     <property name="bidiLayoutOrientation">ltr</property>
@@ -89,61 +75,61 @@
                 <structure>
                     <property name="columnName">id</property>
                     <property name="analysis">measure</property>
-                    <text-property name="displayName">id</text-property>
+                    <text-property name="displayName">ID</text-property>
                     <text-property name="heading">id</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">operator</property>
                     <property name="analysis">dimension</property>
-                    <text-property name="displayName">operator</text-property>
+                    <text-property name="displayName">OPERATORE</text-property>
                     <text-property name="heading">operator</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">type</property>
                     <property name="analysis">dimension</property>
-                    <text-property name="displayName">type</text-property>
+                    <text-property name="displayName">TIPO</text-property>
                     <text-property name="heading">type</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">timestamp</property>
                     <property name="analysis">dimension</property>
-                    <text-property name="displayName">timestamp</text-property>
+                    <text-property name="displayName">DATA &amp; ORA</text-property>
                     <text-property name="heading">timestamp</text-property>
-                </structure>
-                <structure>
-                    <property name="columnName">item</property>
-                    <property name="analysis">dimension</property>
-                    <text-property name="displayName">item</text-property>
-                    <text-property name="heading">item</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">dc</property>
                     <property name="analysis">dimension</property>
-                    <text-property name="displayName">dc</text-property>
+                    <text-property name="displayName">DATACENTER</text-property>
                     <text-property name="heading">dc</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">item</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="displayName">MERCE</text-property>
+                    <text-property name="heading">item</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">pos</property>
                     <property name="analysis">dimension</property>
-                    <text-property name="displayName">pos</text-property>
+                    <text-property name="displayName">POSIZIONE</text-property>
                     <text-property name="heading">pos</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">amount</property>
                     <property name="analysis">measure</property>
-                    <text-property name="displayName">amount</text-property>
+                    <text-property name="displayName">QUANTITA'</text-property>
                     <text-property name="heading">amount</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">sn</property>
                     <property name="analysis">dimension</property>
-                    <text-property name="displayName">sn</text-property>
+                    <text-property name="displayName">S/N</text-property>
                     <text-property name="heading">sn</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">pt</property>
                     <property name="analysis">dimension</property>
-                    <text-property name="displayName">pt</text-property>
+                    <text-property name="displayName">PT</text-property>
                     <text-property name="heading">pt</text-property>
                 </structure>
             </list-property>
@@ -199,16 +185,16 @@
                     <structure>
                         <property name="position">4</property>
                         <property name="name">timestamp</property>
-                        <property name="dataType">date-time</property>
+                        <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">5</property>
-                        <property name="name">item</property>
+                        <property name="name">dc</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">6</property>
-                        <property name="name">dc</property>
+                        <property name="name">item</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
@@ -260,20 +246,20 @@
                     <property name="position">4</property>
                     <property name="name">timestamp</property>
                     <property name="nativeName">timestamp</property>
-                    <property name="dataType">date-time</property>
-                    <property name="nativeDataType">93</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
                     <property name="position">5</property>
-                    <property name="name">item</property>
-                    <property name="nativeName">item</property>
+                    <property name="name">dc</property>
+                    <property name="nativeName">dc</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
                     <property name="position">6</property>
-                    <property name="name">dc</property>
-                    <property name="nativeName">dc</property>
+                    <property name="name">item</property>
+                    <property name="nativeName">item</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
@@ -306,28 +292,11 @@
                     <property name="nativeDataType">12</property>
                 </structure>
             </list-property>
-            <xml-property name="queryText"><![CDATA[select id, operator,type,timestamp,item,dc,pos,amount,sn,pt
+            <xml-property name="queryText"><![CDATA[select id, operator,type,DATE_FORMAT(timestamp, '%d/%m/%Y %H:%i:%s') as timestamp,dc,item,pos,amount,sn,pt
 from transactions where dc like ? and timestamp > ? and timestamp < ?]]></xml-property>
             <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
   <Version>2.0</Version>
-  <DataSetParameters>
-    <parameter>
-      <design:ParameterDefinition>
-        <design:inOutMode>In</design:inOutMode>
-        <design:attributes>
-          <design:identifier>
-            <design:name></design:name>
-            <design:position>3</design:position>
-          </design:identifier>
-          <design:nativeDataTypeCode>-1</design:nativeDataTypeCode>
-          <design:precision>0</design:precision>
-          <design:scale>0</design:scale>
-          <design:nullability>Unknown</design:nullability>
-        </design:attributes>
-      </design:ParameterDefinition>
-    </parameter>
-  </DataSetParameters>
   <design:ResultSets derivedMetaData="true">
     <design:resultSetDefinitions>
       <design:resultSetColumns>
@@ -550,6 +519,8 @@ from transactions where dc like ? and timestamp > ? and timestamp < ?]]></xml-pr
     </data-sets>
     <page-setup>
         <simple-master-page name="Simple MasterPage" id="2">
+            <property name="type">a4</property>
+            <property name="orientation">landscape</property>
             <page-footer>
                 <text id="3">
                     <property name="contentType">html</property>
@@ -560,6 +531,7 @@ from transactions where dc like ? and timestamp > ? and timestamp < ?]]></xml-pr
     </page-setup>
     <body>
         <table id="7">
+            <property name="width">11.145833333333334in</property>
             <property name="dataSet">Transactions</property>
             <list-property name="boundDataColumns">
                 <structure>
@@ -584,7 +556,8 @@ from transactions where dc like ? and timestamp > ? and timestamp < ?]]></xml-pr
                     <property name="name">timestamp</property>
                     <text-property name="displayName">timestamp</text-property>
                     <expression name="expression" type="javascript">dataSetRow["timestamp"]</expression>
-                    <property name="dataType">date-time</property>
+                    <property name="dataType">string</property>
+                    <property name="allowExport">true</property>
                 </structure>
                 <structure>
                     <property name="name">item</property>
@@ -623,66 +596,86 @@ from transactions where dc like ? and timestamp > ? and timestamp < ?]]></xml-pr
                     <property name="dataType">string</property>
                 </structure>
             </list-property>
-            <column id="61"/>
-            <column id="62"/>
-            <column id="63"/>
-            <column id="64"/>
-            <column id="65"/>
-            <column id="66"/>
-            <column id="67"/>
-            <column id="68"/>
-            <column id="69"/>
-            <column id="70"/>
+            <column id="61">
+                <property name="width">0.5416666666666666in</property>
+            </column>
+            <column id="62">
+                <property name="width">1.0625in</property>
+            </column>
+            <column id="63">
+                <property name="width">0.8854166666666666in</property>
+            </column>
+            <column id="64">
+                <property name="width">1.375in</property>
+            </column>
+            <column id="65">
+                <property name="width">0.875in</property>
+            </column>
+            <column id="66">
+                <property name="width">0.75in</property>
+            </column>
+            <column id="67">
+                <property name="width">0.8229166666666666in</property>
+            </column>
+            <column id="68">
+                <property name="width">1.1770833333333333in</property>
+            </column>
+            <column id="69">
+                <property name="width">1.8229166666666667in</property>
+            </column>
+            <column id="70">
+                <property name="width">1.8333333333333333in</property>
+            </column>
             <header>
                 <row id="8">
                     <cell id="9">
                         <label id="10">
-                            <text-property name="text">id</text-property>
+                            <text-property name="text">ID</text-property>
                         </label>
                     </cell>
                     <cell id="11">
                         <label id="12">
-                            <text-property name="text">operator</text-property>
+                            <text-property name="text">OPERATORE</text-property>
                         </label>
                     </cell>
                     <cell id="13">
                         <label id="14">
-                            <text-property name="text">type</text-property>
+                            <text-property name="text">TIPO</text-property>
                         </label>
                     </cell>
                     <cell id="15">
                         <label id="16">
-                            <text-property name="text">timestamp</text-property>
+                            <text-property name="text">DATA &amp; ORA</text-property>
                         </label>
                     </cell>
                     <cell id="17">
                         <label id="18">
-                            <text-property name="text">item</text-property>
+                            <text-property name="text">MERCE</text-property>
                         </label>
                     </cell>
                     <cell id="19">
                         <label id="20">
-                            <text-property name="text">dc</text-property>
+                            <text-property name="text">DATACENTER</text-property>
                         </label>
                     </cell>
                     <cell id="21">
                         <label id="22">
-                            <text-property name="text">pos</text-property>
+                            <text-property name="text">POSIZIONE</text-property>
                         </label>
                     </cell>
                     <cell id="23">
                         <label id="24">
-                            <text-property name="text">amount</text-property>
+                            <text-property name="text">QUANTITA'</text-property>
                         </label>
                     </cell>
                     <cell id="25">
                         <label id="26">
-                            <text-property name="text">sn</text-property>
+                            <text-property name="text">S/N</text-property>
                         </label>
                     </cell>
                     <cell id="27">
                         <label id="28">
-                            <text-property name="text">pt</text-property>
+                            <text-property name="text">PT</text-property>
                         </label>
                     </cell>
                 </row>
