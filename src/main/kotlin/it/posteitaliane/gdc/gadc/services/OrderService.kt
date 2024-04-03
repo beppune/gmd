@@ -121,7 +121,88 @@ class OrderService(
     private val QUERY_SUBMIT_LINE = "INSERT INTO ORDERS_LINES(ownedby,datacenter,item,pos,amount,sn,pt) " +
             "VALUES(?,?,?,?,?,?,?)"
 
-    fun submit(o: Order): Result<Order>  = tr.execute { it ->
+    private val QUERY_UPDATE_ORDER = "UPDATE ORDERS " +
+            " SET operator = ?, datacenter = ?, supplier = ?, issued = ?, type = ?, subject = ?, status = ?, ref = ? " +
+            " WHERE id = ? ORDER BY id LIMIT 1"
+    private val QUERY_DELETE_LINES = "DELETE FROM ORDERS_LINES WHERE ownedby = ?"
+
+    fun register(o: Order): Result<Order>  = tr.execute { it ->
+
+        try {
+                if( o.number != -1 ) { //if New
+                    println("REGISTER")
+                    db.update(
+                        QUERY_SUBMIT_ORDER,
+                        o.op.username,
+                        o.dc.short,
+                        o.supplier.name,
+                        LocalDateTime.now(),
+                        o.type.name,
+                        o.subject.name,
+                        o.status.name,
+                        o.ref
+                    )
+
+                    o.number = db.queryForObject("SELECT LAST_INSERT_ID()", Int::class.java)!!
+                } else { //if registered
+
+                    print("DELETE LINES for ${o.number}, ")
+
+                    val aff = db.update(QUERY_DELETE_LINES, o.number)
+
+                    println(aff)
+
+                    println("UPDATE ORDER")
+                    db.update(
+                        QUERY_UPDATE_ORDER,
+                        o.op.username, o.dc.short, o.supplier.name, LocalDateTime.now(),
+                        o.type.name, o.subject.name, o.status.name, o.ref, o.number
+                    )
+
+                    println("LINES")
+                    for (i in o.lines.indices) {
+                        if(o.lines[i].isUnique) {
+                            o.lines[i].amount = 1
+                        }
+                        db.update(
+                            QUERY_SUBMIT_LINE,
+                            o.number,
+                            o.dc.short,
+                            o.lines[i].item,
+                            o.lines[i].position,
+                            o.lines[i].amount,
+                            o.lines[i].sn?.uppercase(),
+                            o.lines[i].pt?.uppercase()
+                        )
+                    }
+                }
+
+                return@execute Result(o, null)
+            } catch (ex:TransactionException) {
+                it.setRollbackOnly()
+                println("OrderService::submit: ${ex.message}")
+                return@execute Result(null, ex.message)
+            } catch (ex:RuntimeException) {
+                it.setRollbackOnly()
+                println("OrderService::submit: ${ex.message}")
+                return@execute Result(null, ex.message)
+            }
+        }!!
+
+    fun submit(o:Order) : Result<Order> = tr.execute {
+        /*
+                NEW & PENDING           -> register as pending
+
+                REGISTERED & PENDING    -> update order as pending
+
+                NEW & COMPLETED         -> registered as completed
+                                           update storage and transactions
+
+                REGISTERED & COMPLETED  -> update order as completed
+                                           update storage and transactions
+         */
+
+        println("SUMBIT")
 
         val (_, no) = specs.run(o)
 
@@ -133,53 +214,35 @@ class OrderService(
         }
 
         try {
-                db.update(
-                    QUERY_SUBMIT_ORDER,
-                    o.op.username,
-                    o.dc.short,
-                    o.supplier.name,
-                    LocalDateTime.now(),
-                    o.type.name,
-                    o.subject.name,
-                    o.status.name,
-                    o.ref
-                )
 
-                o.number = db.queryForObject("SELECT LAST_INSERT_ID()", Int::class.java)!!
 
-                for (i in o.lines.indices) {
-                    if(o.lines[i].isUnique) {
-                        o.lines[i].amount = 1
-                    }
-                    db.update(
-                        QUERY_SUBMIT_LINE,
-                        o.number,
-                        o.dc.short,
-                        o.lines[i].item,
-                        o.lines[i].position,
-                        o.lines[i].amount,
-                        o.lines[i].sn?.uppercase(),
-                        o.lines[i].pt?.uppercase()
-                    )
+            val res = register(o)
+            if(res.isError()) {
+                it.setRollbackOnly()
+                return@execute res
+            }
 
-                    if( o.status == Order.Status.COMPLETED ) {
-                        ss.updateStorage(o.lines[i]).also { res ->
-                            if(res.isError()) {
-                                return@execute Result(null, "OrderService::submit: ${res.error}")
-                            }
+            if( o.status == Order.Status.COMPLETED ) {
+                println("UPDATE STORAGE")
+                o.lines.forEach { line ->
+
+                    ss.updateStorage(line).also { res ->
+                        if (res.isError()) {
+                            it.setRollbackOnly()
+                            return@execute Result(null, "OrderService::submit: ${res.error}")
                         }
                     }
 
-                    trs.logTransaction(o.lines[i])
+                    trs.logTransaction(line)
                 }
-
-
-                return@execute Result(o, null)
-            } catch (ex:TransactionException) {
-                it.setRollbackOnly()
-                println("OrderService::submit: ${ex.message}")
-                return@execute Result(null, ex.message)
             }
-        }!!
 
+            return@execute Result(o)
+        }catch (ex:TransactionException) {
+            it.setRollbackOnly()
+            println("OrderService::submit: ${ex.message}")
+            return@execute Result(null, ex.message)
+        }
+
+    }!!
 }

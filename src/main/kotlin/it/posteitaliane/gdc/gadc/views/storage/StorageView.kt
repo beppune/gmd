@@ -75,8 +75,4 @@ class StorageView(
         add(searchField)
         add(grid)
     }
-
-    fun reloadStorage() {
-        grid.dataProvider.refreshAll()
-    }
 }

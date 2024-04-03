@@ -78,6 +78,7 @@ class  MainLayout(
                             val o = form.compileOrder()
 
                             val result = os.submit(o)
+
                             if(result.isError()) {
                                 Notification.show(result.error)
                                 println(result.error)
@@ -88,8 +89,6 @@ class  MainLayout(
                             if (content is OrdersView) (content as OrdersView).refresh()
 
                             dialog.close()
-
-                            if(content is StorageView) (content as StorageView).reloadStorage()
 
                         } else {
                             print("Order form non valido")

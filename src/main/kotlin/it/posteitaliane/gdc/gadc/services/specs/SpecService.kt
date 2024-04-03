@@ -48,6 +48,6 @@ class SpecService(
             return OUTBOUND_INTERNAL.runSpec(order)
         }
 
-        throw RuntimeException("Unkown type/subject: $order")
+        throw RuntimeException("Unknown type/subject: $order")
     }
 }

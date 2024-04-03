@@ -19,6 +19,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class OrderPresentation(
+    val number: Int=-1,
     var operator: Operator?=null,
     var type:Order.Type?=null,
     var subject:Order.Subject?=null,
@@ -279,14 +280,19 @@ class OrderForm(
         binder.writeBean(bean)
 
         val order = Order(
+            number = bean.number,
             type = bean.type!!,
             op = ops.findAll().first(),
             issued = LocalDateTime.now(),
             dc = bean.datacenter!!,
             subject = bean.subject!!,
             supplier = bean.supplier!!,
-            status = Order.Status.PENDING
+            status = Order.Status.COMPLETED
         )
+
+        if(optionPending.value) {
+            order.status = Order.Status.PENDING
+        }
 
         linesForms().forEach {
             it.validate()
@@ -308,6 +314,7 @@ class OrderForm(
     fun editOrder(o: Order) {
 
         val op = OrderPresentation(
+            number = o.number,
             operator = o.op,
             type = o.type,
             subject = o.subject,
