@@ -59,7 +59,7 @@ class OrderLineForm(
 
     val ptField:TextField
 
-    private val uniqueButton:Button
+    val uniqueButton:Button
 
     var SNExternalValidator:(String, ValueContext)->ValidationResult = {_,_->ValidationResult.ok()}
         /*{ value, _ ->

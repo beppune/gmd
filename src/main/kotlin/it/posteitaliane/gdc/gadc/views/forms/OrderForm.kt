@@ -16,6 +16,7 @@ import com.vaadin.flow.data.binder.Binder
 import it.posteitaliane.gdc.gadc.model.*
 import it.posteitaliane.gdc.gadc.services.*
 import java.time.LocalDateTime
+import java.util.*
 
 data class OrderPresentation(
     var operator: Operator?=null,
@@ -314,6 +315,27 @@ class OrderForm(
             supplier = o.supplier,
             datacenter = o.dc
         )
+
+        o.lines.forEach { line ->
+            val olp = OrderLinePresentation(
+                item = line.item,
+                position = line.position,
+                amount = line.amount,
+                sn = line.sn,
+                pt = line.pt,
+                viewid = UUID.randomUUID()
+            )
+
+            //val hl = makeLineForm()
+            /*(hl.children.findFirst().get() as OrderLineForm).apply {
+                binder.bean = olp
+                if( line.isUnique ) {
+                    uniqueButton.element.executeJs("$0.click()")
+                }
+            }*/
+
+            //linesContainer.add(hl)
+        }
 
         optionPending.value = true
 
