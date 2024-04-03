@@ -53,7 +53,7 @@ class OrderLineForm(
 
     private val itemsField:ComboBox<String>
 
-    private val amountField:IntegerField
+    val amountField:IntegerField
 
     val snField:TextField
 

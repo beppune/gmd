@@ -9,6 +9,7 @@ import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.html.H1
+import com.vaadin.flow.component.html.H2
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
@@ -129,6 +130,7 @@ class  MainLayout(
         addAttachListener {
             ComponentUtil.addListener(ui.get(), EditOrderEvent::class.java) {
                 form.editOrder(it.o)
+                dialog.header.add(H2("Modifica ordine n. ${it.o.number}"))
                 dialog.open()
             }
         }

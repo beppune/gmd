@@ -316,6 +316,8 @@ class OrderForm(
             datacenter = o.dc
         )
 
+        linesContainer.removeAll()
+
         o.lines.forEach { line ->
             val olp = OrderLinePresentation(
                 item = line.item,
@@ -332,6 +334,16 @@ class OrderForm(
                 positions = dcs.findAll(true).filter { it.short == o.dc.short }.first().locations
             )
             lf.reset(olp)
+
+            if(olp.sn!=null || olp.pt!=null) {
+                lf.snField.isVisible = true
+                lf.ptField.isVisible = true
+
+                lf.amountField.value = 1
+                lf.amountField.isEnabled = false
+
+                lf.uniqueButton.icon = Icon(VaadinIcon.ARROW_LEFT)
+            }
 
             val button = Button(Icon(VaadinIcon.MINUS))
 
