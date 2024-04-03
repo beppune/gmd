@@ -187,7 +187,7 @@ class OrderForm(
                 linesContainer.children.forEach { hr ->
                     if( hr is HorizontalLayout ) {
                         val form:OrderLineForm = hr.children.findFirst().get() as OrderLineForm
-                        form.reset(it.value, skipItem = true)
+                        form.reset(dc=it.value, skipItem = true)
                     }
                 }
             }
@@ -326,20 +326,30 @@ class OrderForm(
                 viewid = UUID.randomUUID()
             )
 
-            //val hl = makeLineForm()
-            /*(hl.children.findFirst().get() as OrderLineForm).apply {
-                binder.bean = olp
-                if( line.isUnique ) {
-                    uniqueButton.element.executeJs("$0.click()")
-                }
-            }*/
+            val lf = OrderLineForm(
+                ss = ss,
+                items = os.findItems(),
+                positions = dcs.findAll(true).filter { it.short == o.dc.short }.first().locations
+            )
+            lf.reset(olp)
 
-            //linesContainer.add(hl)
+            val button = Button(Icon(VaadinIcon.MINUS))
+
+            val hr = HorizontalLayout(lf, button)
+
+            button.addClickListener {
+                linesContainer.remove(hr)
+            }
+
+            linesContainer.add(hr)
         }
 
         optionPending.value = true
 
         binder.bean = op
+
+        addLineButton.isVisible = true
+        linesContainer.isVisible = true
     }
 }
 

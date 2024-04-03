@@ -141,7 +141,6 @@ class OrdersView(
 
                     if( field!!.status == Order.Status.PENDING ) {
                         val edit = Button("MODIFICA ORDINE") {
-                            println("FIRE EVENT")
                             ComponentUtil.fireEvent(ui.get(), EditOrderEvent(this, false, field!!))
                         }
                         add(edit)

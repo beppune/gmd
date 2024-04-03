@@ -216,8 +216,8 @@ class OrderLineForm(
         }
     }
 
-    fun reset(dc:Datacenter?=null, skipItem:Boolean=false, skipAmount:Boolean=false) {
-        bean = OrderLinePresentation()
+    fun reset(b:OrderLinePresentation?=null, dc:Datacenter?=null, skipItem:Boolean=false, skipAmount:Boolean=false) {
+        bean = b ?: OrderLinePresentation()
         if( skipAmount ) {
             bean.amount = amountField.value
         }
