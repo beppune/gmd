@@ -72,7 +72,7 @@ class OrderService(
         return db.query(QUERY_ALL, orderMapper)
     }
 
-    private fun findByOrderId(id: Int) : Order {
+    fun findByOrderId(id: Int) : Order {
         return db.queryForObject(QUERY_BY_ID, orderMapper, id)!!
     }
 

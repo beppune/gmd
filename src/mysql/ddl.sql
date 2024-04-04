@@ -128,3 +128,36 @@
             pt              TEXT NULL
         ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         
+        CREATE TABLE SHIPPING_SEQUENCE(
+			counter		INTEGER NOT NULL,
+            year		INTEGER NOT NULL,
+            
+            PRIMARY KEY(counter,year)
+        );
+        INSERT INTO SHIPPING_SEQUENCE(counter,year) VALUES(0,YEAR(CURRENT_DATE));
+        INSERT INTO SHIPPING_SEQUENCE(counter,year) VALUES(0,YEAR(CURRENT_DATE) + 1);
+        INSERT INTO SHIPPING_SEQUENCE(counter,year) VALUES(0,YEAR(CURRENT_DATE) + 2);
+        INSERT INTO SHIPPING_SEQUENCE(counter,year) VALUES(0,YEAR(CURRENT_DATE) + 3);
+        INSERT INTO SHIPPING_SEQUENCE(counter,year) VALUES(0,YEAR(CURRENT_DATE) + 4);
+        
+		DELIMITER //
+		CREATE FUNCTION get_next_shipping_number() RETURNS TEXT
+			CONTAINS SQL DETERMINISTIC
+		BEGIN
+			SET @new_counter = 0;
+            SET @thisyear = YEAR(CURRENT_DATE());
+            SELECT MAX(counter) + 1 INTO @new_counter FROM SHIPPING_SEQUENCE WHERE year = @thisyear;
+            INSERT INTO SHIPPING_SEQUENCE(counter, year) VALUES(@new_counter,@thisyear);
+            RETURN CONCAT('',@new_counter,'/',@thisyear);
+		END //
+		DELIMITER ;
+        
+        CREATE TABLE SHIPPINGS(
+			number		INTEGER NULL,
+            ownedby		INTEGER NOT NULL,
+            issued		DATETIME NOT NULL,
+            
+            FOREIGN KEY(ownedby) REFERENCES ORDERS (id)
+        ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
+        
+        

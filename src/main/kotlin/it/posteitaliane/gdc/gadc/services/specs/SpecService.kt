@@ -56,6 +56,9 @@ class SpecService(
         .amend(AMEND_UNIQUE_AMOUNT)
         .define("UNIQUE_MUST_BE_IN_STORAGE", UNIQUE_MUST_BE_IN_STORAGE)
 
+    val ORDER_TO_SHIPPING_SPEC = OrderSpec()
+        .define("Must be of OUTBOUND SUPPLIER type") {type==Order.Type.OUTBOUND && subject==Order.Subject.SUPPLIER}
+
     fun run(order: Order): Pair<List<SpecBit>,List<SpecBit>> {
 
         if(order.type == Order.Type.INBOUND && order.subject == Order.Subject.INTERNAL){
@@ -76,4 +79,6 @@ class SpecService(
 
         throw RuntimeException("Unknown type/subject: $order")
     }
+
+    fun run(order: Order, spec:OrderSpec) = spec.runSpec(order)
 }

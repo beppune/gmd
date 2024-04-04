@@ -139,3 +139,24 @@ data class Transaction(
         return id
     }
 }
+
+data class Shipping(
+    val number:String?=null,
+    val order:Order,
+    val issued:LocalDateTime
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Shipping
+
+        return order == other.order
+    }
+
+    override fun hashCode(): Int {
+        return order.hashCode()
+    }
+}
+
+
