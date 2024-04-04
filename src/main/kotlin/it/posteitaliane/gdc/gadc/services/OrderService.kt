@@ -129,8 +129,7 @@ class OrderService(
     fun register(o: Order): Result<Order>  = tr.execute { it ->
 
         try {
-                if( o.number != -1 ) { //if New
-                    println("REGISTER")
+                if( o.number == -1 ) { //if New
                     db.update(
                         QUERY_SUBMIT_ORDER,
                         o.op.username,
@@ -146,35 +145,29 @@ class OrderService(
                     o.number = db.queryForObject("SELECT LAST_INSERT_ID()", Int::class.java)!!
                 } else { //if registered
 
-                    print("DELETE LINES for ${o.number}, ")
+                    db.update(QUERY_DELETE_LINES, o.number)
 
-                    val aff = db.update(QUERY_DELETE_LINES, o.number)
-
-                    println(aff)
-
-                    println("UPDATE ORDER")
                     db.update(
                         QUERY_UPDATE_ORDER,
                         o.op.username, o.dc.short, o.supplier.name, LocalDateTime.now(),
                         o.type.name, o.subject.name, o.status.name, o.ref, o.number
                     )
+                }
 
-                    println("LINES")
-                    for (i in o.lines.indices) {
-                        if(o.lines[i].isUnique) {
-                            o.lines[i].amount = 1
-                        }
-                        db.update(
-                            QUERY_SUBMIT_LINE,
-                            o.number,
-                            o.dc.short,
-                            o.lines[i].item,
-                            o.lines[i].position,
-                            o.lines[i].amount,
-                            o.lines[i].sn?.uppercase(),
-                            o.lines[i].pt?.uppercase()
-                        )
+                for (i in o.lines.indices) {
+                    if(o.lines[i].isUnique) {
+                        o.lines[i].amount = 1
                     }
+                    db.update(
+                        QUERY_SUBMIT_LINE,
+                        o.number,
+                        o.dc.short,
+                        o.lines[i].item,
+                        o.lines[i].position,
+                        o.lines[i].amount,
+                        o.lines[i].sn?.uppercase(),
+                        o.lines[i].pt?.uppercase()
+                    )
                 }
 
                 return@execute Result(o, null)
@@ -202,8 +195,6 @@ class OrderService(
                                            update storage and transactions
          */
 
-        println("SUMBIT")
-
         val (_, no) = specs.run(o)
 
         if( no.isNotEmpty() ) {
@@ -223,7 +214,6 @@ class OrderService(
             }
 
             if( o.status == Order.Status.COMPLETED ) {
-                println("UPDATE STORAGE")
                 o.lines.forEach { line ->
 
                     ss.updateStorage(line).also { res ->

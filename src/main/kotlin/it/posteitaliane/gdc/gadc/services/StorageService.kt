@@ -170,6 +170,10 @@ class StorageService(
             it.setRollbackOnly()
             println("StorageService::updateStorage: ${ex.message}")
             return@execute Result(null, "StorageService::addItem: ${ex.message}")
+        } catch (ex:RuntimeException) {
+            it.setRollbackOnly()
+            println("StorageService::updateStorage: ${ex.message}")
+            return@execute Result(null, "StorageService::addItem: ${ex.message}")
         }
     }!!
 

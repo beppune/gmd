@@ -11,6 +11,7 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
+import com.vaadin.flow.component.textfield.IntegerField
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import it.posteitaliane.gdc.gadc.model.*
@@ -19,7 +20,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class OrderPresentation(
-    val number: Int=-1,
+    var number: Int=-1,
     var operator: Operator?=null,
     var type:Order.Type?=null,
     var subject:Order.Subject?=null,
@@ -43,6 +44,8 @@ class OrderForm(
     val binder:Binder<OrderPresentation>
 
     private var bean:OrderPresentation
+
+    private val numberField:IntegerField
 
     var typeField:Select<Order.Type>
 
@@ -69,6 +72,10 @@ class OrderForm(
         bean = OrderPresentation()
 
         binder = Binder(OrderPresentation::class.java, false)
+
+        numberField = IntegerField().apply { isVisible = false }
+        binder.forField(numberField)
+            .bind({op->op.number},{op,value->op.number=value})
 
         typeField = Select<Order.Type>()
             .apply {
