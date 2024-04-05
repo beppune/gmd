@@ -156,7 +156,13 @@
 			number		INTEGER NULL,
             ownedby		INTEGER NOT NULL,
             issued		DATETIME NOT NULL,
-            
+            motive		VARCHAR(500) NOT NULL,
+            hauler		VARCHAR(50) NOT NULL,
+            address     VARCHAR(128) NOT NULL,
+            filepath    VARCHAR(60) NULL,
+            numpack     INT,
+
+            PRIMARY KEY(ownedby),
             FOREIGN KEY(ownedby) REFERENCES ORDERS (id)
         ) CHARACTER SET = utf8mb4 , COLLATE = utf8mb4_general_ci ;
         

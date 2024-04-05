@@ -1,5 +1,6 @@
 package it.posteitaliane.gdc.gadc.model
 
+import java.nio.file.Path
 import java.time.LocalDateTime
 
 data class Datacenter(
@@ -143,7 +144,12 @@ data class Transaction(
 data class Shipping(
     val number:String?=null,
     val order:Order,
-    val issued:LocalDateTime
+    val issued:LocalDateTime,
+    val motive:String,
+    val hauler:String,
+    val address:String,
+    val filepath:Path?=null,
+    val numpack:Int=1
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
