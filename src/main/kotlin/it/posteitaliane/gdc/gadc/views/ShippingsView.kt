@@ -6,7 +6,7 @@ import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.model.Shipping
 import it.posteitaliane.gdc.gadc.services.ShippingService
 
-@Route(value = "shippings", layout = MainLayout::class)
+//@Route(value = "shippings", layout = MainLayout::class)
 class ShippingsView(
     private val shs:ShippingService
 ) : VerticalLayout() {

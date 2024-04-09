@@ -117,7 +117,6 @@ class  MainLayout(
         val nav = SideNav()
         nav.addItem(SideNavItem("Giacenze", StorageView::class.java))
         nav.addItem(SideNavItem("Ordini", OrdersView::class.java))
-        nav.addItem(SideNavItem("Bolle", ShippingsView::class.java))
         nav.addItem(SideNavItem("Utenze", OperatorsView::class.java))
         nav.addItem(SideNavItem("Transazioni", TransactionsView::class.java))
 
