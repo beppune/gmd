@@ -1,8 +1,6 @@
 package it.posteitaliane.gdc.gadc.views
 
-import com.vaadin.flow.component.ComponentEvent
 import com.vaadin.flow.component.ComponentUtil
-import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.applayout.AppLayout
 import com.vaadin.flow.component.applayout.DrawerToggle
 import com.vaadin.flow.component.button.Button
@@ -16,7 +14,6 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.Scroller
-import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.sidenav.SideNav
 import com.vaadin.flow.component.sidenav.SideNavItem
 import com.vaadin.flow.theme.lumo.LumoUtility
@@ -38,6 +35,7 @@ class  MainLayout(
     sups: SupplierService,
     ss: StorageService,
     ops: OperatorService,
+    files:FilesService
 ) : AppLayout() {
 
     val dialog:Dialog
@@ -47,7 +45,7 @@ class  MainLayout(
 
         op = ops.findAll().find { it.role == Operator.Role.ADMIN }!!
 
-        val form = OrderForm(config.firmName, dcs, sups, os, ss, ops, Order.Type.INBOUND)
+        val form = OrderForm(config.firmName, dcs, sups, os, ss, ops, files, Order.Type.INBOUND)
 
         dialog = Dialog()
             .apply {
@@ -83,6 +81,10 @@ class  MainLayout(
                                 Notification.show(result.error)
                                 println(result.error)
                                 return@addClickListener
+                            }
+
+                            if( form.savePath.isNullOrEmpty().not() ) {
+                                files.updateOrderFile(o, form.savePath!!)
                             }
 
                             if (content is StorageView) (content as StorageView).refresh()

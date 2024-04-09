@@ -5,7 +5,6 @@ import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.formlayout.FormLayout
-import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -13,7 +12,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.IntegerField
 import com.vaadin.flow.component.textfield.TextField
+import com.vaadin.flow.component.upload.Upload
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer
 import com.vaadin.flow.data.binder.Binder
+import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.*
 import it.posteitaliane.gdc.gadc.services.*
 import java.time.LocalDateTime
@@ -36,6 +38,7 @@ class OrderForm(
     private val os:OrderService,
     private val ss:StorageService,
     private val ops:OperatorService,
+    private val files:FilesService,
     type: Order.Type? = null
 ) : FormLayout() {
 
@@ -66,6 +69,10 @@ class OrderForm(
     private val addLineButton:Button
 
     private val optionPending:Checkbox
+
+    private val fileUpload:Upload
+
+    var savePath:String?=null
 
     init {
 
@@ -201,6 +208,28 @@ class OrderForm(
             }
         }
 
+        fileUpload = Upload(MemoryBuffer()).apply {
+            addClassNames(
+                LumoUtility.Padding.NONE,
+                LumoUtility.Margin.NONE
+            )
+
+            setAcceptedFileTypes("application/pdf")
+
+            addSucceededListener {
+                val stream = (it.source.receiver as MemoryBuffer)
+                    .inputStream
+
+                savePath = files.copyTemp("username", stream)
+
+            }
+
+            maxFiles = 1
+            maxFileSize = 1024 * 1024 *2
+        }
+
+
+
         optionPending = Checkbox("In Sospeso", false)
 
         binder.bean = bean
@@ -208,7 +237,7 @@ class OrderForm(
         add(
             typeField, subjectField,
             dcSelect, supplierField,
-            refField, HorizontalLayout(optionPending),
+            refField, HorizontalLayout(optionPending, fileUpload),
             HorizontalLayout(itemsButton, cancelItemsButton)
         )
         add(VerticalLayout(linesContainer), 2)
