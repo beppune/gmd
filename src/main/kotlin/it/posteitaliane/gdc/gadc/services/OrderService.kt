@@ -68,8 +68,12 @@ class OrderService(
 
     private val QUERY_ITEMS = "SELECT name FROM ITEMS"
 
-    fun findAll(): List<Order> {
-        return db.query(QUERY_ALL, orderMapper)
+    fun findAll(fetchLines:Boolean=false): List<Order> {
+        return db.query(QUERY_ALL, orderMapper).also {
+            if( fetchLines ) {
+                it.forEach(this::fillOrderLines)
+            }
+        }
     }
 
     fun findByOrderId(id: Int) : Order {
