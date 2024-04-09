@@ -153,7 +153,7 @@
 		DELIMITER ;
         
         CREATE TABLE SHIPPINGS(
-			number		INTEGER NULL,
+			number		TEXT NULL,
             ownedby		INTEGER NOT NULL,
             issued		DATETIME NOT NULL,
             motive		VARCHAR(500) NOT NULL,
