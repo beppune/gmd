@@ -14,9 +14,9 @@ import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.shared.Registration
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.Datacenter
-import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Storage
 import it.posteitaliane.gdc.gadc.services.BackOffice
 import it.posteitaliane.gdc.gadc.views.forms.OrderLinePresentation
@@ -28,7 +28,7 @@ open class LoadLineForm(
     dc:Datacenter
 ) : FlexLayout() {
 
-    protected val nullBean= OrderLinePresentation()
+    protected val nullBean=OrderLinePresentation()
 
     protected val itemsField:ComboBox<String>
     protected val positionField:ComboBox<String>
@@ -38,13 +38,15 @@ open class LoadLineForm(
 
     val binder:Binder<OrderLinePresentation> = Binder()
 
+    protected val itemBlurRegistration:Registration
+
     init {
         classNames.add(LumoUtility.Gap.SMALL)
 
         itemsField = ComboBox<String>().apply {
             setItems(BO.os.findItems())
             placeholder = "MERCE"
-            isAllowCustomValue = true
+            isAllowCustomValue = false
             value = ""
             minWidth = "75px"
             maxWidth = "250px"
@@ -70,6 +72,16 @@ open class LoadLineForm(
         snField = TextField().apply {
             prefixComponent = Span("S/N")
             value = ""
+
+            itemBlurRegistration = addBlurListener {
+                if( value.isNullOrEmpty().not() ) {
+                    amountInt.value = 1
+                    amountInt.isEnabled = false
+                } else {
+                    amountInt.clear()
+                    amountInt.isEnabled = true
+                }
+            }
         }
 
         ptField = TextField().apply {
@@ -101,8 +113,6 @@ open class LoadLineForm(
 
     private fun bind() {
 
-        binder.isFieldsValidationStatusChangeListenerEnabled = false
-
         binder.forField(itemsField)
             .asRequired("Obbligatorio")
             .bind({it.item},{line,value->line.item=value})
@@ -118,9 +128,24 @@ open class LoadLineForm(
                 else ValidationResult.error("Obbligatorio maggiore di zero")
             }
             .bind({it.amount},{line,value->line.amount=value})
+
+        binder.forField(snField)
+            .withValidator { value, ctx ->
+                if( BO.ss.findBySn(value) == null ) ValidationResult.ok()
+                else ValidationResult.error("S/N registrato")
+            }
+            .bind({it.sn},{line,value->line.sn=value})
+
+        binder.forField(ptField)
+            .withValidator { value, ctx ->
+                if( BO.ss.findByPt(value) == null ) ValidationResult.ok()
+                else ValidationResult.error("PT registrato")
+            }
+            .bind({it.pt},{line,value->line.pt=value})
+
     }
 
-    fun reset() {
+    open fun reset() {
         binder.readBean(nullBean)
     }
 
@@ -146,7 +171,21 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
 
     private var storage =  BO.ss.find(dc = dc)
 
+    private val snCombobox:ComboBox<String>
+    private val ptComboBox:ComboBox<String>
+
     init {
+
+        remove(snField, ptField)
+        binder.removeBinding(snField)
+        binder.removeBinding(ptField)
+
+        //This derived class manage the enable state by itself
+        itemBlurRegistration.remove()
+
+        snCombobox = ComboBox<String>().apply { isAllowCustomValue = false }
+        ptComboBox = ComboBox<String>().apply { isAllowCustomValue = false }
+
         setDc(dc)
 
         positionField.addValueChangeListener {
@@ -156,23 +195,51 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
         itemsField.addValueChangeListener {
             queryStorage().also(::setHints)
         }
+
+        snCombobox.addValueChangeListener {
+            querySn().also(::setTracked)
+        }
+
+        ptComboBox.addValueChangeListener {
+            queryPt().also(::setTracked)
+        }
+
+        binder.forField(snCombobox)
+            .withValidator { value, _ ->
+                if( value.isNullOrEmpty() || BO.ss.findBySn(value) != null ) ValidationResult.ok()
+                else ValidationResult.error("S/N non in giacenza")
+            }
+            .bind({it.sn},{line,value->line.sn=value})
+
+        binder.forField(ptComboBox)
+            .withValidator { value, _ ->
+                if( value.isNullOrEmpty() || BO.ss.findByPt(value) != null ) ValidationResult.ok()
+                else ValidationResult.error("PT non in giacenza")
+            }
+            .bind({it.pt},{line,value->line.pt=value})
+
+        add(snCombobox, ptComboBox)
+
     }
 
     override fun setDc(dc:Datacenter) {
 
         storage = BO.ss.find(dc = dc)
-        storage.forEach(::println)
 
         val pos = storage.map(Storage::pos).distinct()
         positionField.setItems(pos)
 
         val items = storage.map(Storage::item).distinct()
         itemsField.setItems(items)
+
+        snCombobox.setItems(storage.map(Storage::sn).filterNotNull().distinct())
+        ptComboBox.setItems(storage.map(Storage::pt).filterNotNull().distinct())
     }
 
     private fun queryStorage() = storage
             .filter { st ->
                 var r = true
+
                 if( itemsField.value.isNullOrEmpty().not() ) {
                     r =  r.and(st.item == itemsField.value )
                 }
@@ -183,6 +250,13 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
 
                 r
             }
+
+    private fun querySn() = storage
+        .filter { st -> st.sn == snCombobox.value }.distinct()
+
+
+    private fun queryPt() = storage
+        .filter { st -> st.pt == ptComboBox.value }.distinct()
 
     private fun setHints(res:List<Storage>) {
         if( res.size == 1 ) {
@@ -200,6 +274,39 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
             return
         }
     }
+
+    private fun setTracked(res:List<Storage>) {
+
+        if( res.size == 1 ) {
+            itemsField.run {
+                value = res.first().item
+                isEnabled = false
+            }
+
+            positionField.run {
+                value = res.first().pos
+                isEnabled = false
+            }
+
+            amountInt.run {
+                value = 1
+                isEnabled = false
+            }
+
+            snCombobox.run {
+                value = res.first().sn
+            }
+
+            ptComboBox.run {
+                value = res.first().pt
+            }
+        } else {
+            itemsField.isEnabled = true
+            positionField.isEnabled = true
+            amountInt.isEnabled = true
+        }
+
+    }
 }
 
 @Route("test")
@@ -209,8 +316,10 @@ class TestView(
 
     init {
 
-        val form = LoadLineForm(bo, bo.dcs.findAll(true).first())
-        val form2 = UnloadLineForm(bo, bo.dcs.findAll(true).first())
+        val dc = bo.dcs.findAll(true).first()
+
+        val form = LoadLineForm(bo, dc)
+        val form2 = UnloadLineForm(bo, dc)
         add(
             HorizontalLayout(
                 form,
@@ -229,6 +338,8 @@ class TestView(
 
         add(
             Select<Datacenter>().apply {
+
+                value = dc
 
                 setItems(bo.dcs.findAll(true))
 
