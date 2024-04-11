@@ -1,10 +1,13 @@
 package it.posteitaliane.gdc.gadc.views
 
+import com.vaadin.flow.component.ComponentEvent
+import com.vaadin.flow.component.ComponentEventListener
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.FlexLayout
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -174,6 +177,8 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
     private val snCombobox:ComboBox<String>
     private val ptComboBox:ComboBox<String>
 
+    class TrackingChangedEvent(form:UnloadLineForm, val snpt:Pair<String?,String?>) : ComponentEvent<UnloadLineForm>(form, false)
+
     init {
 
         remove(snField, ptField)
@@ -202,6 +207,7 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
 
         ptComboBox.addValueChangeListener {
             queryPt().also(::setTracked)
+
         }
 
         binder.forField(snCombobox)
@@ -220,6 +226,10 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
 
         add(snCombobox, ptComboBox)
 
+    }
+
+    fun addTrackingChangedEventListener(listener: ComponentEventListener<TrackingChangedEvent>) : Registration {
+        return addListener(TrackingChangedEvent::class.java, listener)
     }
 
     override fun setDc(dc:Datacenter) {
@@ -320,6 +330,7 @@ class TestView(
 
         val form = LoadLineForm(bo, dc)
         val form2 = UnloadLineForm(bo, dc)
+        val form3 = UnloadLineForm(bo, dc)
         add(
             HorizontalLayout(
                 form,
@@ -333,7 +344,21 @@ class TestView(
                 form2,
                 Button(Icon(VaadinIcon.MINUS)) { form2.reset() },
                 Button(Icon(VaadinIcon.EXCLAMATION)) { form2.validate() }
-            )
+            ).apply {
+                form2.addTrackingChangedEventListener {
+                    Notification.show("${if (it.snpt.first == null) "SN" else "PT" } Changed")
+                }
+            },
+
+            HorizontalLayout(
+                form3,
+                Button(Icon(VaadinIcon.MINUS)) { form3.reset() },
+                Button(Icon(VaadinIcon.EXCLAMATION)) { form3.validate() }
+            ).apply {
+                form3.addTrackingChangedEventListener {
+                    Notification.show("${if (it.snpt.first == null) "SN" else "PT" } Changed")
+                }
+            }
         )
 
         add(
