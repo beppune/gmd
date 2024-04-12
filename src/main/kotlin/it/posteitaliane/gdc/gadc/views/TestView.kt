@@ -133,7 +133,7 @@ open class LoadLineForm(
             .bind({it.amount},{line,value->line.amount=value})
 
         binder.forField(snField)
-            .withValidator { value, ctx ->
+            .withValidator { value, _ ->
                 if( BO.ss.findBySn(value) == null ) ValidationResult.ok()
                 else ValidationResult.error("S/N registrato")
             }
@@ -157,7 +157,9 @@ open class LoadLineForm(
 
     }
 
-    fun validate() = binder.validate().isOk
+    open fun validate() {
+        binder.validate().isOk
+    }
 
     fun compile() = OrderLinePresentation(
         UUID.randomUUID(),
@@ -177,7 +179,9 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
     private val snCombobox:ComboBox<String>
     private val ptComboBox:ComboBox<String>
 
-    class TrackingChangedEvent(form:UnloadLineForm, val snpt:Pair<String?,String?>) : ComponentEvent<UnloadLineForm>(form, false)
+    private var firing:Boolean=false
+
+    class TrackingChangedEvent(form:UnloadLineForm, val s:Pair<String?,String?>) : ComponentEvent<UnloadLineForm>(form, false)
 
     init {
 
@@ -202,12 +206,20 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
         }
 
         snCombobox.addValueChangeListener {
-            querySn().also(::setTracked)
+            if(firing.not()) {
+                firing = true
+                querySn().also(::setTrackedSn)
+                fireEvent(TrackingChangedEvent(this, Pair(it.value, null)))
+                firing = false
+            }
         }
 
         ptComboBox.addValueChangeListener {
-            queryPt().also(::setTracked)
-
+            if(firing.not()) {
+                firing = true
+                queryPt().also(::setTrackedPt)
+                firing = false
+            }
         }
 
         binder.forField(snCombobox)
@@ -224,14 +236,18 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
             }
             .bind({it.pt},{line,value->line.pt=value})
 
+        addDetachListener {
+            reset() //remove par from shared when detached
+        }
+
         add(snCombobox, ptComboBox)
+
 
     }
 
     fun addTrackingChangedEventListener(listener: ComponentEventListener<TrackingChangedEvent>) : Registration {
         return addListener(TrackingChangedEvent::class.java, listener)
     }
-
     override fun setDc(dc:Datacenter) {
 
         storage = BO.ss.find(dc = dc)
@@ -285,7 +301,7 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
         }
     }
 
-    private fun setTracked(res:List<Storage>) {
+    private fun setTrackedPt(res:List<Storage>) {
 
         if( res.size == 1 ) {
             itemsField.run {
@@ -304,10 +320,6 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
             }
 
             snCombobox.run {
-                value = res.first().sn
-            }
-
-            ptComboBox.run {
                 value = res.first().pt
             }
         } else {
@@ -317,6 +329,37 @@ class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
         }
 
     }
+    private fun setTrackedSn(res:List<Storage>) {
+
+        if( res.size == 1 ) {
+            itemsField.run {
+                value = res.first().item
+                isEnabled = false
+            }
+
+            positionField.run {
+                value = res.first().pos
+                isEnabled = false
+            }
+
+            amountInt.run {
+                value = 1
+                isEnabled = false
+            }
+
+            ptComboBox.run {
+                value = res.first().pt
+            }
+
+        } else {
+            itemsField.isEnabled = true
+            positionField.isEnabled = true
+            amountInt.isEnabled = true
+        }
+
+    }
+
+
 }
 
 @Route("test")
@@ -342,31 +385,26 @@ class TestView(
         add(
             HorizontalLayout(
                 form2,
-                Button(Icon(VaadinIcon.MINUS)) { form2.reset() },
-                Button(Icon(VaadinIcon.EXCLAMATION)) { form2.validate() }
+                Button(Icon(VaadinIcon.MINUS)) { form2.reset() }
             ).apply {
                 form2.addTrackingChangedEventListener {
-                    Notification.show("${if (it.snpt.first == null) "SN" else "PT" } Changed")
+                    Notification.show("Tracked: ${it.s}")
                 }
             },
 
             HorizontalLayout(
                 form3,
-                Button(Icon(VaadinIcon.MINUS)) { form3.reset() },
-                Button(Icon(VaadinIcon.EXCLAMATION)) { form3.validate() }
+                Button(Icon(VaadinIcon.MINUS)) { form3.reset() }
             ).apply {
-                form3.addTrackingChangedEventListener {
-                    Notification.show("${if (it.snpt.first == null) "SN" else "PT" } Changed")
-                }
+
             }
         )
-
         add(
             Select<Datacenter>().apply {
 
-                value = dc
-
                 setItems(bo.dcs.findAll(true))
+
+                value = dc
 
                 setItemLabelGenerator { "${it.short} - ${it.fullName}" }
 

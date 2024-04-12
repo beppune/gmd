@@ -2,6 +2,7 @@ package it.posteitaliane.gdc.gadc.services.specs
 
 import it.posteitaliane.gdc.gadc.config.GMDConfig
 import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.services.StorageService
 import it.posteitaliane.gdc.gadc.services.SupplierService
 import org.springframework.stereotype.Service
@@ -34,6 +35,11 @@ class SpecService(
         }
     }
 
+    private val NO_REPEATED_UNIQUES:OrderPredicate = {
+        lines.map(OrderLine::sn).groupBy { it }.all { it.value.size == 1 }
+                && lines.map(OrderLine::pt).groupBy { it }.all { it.value.size == 1 }
+    }
+
     private val AMEND_INTERNAL_SUPPLIER:Order.()->Unit = {
         supplier = sups.findByName(config.firmName)
     }
@@ -42,6 +48,7 @@ class SpecService(
         .amend(AMEND_INTERNAL_SUPPLIER)
         .amend(AMEND_UNIQUE_AMOUNT)
         .define("UNIQUE_MUST_NOT_BE_IN_STORAGE", UNIQUE_MUST_NOT_BE_IN_STORAGE)
+        .define("NO_REPEATED_UNIQUES", NO_REPEATED_UNIQUES)
 
     val OUTBOUND_INTERNAL_SPEC = OrderSpec()
         .amend(AMEND_INTERNAL_SUPPLIER)
@@ -51,6 +58,7 @@ class SpecService(
     val INBOUND_SUPPLIER_SPEC = OrderSpec()
         .amend(AMEND_UNIQUE_AMOUNT)
         .define("UNIQUE_MUST_NOT_BE_IN_STORAGE", UNIQUE_MUST_NOT_BE_IN_STORAGE)
+        .define("NO_REPEATED_UNIQUES", NO_REPEATED_UNIQUES)
 
     val OUTBOUND_SUPPLIER_SPEC = OrderSpec()
         .amend(AMEND_UNIQUE_AMOUNT)
