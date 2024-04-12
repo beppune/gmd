@@ -248,7 +248,6 @@ class OrderForm(
         addLineButton = Button("AGGIUNGI")
             .apply {
                 addClickListener { linesContainer.add(makeLineForm()) }
-                isVisible = false
             }
 
 
