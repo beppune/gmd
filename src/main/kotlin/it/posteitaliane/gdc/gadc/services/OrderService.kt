@@ -227,7 +227,6 @@ class OrderService(
 
             if( o.status == Order.Status.COMPLETED ) {
                 o.lines.forEach { line ->
-
                     ss.updateStorage(line).also { res ->
                         if (res.isError()) {
                             it.setRollbackOnly()

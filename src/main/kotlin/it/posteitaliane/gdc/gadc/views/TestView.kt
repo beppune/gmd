@@ -20,22 +20,32 @@ import com.vaadin.flow.router.Route
 import com.vaadin.flow.shared.Registration
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.Datacenter
+import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.model.Storage
 import it.posteitaliane.gdc.gadc.services.BackOffice
 import it.posteitaliane.gdc.gadc.views.forms.OrderLinePresentation
-import java.util.*
 
+interface LineForm{
+    fun setDc(dc:Datacenter)
+    fun validate() : Boolean
 
-open class LoadLineForm(
-    protected val BO:BackOffice,
+    fun compile(o: Order) : OrderLine
+
+    fun load(olp:OrderLinePresentation)
+    fun reset(item:String?=null, amount:Int?=null)
+}
+
+open class LoadLineForm (
+    val BO:BackOffice,
     dc:Datacenter
-) : FlexLayout() {
+) : FlexLayout(), LineForm {
 
     protected val nullBean=OrderLinePresentation()
 
-    protected val itemsField:ComboBox<String>
+    val itemsField:ComboBox<String>
     protected val positionField:ComboBox<String>
-    protected val amountInt:IntegerField
+    val amountInt:IntegerField
     protected val snField:TextField
     protected val ptField:TextField
 
@@ -148,28 +158,36 @@ open class LoadLineForm(
 
     }
 
-    open fun reset() {
+    override fun reset(item:String?, amount:Int?) {
         binder.readBean(nullBean)
+
+        itemsField.value = item
+        amountInt.value = amount
     }
 
-    open fun setDc(dc:Datacenter) {
+    override fun setDc(dc:Datacenter) {
         positionField.setItems(dc.locations)
 
     }
 
-    open fun validate() {
-        binder.validate().isOk
+    override fun validate() = binder.validate().isOk
+    override fun compile(o: Order) =
+        OrderLine(
+            order = o,
+            item = itemsField.value,
+            position = positionField.value,
+            amount = amountInt.value,
+            sn = snField.value,
+            pt = ptField.value
+        )
+    override fun load(olp:OrderLinePresentation) {
+        itemsField.value = olp.item
+        positionField.value = olp.position
+        amountInt.value = olp.amount
+
+        snField.value = olp.sn
+        ptField.value = olp.pt
     }
-
-    fun compile() = OrderLinePresentation(
-        UUID.randomUUID(),
-        item = itemsField.value,
-        position = positionField.value,
-        amount = amountInt.value,
-        sn = snField.value,
-        pt = ptField.value
-    )
-
 }
 
 class UnloadLineForm(BO:BackOffice, dc:Datacenter) : LoadLineForm(BO, dc) {
