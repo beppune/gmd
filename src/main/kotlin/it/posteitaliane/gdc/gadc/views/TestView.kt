@@ -44,10 +44,10 @@ open class LoadLineForm (
     protected val nullBean=OrderLinePresentation()
 
     val itemsField:ComboBox<String>
-    protected val positionField:ComboBox<String>
+    val positionField:ComboBox<String>
     val amountInt:IntegerField
-    protected val snField:TextField
-    protected val ptField:TextField
+    val snField:TextField
+    val ptField:TextField
 
     val binder:Binder<OrderLinePresentation> = Binder()
 
@@ -181,11 +181,16 @@ open class LoadLineForm (
             pt = ptField.value
         )
     override fun load(olp:OrderLinePresentation) {
+        println("load item")
         itemsField.value = olp.item
+        println("load pos")
         positionField.value = olp.position
+        println("load amount")
         amountInt.value = olp.amount
 
+        println("load sn")
         snField.value = olp.sn
+        println("load pt")
         ptField.value = olp.pt
     }
 }
