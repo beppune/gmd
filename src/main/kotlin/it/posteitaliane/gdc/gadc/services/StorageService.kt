@@ -1,5 +1,6 @@
 package it.posteitaliane.gdc.gadc.services
 
+import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.model.Storage
@@ -49,12 +50,17 @@ class StorageService(
         else return null
     }
 
-    fun find(offset: Int, limit: Int, searchKey: String?, ascending: Boolean, sortKey: String?) : List<Storage> {
+    fun find(offset: Int=0, limit: Int=1000, searchKey: String?=null, ascending: Boolean=true, sortKey: String?=null, dc:Datacenter?=null) : List<Storage> {
         var query = QUERY_ALL
 
+        query += " WHERE TRUE "
+
+        if(dc!=null) {
+            query += " AND dc LIKE '${dc.short}' "
+        }
+
         if ( searchKey != null ) {
-            query += " WHERE "
-            query += " item LIKE '$searchKey%'"
+            query += " AND item LIKE '$searchKey%' "
         }
 
         if( sortKey != null ) {
