@@ -261,6 +261,7 @@ class OrderForm(
 
     fun reset(type: Order.Type?=null) {
         undisplayLines(true)
+        optionPending.value = false
         bean = OrderPresentation()
         bean.type = type
         binder.readBean(bean)

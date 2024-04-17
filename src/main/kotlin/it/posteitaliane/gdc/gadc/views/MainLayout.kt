@@ -59,7 +59,10 @@ class  MainLayout(
                 .apply {
                     addThemeVariants(ButtonVariant.LUMO_ERROR)
                     style.set("margin-inline-end", "auto")
-                    addClickListener { dialog.close() }
+                    addClickListener {
+                        form.reset()
+                        dialog.close()
+                    }
                 },
             Button("Reset")
                 .apply {

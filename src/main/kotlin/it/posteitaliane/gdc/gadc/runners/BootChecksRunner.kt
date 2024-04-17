@@ -5,6 +5,8 @@ import org.jboss.logging.Logger
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
+import org.springframework.util.FileSystemUtils
+import java.nio.file.FileSystem
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.notExists
@@ -24,6 +26,9 @@ class BootChecksRunner(
         val uploadPath = Path.of("", config.uploadDirectory)
         if( uploadPath.notExists() ) {
             logger.info("Creating upload-path: ${uploadPath.pathString}")
+            Files.createDirectory(uploadPath)
+        } else {
+            FileSystemUtils.deleteRecursively(uploadPath.toFile())
             Files.createDirectory(uploadPath)
         }
 
