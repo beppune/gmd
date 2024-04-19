@@ -6,16 +6,23 @@ import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
+import com.vaadin.flow.component.html.Anchor
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
+import com.vaadin.flow.data.provider.DataKeyMapper
 import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.data.renderer.ComponentRenderer
+import com.vaadin.flow.data.renderer.LitRenderer
+import com.vaadin.flow.data.renderer.Renderer
+import com.vaadin.flow.data.renderer.Rendering
+import com.vaadin.flow.dom.Element
 import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.server.StreamResource
 import it.posteitaliane.gdc.gadc.events.EditOrderEvent
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.services.OrderService
@@ -50,15 +57,29 @@ class OrdersView(
         return label
     }
 
+
+
     init {
 
         setHeightFull()
+
+        val idRenderer = ComponentRenderer { o:Order->
+
+            if( o.filepath.isNullOrEmpty() ) {
+                Span("${o.number}")
+            } else {
+                Span().apply {
+                    add(Anchor(o.filepath, o.number.toString()))
+                }
+            }
+        }
 
         provider = OrdersProvider(os)
 
         filterProvider = provider.withConfigurableFilter()
 
         grid = Grid(Order::class.java, false)
+        grid.addColumn( idRenderer ).setHeader("Order °")
         grid.addColumn({"${it.op.firstName} ${it.op.lastName}"}, "operator")
             .setHeader("Operatore")
         grid.addColumn({makeTypeLabel(it)}, "type")

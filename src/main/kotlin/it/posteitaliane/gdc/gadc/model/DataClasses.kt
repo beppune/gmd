@@ -87,6 +87,8 @@ data class Order(
 
     var ref:String = "${op.firstName} ${op.lastName}"
 
+    var filepath:String?=null
+
     enum class Type { INBOUND, OUTBOUND }
     enum class Subject { SUPPLIER, SUPPLIER_DC, INTERNAL  }
     enum class Status { PENDING, COMPLETED, CANCELED }

@@ -3,6 +3,8 @@ package it.posteitaliane.gdc.gadc.services
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.services.specs.SpecService
+import org.springframework.dao.DataAccessException
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
@@ -35,7 +37,10 @@ class OrderService(
             status = Order.Status.valueOf(rs.getString("status")),
         ).apply {
             ref = rs.getString("ref")
+
+            fillPath(this)
         }
+
     }
 
     var lineMapper = RowMapper { rs, _ ->
@@ -239,4 +244,21 @@ class OrderService(
         }
 
     }!!
+
+    fun fillPath(o:Order) {
+        try {
+            val path: String? = db.queryForObject(
+                "SELECT filepath FROM SHIPPINGS WHERE ownedby = ?",
+                String::class.java,
+                o.number.toString()
+            )
+
+
+            o.filepath = path
+        }catch (ex:EmptyResultDataAccessException) {
+            //do nothing
+        }catch (ex:DataAccessException) {
+            ex.printStackTrace()
+        }
+    }
 }
