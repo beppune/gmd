@@ -85,7 +85,7 @@ class OrderService(
         return db.queryForObject(QUERY_BY_ID, orderMapper, id)!!
     }
 
-    fun find(offset: Int, limit: Int, searchKey: String?, sortKey:String?, ascending:Boolean): List<Order> {
+    fun find(offset: Int, limit: Int, searchKey: String?, sortKey:String?, dcs:String?, ascending:Boolean): List<Order> {
         var query = QUERY_SEARCH_KEY
 
         if ( searchKey != null ) {
@@ -99,6 +99,10 @@ class OrderService(
 
         }
 
+        if( dcs.isNullOrEmpty().not() ) {
+            query += " AND datacenter IN ${dcs} "
+        }
+
         if( sortKey != null ) {
             query += " ORDER BY $sortKey "
 
@@ -110,7 +114,6 @@ class OrderService(
         query += " LIMIT $limit "
 
         query += " OFFSET $offset"
-        //println(query)
         return db.query(query, orderMapper)
 
     }

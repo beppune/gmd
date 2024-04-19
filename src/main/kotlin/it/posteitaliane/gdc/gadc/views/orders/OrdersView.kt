@@ -4,6 +4,8 @@ import com.vaadin.flow.component.ComponentEvent
 import com.vaadin.flow.component.ComponentUtil
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.checkbox.CheckboxGroup
+import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.html.Anchor
@@ -24,23 +26,30 @@ import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.server.StreamResource
 import it.posteitaliane.gdc.gadc.events.EditOrderEvent
+import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.OrderService
 import it.posteitaliane.gdc.gadc.views.MainLayout
 import java.time.format.DateTimeFormatter
 
 @Route(value = "orders", layout = MainLayout::class)
 class OrdersView(
-    os:OrderService
+    os:OrderService,
+    dcs:DatacenterService
 ) : VerticalLayout() {
 
     private val provider: OrdersProvider
 
-    private val filterProvider:ConfigurableFilterDataProvider<Order, Void, String>
+    private val filterProvider:ConfigurableFilterDataProvider<Order, Void, OrdersFilter>
 
     val grid:Grid<Order>
 
     private val searchField:TextField
+
+    private val dcSelect:CheckboxGroup<Datacenter>
+
+    private val ordersFilter:OrdersFilter
 
     private fun makeTypeLabel(o:Order): String {
         var label =""
@@ -60,6 +69,8 @@ class OrdersView(
 
 
     init {
+
+        ordersFilter = OrdersFilter()
 
         setHeightFull()
 
@@ -106,13 +117,25 @@ class OrdersView(
                 classNames.add("search")
                 addKeyUpListener {
                     if( it.key == Key.ENTER) {
-                        filterProvider.setFilter(value.trim().lowercase())
+                        ordersFilter.searchKery = value.trim().lowercase()
+                        filterProvider.setFilter(ordersFilter)
                     }
                 }
             }
 
+        dcSelect = CheckboxGroup<Datacenter>().apply {
+            setItems(dcs.findAll())
+            setItemLabelGenerator { it.short }
 
-        add(searchField)
+            addValueChangeListener {
+                ordersFilter.dcs.clear()
+                ordersFilter.dcs.addAll(it.value)
+
+                filterProvider.setFilter(ordersFilter)
+            }
+        }
+
+        add(searchField, dcSelect)
         add(grid)
     }
 
