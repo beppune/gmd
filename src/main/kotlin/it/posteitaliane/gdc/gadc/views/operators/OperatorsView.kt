@@ -4,6 +4,7 @@ import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.checkbox.CheckboxGroup
+import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.grid.editor.Editor
@@ -11,6 +12,7 @@ import com.vaadin.flow.component.html.NativeLabel
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
@@ -21,11 +23,13 @@ import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Operator
 import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.OperatorService
 import it.posteitaliane.gdc.gadc.views.MainLayout
+import it.posteitaliane.gdc.gadc.views.forms.OperatorForm
 
 @Route(value = "anag", layout = MainLayout::class)
 class OperatorsView(
@@ -59,8 +63,50 @@ class OperatorsView(
 
     private val permissionsField: CheckboxGroup<Datacenter>
 
+    private val addOperatorButton:Button
+
+    private val opForm:OperatorForm
+
+    private val dialog:Dialog
+
     init {
         setHeightFull()
+
+        opForm = OperatorForm(dcs.findAll())
+
+        dialog = Dialog().apply {
+            isModal = true
+
+            add(opForm)
+
+        }
+
+        dialog.footer.add(
+            Button("AGGIUNGI").apply {
+                addClassNames(LumoUtility.Margin.Left.AUTO, LumoUtility.Margin.Right.MEDIUM)
+                addThemeVariants(ButtonVariant.LUMO_PRIMARY)
+                addClickListener {
+                    Notification.show(opForm.compile().toString())
+                }
+            },
+
+            Button("ANNULLA").apply {
+                addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.AUTO)
+                addThemeVariants(ButtonVariant.LUMO_ERROR)
+                addClickListener {
+                    opForm.reset()
+                    dialog.close()
+                }
+            }
+        )
+
+        addOperatorButton = Button("AGGIUNGI UTENZA").apply {
+            addClassNames(LumoUtility.Margin.Left.AUTO, LumoUtility.Margin.Right.MEDIUM)
+
+            addClickListener {
+                dialog.open()
+            }
+        }
 
         personFilter = OperatorFilter()
 
@@ -170,7 +216,9 @@ class OperatorsView(
             ops.updatePermissions(it.item, it.item.permissions)
         }
 
-        add(searchField, grid)
+        add(HorizontalLayout(searchField, addOperatorButton))
+
+        add(grid)
 
     }
 
