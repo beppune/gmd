@@ -81,24 +81,6 @@ class OperatorsView(
 
         }
 
-        dialog.footer.add(
-            Button("AGGIUNGI").apply {
-                addClassNames(LumoUtility.Margin.Left.AUTO, LumoUtility.Margin.Right.MEDIUM)
-                addThemeVariants(ButtonVariant.LUMO_PRIMARY)
-                addClickListener {
-                    Notification.show(opForm.compile().toString())
-                }
-            },
-
-            Button("ANNULLA").apply {
-                addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.AUTO)
-                addThemeVariants(ButtonVariant.LUMO_ERROR)
-                addClickListener {
-                    opForm.reset()
-                    dialog.close()
-                }
-            }
-        )
 
         addOperatorButton = Button("AGGIUNGI UTENZA").apply {
             addClassNames(LumoUtility.Margin.Left.AUTO, LumoUtility.Margin.Right.MEDIUM)
@@ -122,7 +104,7 @@ class OperatorsView(
         val lastNameColumn = grid.addColumn(Operator::lastName, "lastName").setHeader("Cognome")
         val firstNameColumn = grid.addColumn(Operator::firstName, "firstName").setHeader("Nome")
         val emailColumn = grid.addColumn(Operator::email, "email").setHeader("Email")
-        val activeColumn = grid.addColumn(operatorStatusRenderer()).setHeader("Active")
+        val activeColumn = grid.addColumn(operatorStatusRenderer()).setHeader("Active").setWidth("50px")
         val permissionsColumn = grid.addColumn({it.permissions.map(Datacenter::short).joinToString(", ")}).setHeader("Permessi")
         val editColumn = grid.addComponentColumn { operator ->
             val editButton = Button("Edit") {
@@ -216,7 +198,44 @@ class OperatorsView(
             ops.updatePermissions(it.item, it.item.permissions)
         }
 
-        add(HorizontalLayout(searchField, addOperatorButton))
+        dialog.footer.add(
+            Button("ANNULLA").apply {
+                addClassNames(LumoUtility.Margin.Left.MEDIUM, LumoUtility.Margin.Right.AUTO)
+                addThemeVariants(ButtonVariant.LUMO_ERROR)
+                addClickListener {
+                    opForm.reset()
+                    dialog.close()
+                }
+            },
+
+            Button("AGGIUNGI").apply {
+                addClassNames(LumoUtility.Margin.Left.AUTO, LumoUtility.Margin.Right.MEDIUM)
+                addThemeVariants(ButtonVariant.LUMO_PRIMARY)
+                addClickListener {
+                    val op = if ( opForm.validate().isOk ) opForm.compile()
+                    else null
+
+                    if(op==null) {
+                        Notification.show("Errore Form")
+                        return@addClickListener
+                    }
+
+                    val (_, notok) = ops.create(op)
+
+                    if(notok.isNullOrEmpty().not()) {
+                        Notification.show(notok)
+                        return@addClickListener
+                    }
+
+                    grid.dataProvider.refreshAll()
+                    opForm.reset()
+                    dialog.close()
+                }
+            }
+        )
+
+
+        add(HorizontalLayout(searchField, addOperatorButton).apply { setWidthFull() })
 
         add(grid)
 

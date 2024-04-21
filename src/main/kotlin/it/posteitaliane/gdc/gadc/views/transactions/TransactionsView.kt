@@ -111,7 +111,6 @@ class TransactionsView(
                 dcSelect.clear()
                 fromPicker.clear()
                 toPicker.clear()
-                classNames.add(LumoUtility.Margin.Left.MEDIUM)
                 filter = TransactionFilter()
                 filterProvider.setFilter(null)
             }

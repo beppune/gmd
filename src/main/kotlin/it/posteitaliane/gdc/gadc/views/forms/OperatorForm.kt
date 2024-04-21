@@ -2,7 +2,10 @@ package it.posteitaliane.gdc.gadc.views.forms
 
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.checkbox.CheckboxGroup
-import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.formlayout.FormLayout
+import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.component.select.Select
+import com.vaadin.flow.component.textfield.EmailField
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import it.posteitaliane.gdc.gadc.model.Datacenter
@@ -12,14 +15,21 @@ data class OperatorPresentation(
     var username:String?=null,
     var firstname:String?=null,
     var lastname:String?=null,
+    var email:String?=null,
     var active:Boolean=true,
+    var role:Operator.Role=Operator.Role.OPERATOR,
     val permissions:MutableList<Datacenter> = mutableListOf()
 )
-class OperatorForm(private val dcs:List<Datacenter>) : VerticalLayout() {
+
+class OperatorForm(private val dcs:List<Datacenter>) : FormLayout() {
 
     private val userNameField:TextField
 
     private val activeField:Checkbox
+
+    private val roleSelect:Select<Operator.Role>
+
+    private val emailField:EmailField
 
     private val lastNameField:TextField
 
@@ -35,7 +45,16 @@ class OperatorForm(private val dcs:List<Datacenter>) : VerticalLayout() {
             placeholder = "USERNAME"
         }
 
+        emailField = EmailField().apply { placeholder = "@" }
+
         activeField = Checkbox("ABILITATO", true)
+
+        roleSelect = Select<Operator.Role>().apply {
+            prefixComponent = Span("RUOLO")
+            setItems(Operator.Role.entries)
+
+            value = Operator.Role.OPERATOR
+        }
 
         lastNameField = TextField().apply { placeholder = "COGNOME" }
 
@@ -61,14 +80,32 @@ class OperatorForm(private val dcs:List<Datacenter>) : VerticalLayout() {
             .asRequired("Obbligatorio")
             .bind("firstname")
 
+        binder.forField(emailField)
+            .asRequired("Obbligatorio")
+            .bind("email")
+
         binder.forField(activeField)
             .bind("active")
+
+        binder.forField(roleSelect)
+            .asRequired("Obbligatorio")
+            .bind("role")
 
         binder.forField(datacenterGroup)
             .bind({it.permissions.toSet()},{op, list ->
                 op.permissions.clear()
                 op.permissions.addAll(list)
             })
+
+        add(userNameField, activeField)
+        add(emailField, 2)
+        add(roleSelect, 2)
+        add(lastNameField)
+        add(firstNameField)
+        add(datacenterGroup, 2)
+
+        width = "500px"
+
     }
 
     fun validate() = binder.validate()
@@ -80,12 +117,14 @@ class OperatorForm(private val dcs:List<Datacenter>) : VerticalLayout() {
         return Operator(
             username = op.username!!,
             role = Operator.Role.OPERATOR,
-            email = "@",
+            email = op.email!!,
             isActive = op.active,
             lastName = op.lastname!!,
             firstName = op.firstname!!,
             localPassword = null
-        )
+        ).apply {
+            permissions.addAll(datacenterGroup.value)
+        }
     }
 
     fun reset() {
