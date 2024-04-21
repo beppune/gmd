@@ -7,20 +7,18 @@ import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.IntegerField
+import com.vaadin.flow.component.textfield.TextArea
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.component.upload.Upload
-import com.vaadin.flow.component.upload.UploadI18N
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer
 import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.*
 import it.posteitaliane.gdc.gadc.services.*
-import org.springframework.web.multipart.MaxUploadSizeExceededException
 import java.time.LocalDateTime
 import java.util.*
 
@@ -31,7 +29,8 @@ data class OrderPresentation(
     var subject:Order.Subject?=null,
     var ref:String?=null,
     var supplier:Supplier?=null,
-    var datacenter:Datacenter?=null
+    var datacenter:Datacenter?=null,
+    var remarks:String?=null
 )
 
 class OrderForm(
@@ -74,6 +73,8 @@ class OrderForm(
     private val optionPending:Checkbox
 
     private val fileUpload:Upload
+
+    private val remarksText:TextArea
 
     var savePath:String?=null
 
@@ -231,7 +232,9 @@ class OrderForm(
             maxFileSize = 1024 * 1024 *2
         }
 
-
+        remarksText = TextArea()
+        binder.forField(remarksText)
+            .bind("remarks")
 
         optionPending = Checkbox("In Sospeso", false)
 
@@ -240,9 +243,10 @@ class OrderForm(
         add(
             typeField, subjectField,
             dcSelect, supplierField,
-            refField, HorizontalLayout(optionPending, fileUpload),
-            HorizontalLayout(itemsButton, cancelItemsButton)
-        )
+            refField, HorizontalLayout(optionPending, fileUpload))
+
+        add(remarksText, 2)
+        add(HorizontalLayout(itemsButton, cancelItemsButton))
         add(VerticalLayout(linesContainer), 2)
 
         addLineButton = Button("AGGIUNGI")
@@ -327,7 +331,10 @@ class OrderForm(
             subject = bean.subject!!,
             supplier = bean.supplier!!,
             status = Order.Status.COMPLETED
-        )
+        ).apply {
+            ref = ref
+            remarks = bean.remarks
+        }
 
         if(optionPending.value) {
             order.status = Order.Status.PENDING

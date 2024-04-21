@@ -87,6 +87,8 @@ data class Order(
 
     var ref:String = "${op.firstName} ${op.lastName}"
 
+    var remarks:String?=null
+
     var filepath:String?=null
 
     enum class Type { INBOUND, OUTBOUND }

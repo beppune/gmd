@@ -90,7 +90,7 @@
             status          ENUM( 'PENDING', 'COMPLETED', 'CANCELED' ) NOT NULL,
             ref             VARCHAR(100) NOT NULL,
             
-            remarks         VARCHAR(500) NULL,
+            remarks         VARCHAR(1000) NULL,
             
             PRIMARY KEY(id),
             FOREIGN KEY(operator) REFERENCES OPERATORS(uid),

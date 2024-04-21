@@ -37,6 +37,7 @@ class OrderService(
             status = Order.Status.valueOf(rs.getString("status")),
         ).apply {
             ref = rs.getString("ref")
+            remarks = rs.getString("remarks")
 
             fillPath(this)
         }
@@ -56,10 +57,10 @@ class OrderService(
 
 
     private val QUERY_ALL =
-        "SELECT id,operator,datacenter,supplier,issued,type,subject,status,ref FROM ORDERS"
+        "SELECT id,operator,datacenter,supplier,issued,type,subject,status,ref,remarks FROM ORDERS"
 
     private val QUERY_SEARCH_KEY = """
-        SELECT id,operator,datacenter,supplier,issued,type,subject,status,ref FROM ORDERS 
+        SELECT id,operator,datacenter,supplier,issued,type,subject,status,ref,remarks FROM ORDERS 
         JOIN OPERATORS ON uid=operator 
         JOIN DCS ON shortname=datacenter 
     """.trimIndent()
@@ -128,13 +129,13 @@ class OrderService(
     }
 
 
-    private val QUERY_SUBMIT_ORDER = "INSERT INTO ORDERS(operator,datacenter,supplier,issued,type,subject,status,ref) " +
-            "VALUES(?,?,?,?,?,?,?,?)"
+    private val QUERY_SUBMIT_ORDER = "INSERT INTO ORDERS(operator,datacenter,supplier,issued,type,subject,status,ref,remarks) " +
+            "VALUES(?,?,?,?,?,?,?,?,?)"
     private val QUERY_SUBMIT_LINE = "INSERT INTO ORDERS_LINES(ownedby,datacenter,item,pos,amount,sn,pt) " +
             "VALUES(?,?,?,?,?,?,?)"
 
     private val QUERY_UPDATE_ORDER = "UPDATE ORDERS " +
-            " SET operator = ?, datacenter = ?, supplier = ?, issued = ?, type = ?, subject = ?, status = ?, ref = ? " +
+            " SET operator = ?, datacenter = ?, supplier = ?, issued = ?, type = ?, subject = ?, status = ?, ref = ?, remakrs = ?" +
             " WHERE id = ? ORDER BY id LIMIT 1"
     private val QUERY_DELETE_LINES = "DELETE FROM ORDERS_LINES WHERE ownedby = ?"
 
@@ -151,7 +152,8 @@ class OrderService(
                         o.type.name,
                         o.subject.name,
                         o.status.name,
-                        o.ref
+                        o.ref,
+                        o.remarks
                     )
 
                     o.number = db.queryForObject("SELECT LAST_INSERT_ID()", Int::class.java)!!
