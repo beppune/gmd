@@ -13,21 +13,22 @@ class SupplierService(
     private val tr:TransactionTemplate
 ) {
 
-    companion object {
-        val mapper = RowMapper { rs, _ ->
-            Supplier(
-                rs.getString("name"),
-                rs.getString("legal"),
-                rs.getString("piva")
-            )
+
+    val mapper = RowMapper { rs, _ ->
+        Supplier(
+            rs.getString("name"),
+            rs.getString("legal"),
+            rs.getString("piva")
+        ).apply {
+            fillAddresses(this)
         }
     }
 
-    private val QUERY_ALL = "SELECT name,legal,piva FROM SUPPLIERS"
-    private val QUERY_BY_NAME = "SELECT name,legal,piva FROM SUPPLIERS WHERE name = ?"
-    private val QUERY_SUPPLIER_ADDRESSES = "SELECT address FROM SUPPLIERS_ADDRESSES WHERE supplier = ?"
+    private val QUERY_ALL = "SELECT name,legal,piva FROM SUPPLIERS "
+    private val QUERY_BY_NAME = "SELECT name,legal,piva FROM SUPPLIERS WHERE name = ? "
+    private val QUERY_SUPPLIER_ADDRESSES = "SELECT address FROM SUPPLIERS_ADDRESSES WHERE supplier = ? "
 
-    private fun fillAddresses(s:Supplier) {
+    fun fillAddresses(s:Supplier) {
         val list = db.queryForList(QUERY_SUPPLIER_ADDRESSES, String::class.java, s.name)
         s.addresses.addAll(list)
     }
@@ -40,6 +41,32 @@ class SupplierService(
 
     fun findByName(name: String): Supplier {
         return db.queryForObject(QUERY_BY_NAME, mapper, name)!!
+    }
+
+    fun find(offset: Int=0, limit: Int=1000, searchKey: String?=null, ascending: Boolean=true, sortKey: String?=null) : List<Supplier> {
+        var query = QUERY_ALL
+
+        query += " WHERE TRUE "
+
+        if ( searchKey != null ) {
+            query += " AND name LIKE '%$searchKey%' "
+            query += " OR piva LIKE '%$searchKey%' "
+            query += " OR legal LIKE '%$searchKey%' "
+        }
+
+        if( sortKey != null ) {
+            query += " ORDER BY $sortKey "
+
+            if( !ascending ) {
+                query += " DESC "
+            }
+        }
+
+        query += " LIMIT $limit "
+
+        query += " OFFSET $offset"
+
+        return db.query(query, mapper)
     }
 
     private val CREATE_SUPPLIER_SQL = "INSERT INTO SUPPLIERS(name,legal,piva) VALUES(?,?,?)"
