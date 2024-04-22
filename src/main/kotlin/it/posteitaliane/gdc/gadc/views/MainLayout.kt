@@ -26,6 +26,7 @@ import it.posteitaliane.gdc.gadc.views.forms.OrderForm
 import it.posteitaliane.gdc.gadc.views.operators.OperatorsView
 import it.posteitaliane.gdc.gadc.views.orders.OrdersView
 import it.posteitaliane.gdc.gadc.views.storage.StorageView
+import it.posteitaliane.gdc.gadc.views.suppliers.SuppliersView
 import it.posteitaliane.gdc.gadc.views.transactions.TransactionsView
 
 class  MainLayout(
@@ -122,6 +123,7 @@ class  MainLayout(
         val nav = SideNav()
         nav.addItem(SideNavItem("Giacenze", StorageView::class.java))
         nav.addItem(SideNavItem("Ordini", OrdersView::class.java))
+        nav.addItem(SideNavItem("Fornitori", SuppliersView::class.java))
         nav.addItem(SideNavItem("Utenze", OperatorsView::class.java))
         nav.addItem(SideNavItem("Transazioni", TransactionsView::class.java))
 

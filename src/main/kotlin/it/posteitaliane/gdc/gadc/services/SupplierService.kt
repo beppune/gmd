@@ -31,10 +31,10 @@ class SupplierService(
         val list = db.queryForList(QUERY_SUPPLIER_ADDRESSES, String::class.java, s.name)
         s.addresses.addAll(list)
     }
-    fun findAll() : List<Supplier> {
+    fun findAll(withAddresses:Boolean=false) : List<Supplier> {
         val list = db.query(QUERY_ALL, mapper)
 
-        list.forEach { fillAddresses(it) }
+        if(withAddresses) list.forEach { fillAddresses(it) }
         return list
     }
 
