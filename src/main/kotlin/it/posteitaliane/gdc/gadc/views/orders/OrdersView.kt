@@ -4,6 +4,7 @@ import com.vaadin.flow.component.ComponentUtil
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.checkbox.CheckboxGroup
+import com.vaadin.flow.component.details.Details
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.html.Anchor
@@ -11,6 +12,7 @@ import com.vaadin.flow.component.html.Paragraph
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
@@ -128,7 +130,7 @@ class OrdersView(
             }
         }
 
-        add(searchField, dcSelect)
+        add(HorizontalLayout(searchField, dcSelect).apply { setWidthFull() })
         add(grid)
     }
 
@@ -183,7 +185,7 @@ class OrdersView(
                         add(edit)
                     }
 
-                    add(Paragraph(field!!.remarks))
+                    add(Details("Note", Paragraph(field!!.remarks)))
 
                     os.fillOrderLines(field!!)
                     field!!.lines.forEach { add(Span( "${it.item} ${it.position} ${it.amount}" +
