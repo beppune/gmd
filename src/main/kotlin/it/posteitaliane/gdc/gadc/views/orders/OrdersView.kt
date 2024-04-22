@@ -110,13 +110,20 @@ class OrdersView(
                 placeholder = "Cerca per nome utente, datacenter, referente..."
                 width = "50%"
                 classNames.add("search")
-                addKeyUpListener {
+
+            }
+            searchField. addKeyUpListener {
                     if( it.key == Key.ENTER) {
-                        ordersFilter.searchKery = value.trim().lowercase()
+                        ordersFilter.searchKery = searchField.value.trim().lowercase()
                         filterProvider.setFilter(ordersFilter)
                     }
+
+
+                    if( it.key.toString() == "Escape" || it.key.toString() == "Delete" ) {
+                        searchField.clear()
+                        filterProvider.setFilter(null)
+                    }
                 }
-            }
 
         dcSelect = CheckboxGroup<Datacenter>().apply {
             setItems(dcs.findAll())

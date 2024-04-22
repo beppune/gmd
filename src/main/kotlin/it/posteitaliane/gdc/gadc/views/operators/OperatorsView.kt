@@ -1,5 +1,6 @@
 package it.posteitaliane.gdc.gadc.views.operators
 
+import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
@@ -20,7 +21,6 @@ import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.data.renderer.ComponentRenderer
-import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.theme.lumo.LumoUtility
@@ -173,10 +173,20 @@ class OperatorsView(
             placeholder = "Cerca per username, cognome, nome, email..."
             classNames.add("search")
             prefixComponent = Icon(VaadinIcon.SEARCH)
-            valueChangeMode = ValueChangeMode.EAGER
-            addValueChangeListener {
-                personFilter.searchTerm = it.value
+        }
+
+        searchField.addKeyUpListener {
+            if( it.key == Key.ENTER ) {
+                personFilter.searchTerm = searchField.value
                 filterDataProvider.setFilter(personFilter)
+            }
+
+
+
+            if( it.key.toString() == "Escape" || it.key.toString() == "Delete" ) {
+                searchField.clear()
+                personFilter.searchTerm = ""
+                filterDataProvider.setFilter(null)
             }
         }
 

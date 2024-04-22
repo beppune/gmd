@@ -64,6 +64,11 @@ class SuppliersView(
                 val value = if(searchField.value.isNullOrEmpty()) null else searchField.value
                 filterDataProvider.setFilter(value)
             }
+
+            if( it.key.toString() == "Escape" || it.key.toString() == "Delete" ) {
+                searchField.clear()
+                filterDataProvider.setFilter(null)
+            }
         }
 
 
