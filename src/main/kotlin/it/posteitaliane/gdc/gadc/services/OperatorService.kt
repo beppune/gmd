@@ -52,7 +52,7 @@ class OperatorService(
         return ops.first()
     }
 
-    fun find(offset:Int=0, limit:Int=Int.MAX_VALUE, ascending:Boolean=true, sortkey:String?, filter:String?): List<Operator> {
+    fun find(offset:Int=0, limit:Int=Int.MAX_VALUE, ascending:Boolean=true, sortkey:String?=null, filter:String?): List<Operator> {
         var query = "SELECT uid,lastname,firstname,email,role,active,localpassword FROM OPERATORS "
 
         if(!filter.isNullOrEmpty()) {

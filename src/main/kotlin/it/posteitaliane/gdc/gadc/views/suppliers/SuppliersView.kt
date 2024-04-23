@@ -18,8 +18,9 @@ import it.posteitaliane.gdc.gadc.model.Supplier
 import it.posteitaliane.gdc.gadc.services.SupplierService
 import it.posteitaliane.gdc.gadc.views.MainLayout
 import it.posteitaliane.gdc.gadc.views.forms.SupplierForm
+import jakarta.annotation.security.RolesAllowed
 
-
+@RolesAllowed("ADMIN")
 @Route(value = "suppliers", layout = MainLayout::class)
 class SuppliersView(
     sups:SupplierService

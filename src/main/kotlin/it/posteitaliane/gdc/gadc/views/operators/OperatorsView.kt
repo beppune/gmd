@@ -30,7 +30,9 @@ import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.OperatorService
 import it.posteitaliane.gdc.gadc.views.MainLayout
 import it.posteitaliane.gdc.gadc.views.forms.OperatorForm
+import jakarta.annotation.security.RolesAllowed
 
+@RolesAllowed("ADMIN")
 @Route(value = "anag", layout = MainLayout::class)
 class OperatorsView(
     dcs:DatacenterService,

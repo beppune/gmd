@@ -13,7 +13,9 @@ import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.model.Storage
 import it.posteitaliane.gdc.gadc.services.StorageService
 import it.posteitaliane.gdc.gadc.views.MainLayout
+import jakarta.annotation.security.PermitAll
 
+@PermitAll
 @Route(value = "", layout = MainLayout::class)
 class StorageView(
     ss:StorageService

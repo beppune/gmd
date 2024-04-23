@@ -49,6 +49,9 @@ data class Operator(
     override fun hashCode(): Int {
         return username.hashCode()
     }
+
+    val isAdmin = role == Role.ADMIN
+    val isOperator = role == Role.ADMIN || role == Role.OPERATOR
 }
 
 data class Supplier(

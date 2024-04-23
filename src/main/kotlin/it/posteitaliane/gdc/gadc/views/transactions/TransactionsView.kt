@@ -21,9 +21,11 @@ import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.ReportService
 import it.posteitaliane.gdc.gadc.services.TransactionsService
 import it.posteitaliane.gdc.gadc.views.MainLayout
+import jakarta.annotation.security.RolesAllowed
 import java.io.InputStream
 import java.time.format.DateTimeFormatter
 
+@RolesAllowed("ADMIN")
 @Route(value = "transactions", layout = MainLayout::class)
 class TransactionsView(
     dcs:DatacenterService,

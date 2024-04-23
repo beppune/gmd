@@ -17,6 +17,7 @@ import com.vaadin.flow.component.orderedlayout.Scroller
 import com.vaadin.flow.component.sidenav.SideNav
 import com.vaadin.flow.component.sidenav.SideNavItem
 import com.vaadin.flow.theme.lumo.LumoUtility
+import it.posteitaliane.gdc.gadc.SecurityService
 import it.posteitaliane.gdc.gadc.config.GMDConfig
 import it.posteitaliane.gdc.gadc.events.EditOrderEvent
 import it.posteitaliane.gdc.gadc.model.Operator
@@ -36,7 +37,8 @@ class  MainLayout(
     sups: SupplierService,
     ss: StorageService,
     ops: OperatorService,
-    files:FilesService
+    files:FilesService,
+    private val sec: SecurityService
 ) : AppLayout() {
 
     val dialog:Dialog
@@ -44,9 +46,9 @@ class  MainLayout(
     val op:Operator
     init {
 
-        op = ops.findAll().find { it.role == Operator.Role.ADMIN }!!
+        op = sec.op()
 
-        val form = OrderForm(config.firmName, dcs, sups, os, ss, ops, files, Order.Type.INBOUND)
+        val form = OrderForm(config.firmName, dcs, sups, os, ss, ops, files, op, Order.Type.INBOUND)
 
         dialog = Dialog()
             .apply {
@@ -115,7 +117,12 @@ class  MainLayout(
 
         val operatorWidget = HorizontalLayout(
             Icon(VaadinIcon.USER),
-            Span(op.username)
+            Span(op.username),
+            Button("LOGOUT").apply {
+                addThemeVariants(ButtonVariant.LUMO_TERTIARY)
+                addClassNames(LumoUtility.Margin.Left.AUTO)
+                addClickListener { sec.logout() }
+            }
         ).apply {
             addClassNames(LumoUtility.Margin.Left.AUTO, LumoUtility.Margin.Right.MEDIUM, "pointer")
         }
@@ -123,9 +130,12 @@ class  MainLayout(
         val nav = SideNav()
         nav.addItem(SideNavItem("Giacenze", StorageView::class.java))
         nav.addItem(SideNavItem("Ordini", OrdersView::class.java))
-        nav.addItem(SideNavItem("Fornitori", SuppliersView::class.java))
-        nav.addItem(SideNavItem("Utenze", OperatorsView::class.java))
-        nav.addItem(SideNavItem("Transazioni", TransactionsView::class.java))
+
+        if( op.isAdmin ) {
+            nav.addItem(SideNavItem("Fornitori", SuppliersView::class.java))
+            nav.addItem(SideNavItem("Utenze", OperatorsView::class.java))
+            nav.addItem(SideNavItem("Transazioni", TransactionsView::class.java))
+        }
 
         val scroller = Scroller(nav)
         scroller.className = LumoUtility.Padding.SMALL

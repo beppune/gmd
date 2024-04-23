@@ -26,8 +26,10 @@ import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.OrderService
 import it.posteitaliane.gdc.gadc.views.MainLayout
+import jakarta.annotation.security.PermitAll
 import java.time.format.DateTimeFormatter
 
+@PermitAll
 @Route(value = "orders", layout = MainLayout::class)
 class OrdersView(
     os:OrderService,

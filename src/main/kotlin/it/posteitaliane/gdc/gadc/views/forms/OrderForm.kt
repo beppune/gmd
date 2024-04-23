@@ -41,6 +41,7 @@ class OrderForm(
     private val ss:StorageService,
     private val ops:OperatorService,
     private val files:FilesService,
+    private val op:Operator,
     type: Order.Type? = null
 ) : FormLayout() {
 
@@ -130,7 +131,7 @@ class OrderForm(
                 setItemLabelGenerator {
                     "${it.short} - ${it.fullName}"
                 }
-                setItems(dcs.findAll(true))
+                setItems(dcs.findAll(true).filter { op.permissions.contains(it) })
             }
 
         binder.forField(dcSelect)
