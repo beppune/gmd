@@ -108,7 +108,7 @@ class SuppliersView(
             }
         )
 
-        val addSupplierButton = Button("AGGIUNGI UTENZA").apply {
+        val addSupplierButton = Button("AGGIUNGI FORNITORE").apply {
             addClassNames(LumoUtility.Margin.Left.AUTO, LumoUtility.Margin.Right.MEDIUM)
 
             addClickListener {

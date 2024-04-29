@@ -6,9 +6,7 @@ import it.posteitaliane.gdc.gadc.services.OperatorService
 import it.posteitaliane.gdc.gadc.views.LoginView
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.authentication.TestingAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
@@ -43,7 +41,7 @@ class SecurityConfig(
                 return User
                     .withUsername(op.username)
                     .roles(op.role.name)
-                    .password("{noop}password")
+                    .password("{noop}${op.localPassword}")
                     .build()
             }catch (ex:NoSuchElementException) {
                 println("Username not found: $username")
