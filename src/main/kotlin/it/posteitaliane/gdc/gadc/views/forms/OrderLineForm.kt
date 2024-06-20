@@ -59,8 +59,6 @@ class OrderLineForm(
 
     val ptField:TextField
 
-    val uniqueButton:Button
-
     var SNExternalValidator:(String, ValueContext)->ValidationResult = {_,_->ValidationResult.ok()}
         /*{ value, _ ->
         if( isUnique().not() ) ValidationResult.ok()
@@ -121,14 +119,12 @@ class OrderLineForm(
         snField = TextField()
             .apply {
                 prefixComponent = Span("S/N")
-                isVisible = false
                 value = ""
             }
 
         ptField = TextField()
             .apply {
                 prefixComponent = Span("PT")
-                isVisible = false
                 maxLength = 8
                 minLength = 8
                 allowedCharPattern = "\\d"
@@ -155,8 +151,6 @@ class OrderLineForm(
             else ValidationResult.ok()
         }
 
-        uniqueButton = Button(Icon(VaadinIcon.ARROW_RIGHT)) {toggleUnique()}
-
         /* BINDINGS */
         binder.forField(itemsField)
             .asRequired("Campo Obbligatorio")
@@ -171,48 +165,36 @@ class OrderLineForm(
             .bind({it.amount},{ line, value -> line.amount = value})
 
         binder.forField(snField)
-            .withValidator { value, _ ->
-                if(isUnique() && value.isNullOrEmpty() && ptField.value.isNullOrEmpty()) ValidationResult.error("Obbligatorio almeno uno fra S/N e PT")
-                else ValidationResult.ok()
-            }
             .withValidator(SNNotRegistered)
             .withValidator(SNExternalValidator)
             .bind({ol -> ol.sn}, {ol, sn -> ol.sn = sn})
 
         binder.forField(ptField)
-            .withValidator { value, _ ->
-                if(isUnique() && value.isNullOrEmpty() && snField.value.isNullOrEmpty()) ValidationResult.error("Obbligatorio almeno uno fra S/N e PT")
-                else ValidationResult.ok()
-            }
             .withValidator(PTNotRegistered)
             .withValidator(PTExternalValidator)
             .bind({ol -> ol.pt}, {ol, pt -> ol.pt = pt})
 
+        snField.addBlurListener { setAmount() }
+
+        ptField.addBlurListener { setAmount() }
+
         reset()
+
         /* UI */
-        add(itemsField, positionsField, amountField, uniqueButton, snField, ptField)
+        add(itemsField, positionsField, amountField, snField, ptField)
     }
 
-    private fun toggleUnique() {
-        if( isUnique() ) {
-            snField.value = ""
-            snField.isVisible = false
-
-            ptField.value = ""
-            ptField.isVisible = false
-
-            amountField.value = null
-            amountField.isEnabled = true
-
-            uniqueButton.icon = Icon(VaadinIcon.ARROW_RIGHT)
-        } else {
-            snField.isVisible = true
-            ptField.isVisible = true
-
+    private fun setAmount() {
+        if( snField.value.isNotEmpty() || ptField.value.isNotEmpty() ) {
             amountField.value = 1
             amountField.isEnabled = false
+            return
+        }
 
-            uniqueButton.icon = Icon(VaadinIcon.ARROW_LEFT)
+        if( snField.value.isNullOrEmpty() && ptField.value.isNullOrEmpty() ) {
+            amountField.clear()
+            amountField.isEnabled = true
+            return
         }
     }
 
@@ -220,9 +202,6 @@ class OrderLineForm(
         bean = b ?: OrderLinePresentation()
         if( skipAmount ) {
             bean.amount = amountField.value
-        }
-        if( isUnique() ) {
-            bean.amount = 1
         }
 
         if( skipItem ) {
@@ -244,7 +223,5 @@ class OrderLineForm(
             binder.writeBean(bean)
         }
     }
-
-    private fun isUnique() : Boolean = snField.isVisible
 
 }

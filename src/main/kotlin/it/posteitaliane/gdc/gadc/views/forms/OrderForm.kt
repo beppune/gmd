@@ -395,8 +395,6 @@ class OrderForm(
 
                 lf.amountField.value = 1
                 lf.amountField.isEnabled = false
-
-                lf.uniqueButton.icon = Icon(VaadinIcon.ARROW_LEFT)
             }
 
             val button = Button(Icon(VaadinIcon.MINUS))
