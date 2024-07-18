@@ -53,7 +53,11 @@ class CreateDatabaseRunner(val bo:BackOffice, val ctx:ApplicationContext, val co
             }
         }
 
-        bo.ops.create(faker.ga().operator(r=Operator.Role.ADMIN, dcs = dcs))
+        faker.ga().operator(r=Operator.Role.ADMIN, dcs = dcs).also {
+
+            bo.ops.create(it)
+            println("ADMIN is ${it.username}")
+        }
 
 
         val items = faker.collection({faker.appliance().equipment()})
@@ -81,7 +85,7 @@ class CreateDatabaseRunner(val bo:BackOffice, val ctx:ApplicationContext, val co
             }
         }
 
-        /*val orders = faker.collection({
+        val orders = faker.collection({
             faker.ga().order(items, dcs, ops, suppliers, s = Order.Subject.INTERNAL, t = Order.Type.INBOUND, withUnique = true)
         }).len(10).generate<List<Order>>()
 
@@ -95,7 +99,7 @@ class CreateDatabaseRunner(val bo:BackOffice, val ctx:ApplicationContext, val co
             }catch (ex:CannotCreateTransactionException) {
                 ex.printStackTrace()
             }
-        }*/
+        }
 
     }
 
