@@ -118,4 +118,9 @@ class OperatorService(
 
     }!!
 
+    fun updateLocalPassword(op: Operator, passwd: String?) {
+        val sql = "UPDATE operators SET localpassword = ? WHERE uid = ? ORDER BY uid LIMIT 1"
+        db.update(sql, passwd, op.username)
+    }
+
 }
