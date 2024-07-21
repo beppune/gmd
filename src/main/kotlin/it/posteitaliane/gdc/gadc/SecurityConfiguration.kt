@@ -16,7 +16,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 @EnableWebSecurity
 @SpringComponent
 @Configuration
-class SecurityConfig(
+class SecurityConfiguration(
     private val ops:OperatorService
 ) : VaadinWebSecurity() {
 
