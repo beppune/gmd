@@ -53,10 +53,10 @@ class CreateDatabaseRunner(val bo:BackOffice, val ctx:ApplicationContext, val co
             }
         }
 
-        faker.ga().operator(r=Operator.Role.ADMIN, dcs = dcs).also {
+        faker.ga().operator(r=Operator.Role.ADMIN, dcs = dcs, u = "ADMIN").also {
 
             bo.ops.create(it)
-            println("ADMIN is ${it.username}")
+            bo.ops.updateLocalPassword(it, "admin")
         }
 
 
