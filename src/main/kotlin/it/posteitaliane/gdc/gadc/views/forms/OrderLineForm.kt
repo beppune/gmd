@@ -1,10 +1,7 @@
 package it.posteitaliane.gdc.gadc.views.forms
 
-import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.html.Span
-import com.vaadin.flow.component.icon.Icon
-import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.textfield.IntegerField
 import com.vaadin.flow.component.textfield.TextField
@@ -13,6 +10,8 @@ import com.vaadin.flow.data.binder.ValidationResult
 import com.vaadin.flow.data.binder.Validator
 import com.vaadin.flow.data.binder.ValueContext
 import it.posteitaliane.gdc.gadc.model.Datacenter
+import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.model.Storage
 import it.posteitaliane.gdc.gadc.services.StorageService
 import java.util.*
 
@@ -40,9 +39,10 @@ data class OrderLinePresentation(
 }
 
 class OrderLineForm(
+    private var order:OrderPresentation,
     items:List<String>,
     positions:MutableList<String>,
-    ss:StorageService
+    private val ss:StorageService
 ) : HorizontalLayout() {
 
     private var positionsField: ComboBox<String>
@@ -131,22 +131,22 @@ class OrderLineForm(
                 value = ""
             }
 
-        val PTNotRegistered = Validator<String> { value, _ ->
+        val PTMustNotRegistered = Validator<String> { value, _ ->
             if( ss.findByPt(value) != null ) ValidationResult.error("PT must not be registered")
             else ValidationResult.ok()
         }
 
-        val SNNotRegistered = Validator<String> { value, _ ->
+        val SNMustNotRegistered = Validator<String> { value, _ ->
             if( ss.findBySn(value) != null ) ValidationResult.error("SN must not be registered")
             else ValidationResult.ok()
         }
 
-        Validator<String> { value, _ ->
+        val PTMustBeRegistered = Validator<String> { value, _ ->
             if( ss.findByPt(value) == null ) ValidationResult.error("PT must be registered")
             else ValidationResult.ok()
         }
 
-        Validator<String> { value, _ ->
+        val SNMustBeRegistered = Validator<String> { value, _ ->
             if( ss.findBySn(value) == null ) ValidationResult.error("SN must be registered")
             else ValidationResult.ok()
         }
@@ -165,12 +165,12 @@ class OrderLineForm(
             .bind({it.amount},{ line, value -> line.amount = value})
 
         binder.forField(snField)
-            .withValidator(SNNotRegistered)
+            .withValidator(SNMustNotRegistered)
             .withValidator(SNExternalValidator)
             .bind({ol -> ol.sn}, {ol, sn -> ol.sn = sn})
 
         binder.forField(ptField)
-            .withValidator(PTNotRegistered)
+            .withValidator(PTMustNotRegistered)
             .withValidator(PTExternalValidator)
             .bind({ol -> ol.pt}, {ol, pt -> ol.pt = pt})
 
@@ -199,6 +199,8 @@ class OrderLineForm(
     }
 
     fun reset(b:OrderLinePresentation?=null, dc:Datacenter?=null, skipItem:Boolean=false, skipAmount:Boolean=false) {
+
+
         bean = b ?: OrderLinePresentation()
         if( skipAmount ) {
             bean.amount = amountField.value
@@ -210,10 +212,22 @@ class OrderLineForm(
 
         if( dc != null ) {
             positionsField.clear()
+
             positionsField.setItems(dc.locations)
 
             bean.sn = snField.value
             bean.pt = ptField.value
+
+            if( order.type == Order.Type.OUTBOUND ) {
+                ss.findAll()
+                    .filter { (dc.short == it.dc.short) }
+                    .map(Storage::item)
+                    .distinct()
+                    .also {
+                        println(it.size)
+                        itemsField.setItems(it)
+                    }
+            }
         }
         binder.readBean(bean)
     }

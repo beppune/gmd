@@ -42,7 +42,7 @@ class OrderForm(
     private val ops:OperatorService,
     private val files:FilesService,
     private val op:Operator,
-    type: Order.Type? = null
+    private var type: Order.Type? = null
 ) : FormLayout() {
 
     var isValid: Boolean = false
@@ -93,6 +93,7 @@ class OrderForm(
             .apply {
                 placeholder = "CARICO / SCARICO"
                 setItems(Order.Type.entries)
+                value = type
                 setItemLabelGenerator {
                     when(it) {
                         Order.Type.INBOUND -> "CARICO"
@@ -296,7 +297,7 @@ class OrderForm(
 
     private fun makeLineForm(): HorizontalLayout {
         val hr = HorizontalLayout()
-        val line = OrderLineForm( os.findItems(), dcSelect.value.locations, ss)
+        val line = OrderLineForm( bean, os.findItems(), dcSelect.value.locations, ss)
         val button = Button(Icon(VaadinIcon.MINUS))
 
         hr.add(line, button)
@@ -383,6 +384,7 @@ class OrderForm(
             )
 
             val lf = OrderLineForm(
+                order = bean,
                 ss = ss,
                 items = os.findItems(),
                 positions = dcs.findAll(true).filter { it.short == o.dc.short }.first().locations
