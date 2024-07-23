@@ -47,7 +47,7 @@ class OperatorService(
     }
 
     fun get(username:String) : Operator {
-        val ops = db.query("SELECT uid,lastname,firstnaem,email,role,active FROM OPERATORS WHERE uid = ? LIMIT 1", mapper, username)
+        val ops = db.query("SELECT uid,lastname,firstname,email,role,active,localpassword FROM OPERATORS WHERE uid = ? LIMIT 1", mapper, username)
         fetchPermissions( ops )
         return ops.first()
     }

@@ -1,8 +1,12 @@
 package it.posteitaliane.gdc.gadc.security
 
+import it.posteitaliane.gdc.gadc.services.OperatorService
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetails
 import java.util.*
 import javax.naming.AuthenticationException
 import javax.naming.Context
@@ -10,7 +14,7 @@ import javax.naming.PartialResultException
 import javax.naming.directory.InitialDirContext
 import javax.naming.directory.SearchControls
 
-class ADSelfAuthenticationProvider : AuthenticationProvider {
+class ADSelfAuthenticationProvider(private val ops:OperatorService) : AbstractUserDetailsAuthenticationProvider() {
 
     override fun authenticate(authentication: Authentication?): Authentication? {
         val username:String = authentication!!.principal as String
@@ -24,8 +28,8 @@ class ADSelfAuthenticationProvider : AuthenticationProvider {
                     //put(Context.PROVIDER_URL, "ldaps://pretedc01v.rete.poste:636/DC=rete,DC=poste")
                     //put(Context.SECURITY_PROTOCOL, "ssl")
                     put(Context.PROVIDER_URL, "ldap://pretedc01v.rete.poste/DC=rete,DC=poste")
-                    put(Context.SECURITY_PRINCIPAL, "RETE\\MANZOGI9")
-                    put(Context.SECURITY_CREDENTIALS, "1Krum1r1")
+                    put(Context.SECURITY_PRINCIPAL, "RETE\\$username")
+                    put(Context.SECURITY_CREDENTIALS, password)
                     put(Context.SECURITY_AUTHENTICATION, "simple")
                 }
 
@@ -58,6 +62,22 @@ class ADSelfAuthenticationProvider : AuthenticationProvider {
 
     override fun supports(authentication: Class<*>?): Boolean {
         return authentication!!.equals(this::class.java)
+    }
+
+    override fun additionalAuthenticationChecks(
+        userDetails: UserDetails?,
+        authentication: UsernamePasswordAuthenticationToken?
+    ) {
+        //no more checks
+    }
+
+    override fun retrieveUser(username: String, authentication: UsernamePasswordAuthenticationToken): UserDetails {
+        val op = ops.get(username)
+
+        return User.withUsername(op.username)
+            .roles(op.role.name)
+            .password(authentication.credentials as String)
+            .build()
     }
 
 }
