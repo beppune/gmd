@@ -55,35 +55,9 @@ class OrderLineForm(
 
     val amountField:IntegerField
 
-    val snField:TextField
+    val snField:ComboBox<String>
 
-    val ptField:TextField
-
-    var SNExternalValidator:(String, ValueContext)->ValidationResult = {_,_->ValidationResult.ok()}
-        /*{ value, _ ->
-        if( isUnique().not() ) ValidationResult.ok()
-
-        if( parent==null) ValidationResult.ok()
-
-        val l = parent!!.linesForms().filter { it != this }.map { it.snField.value }.toList()
-
-        if( l.contains(value) ) ValidationResult.error("Duplicated SN")
-        else ValidationResult.ok()
-
-    }*/
-
-    var PTExternalValidator:(String, ValueContext)->ValidationResult = {_,_->ValidationResult.ok()}
-    /*{ value, _ ->
-        if( isUnique().not() ) ValidationResult.ok()
-
-        if( parent==null ) ValidationResult.ok()
-
-        val l = parent!!.linesForms().filter { it != this }.map { it.ptField.value }.toList()
-
-        if( l.contains(value) ) ValidationResult.error("Duplicated PT")
-        else ValidationResult.ok()
-
-    }*/
+    val ptField:ComboBox<String>
 
     init {
 
@@ -116,19 +90,19 @@ class OrderLineForm(
                 maxWidth = "50px"
             }
 
-        snField = TextField()
+        snField = ComboBox<String>()
             .apply {
                 prefixComponent = Span("S/N")
                 value = ""
             }
 
-        ptField = TextField()
+        ptField = ComboBox<String>()
             .apply {
                 prefixComponent = Span("PT")
-                maxLength = 8
-                minLength = 8
                 allowedCharPattern = "\\d"
                 value = ""
+                element.executeJs("this.childNodes.item(0).maxLength = 8")
+                element.executeJs("this.childNodes.item(0).minLength = 8")
             }
 
         val PTMustNotRegistered = Validator<String> { value, _ ->
@@ -165,20 +139,10 @@ class OrderLineForm(
             .bind({it.amount},{ line, value -> line.amount = value})
 
         binder.forField(snField)
-            .withValidator(SNMustNotRegistered)
-            .withValidator(SNExternalValidator)
             .bind({ol -> ol.sn}, {ol, sn -> ol.sn = sn})
 
         binder.forField(ptField)
-            .withValidator(PTMustNotRegistered)
-            .withValidator(PTExternalValidator)
             .bind({ol -> ol.pt}, {ol, pt -> ol.pt = pt})
-
-        snField.addBlurListener { setAmount() }
-
-        ptField.addBlurListener { setAmount() }
-
-        reset()
 
         /* UI */
         add(itemsField, positionsField, amountField, snField, ptField)
@@ -198,62 +162,10 @@ class OrderLineForm(
         }
     }
 
-    fun reset(b:OrderLinePresentation?=null, dc:Datacenter?=null, skipItem:Boolean=false, skipAmount:Boolean=false) {
-
-
-        bean = b ?: OrderLinePresentation()
-        if( skipAmount ) {
-            bean.amount = amountField.value
-        }
-
-        if( skipItem ) {
-            bean.item = itemsField.value
-        }
-
-        if( dc != null ) {
-            positionsField.clear()
-
-            positionsField.setItems(dc.locations)
-
-            bean.sn = snField.value
-            bean.pt = ptField.value
-
-            if( order.type == Order.Type.OUTBOUND ) {
-                ss.findAll()
-                    .filter { (dc.short == it.dc.short) }
-                    .map(Storage::item)
-                    .distinct()
-                    .also {
-                        println(it.size)
-                        itemsField.setItems(it)
-                    }
-            }
-        }
-        binder.readBean(bean)
-    }
-
     fun validate() {
         if ( binder.validate().isOk ) {
             binder.writeBean(bean)
         }
-    }
-
-    fun reset2(o: OrderPresentation) {
-        when(o.type!!){
-            Order.Type.OUTBOUND  -> {
-                ss.findAll()
-                    .filter { o.datacenter!!.short == it.dc.short }
-                    .map(Storage::item)
-                    .distinct()
-                    .also {
-                        itemsField.setItems(it)
-                    }
-            }
-            Order.Type.INBOUND -> {
-                itemsField.setItems(items)
-            }
-        }
-
     }
 
 }

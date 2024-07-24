@@ -67,8 +67,6 @@ class OrderForm(
 
     private var itemsButton:Button
 
-    private var linesContainer:VerticalLayout
-
     private val addLineButton:Button
 
     private val optionPending:Checkbox
@@ -183,7 +181,6 @@ class OrderForm(
         itemsButton.addClickListener {
             val res = binder.validate()
             if( res.isOk ) {
-                displayLines()
 
                 //update view
                 it.source.isEnabled = false
@@ -192,36 +189,12 @@ class OrderForm(
         }
 
         cancelItemsButton.addClickListener {
-            undisplayLines(true)
 
             //update view
             it.source.isEnabled = false
             itemsButton.isEnabled = true
         }
 
-        linesContainer = VerticalLayout().apply {
-            isVisible = false
-        }
-
-        dcSelect.addValueChangeListener {
-            if( linesContainer.isVisible ) {
-                linesContainer.children.forEach { hr ->
-                    if( hr is HorizontalLayout ) {
-                        val form:OrderLineForm = hr.children.findFirst().get() as OrderLineForm
-                        form.reset(dc=it.value, skipItem = true)
-                    }
-                }
-            }
-        }
-
-        typeField.addValueChangeListener {
-            linesContainer.children.forEach { hr ->
-                if( hr is HorizontalLayout ) {
-                    (hr.children.findFirst().get() as OrderLineForm)
-                        .reset2(binder.bean)
-                }
-            }
-        }
 
         fileUpload = Upload(MemoryBuffer()).apply {
             addClassNames(
@@ -258,13 +231,8 @@ class OrderForm(
 
         add(remarksText, 2)
         add(HorizontalLayout(itemsButton, cancelItemsButton))
-        add(VerticalLayout(linesContainer), 2)
 
         addLineButton = Button("AGGIUNGI")
-            .apply {
-                addClickListener { linesContainer.add(makeLineForm()) }
-            }
-
 
         add(addLineButton, 1)
 
@@ -272,60 +240,18 @@ class OrderForm(
             typeField.value = type
         }
 
-        reset(type)
-
     }
 
     fun reset(type: Order.Type?=null) {
-        undisplayLines(true)
         optionPending.value = false
         bean = OrderPresentation()
         bean.type = type
         binder.readBean(bean)
     }
 
-    // Make OrderLinesPresentation forms list based on OrderPresentation values
-    fun displayLines(/*lines:List<OrderLinePresentation>*/) {
-
-        val line = makeLineForm()
-
-        linesContainer.isVisible = true
-        linesContainer.add(line)
-        addLineButton.isVisible = true
-
-    }
-
-    fun undisplayLines(remove:Boolean=false) {
-        if( remove ) {
-            linesContainer.children.filter { it is HorizontalLayout }.forEach { linesContainer.remove(it) }
-        }
-
-        linesContainer.isVisible = false
-        addLineButton.isVisible = false
-    }
-
-    private fun makeLineForm(): HorizontalLayout {
-        val hr = HorizontalLayout()
-        val line = OrderLineForm( bean, os.findItems(), dcSelect.value.locations, ss)
-        val button = Button(Icon(VaadinIcon.MINUS))
-
-        hr.add(line, button)
-
-        button.addClickListener {
-            linesContainer.remove(hr)
-        }
-
-        return hr
-    }
-
-    fun linesForms() = linesContainer.children.filter { it is HorizontalLayout }
-        .map { (it as HorizontalLayout).children.findFirst().get() as OrderLineForm }
-
     fun validate() : Boolean {
 
-        val lines = linesForms()
-            .allMatch { it.validate(); it.binder.isValid }
-        isValid = lines && binder.validate().isOk
+        isValid = binder.validate().isOk
         return  isValid
     }
 
@@ -351,20 +277,6 @@ class OrderForm(
             order.status = Order.Status.PENDING
         }
 
-        linesForms().forEach {
-            it.validate()
-            val line = OrderLine(
-                order = order,
-                item = it.bean.item!!,
-                position = it.bean.position!!,
-                amount = it.bean.amount!!,
-                sn = if(it.bean.sn.isNullOrEmpty()) null else it.bean.sn,
-                pt = if(it.bean.pt.isNullOrEmpty()) null else it.bean.pt,
-            )
-
-            order.lines.add(line)
-        }
-
         return order
     }
 
@@ -379,8 +291,6 @@ class OrderForm(
             supplier = o.supplier,
             datacenter = o.dc
         )
-
-        linesContainer.removeAll()
 
         o.lines.forEach { line ->
             val olp = OrderLinePresentation(
@@ -398,7 +308,6 @@ class OrderForm(
                 items = os.findItems(),
                 positions = dcs.findAll(true).filter { it.short == o.dc.short }.first().locations
             )
-            lf.reset(olp)
 
             if(olp.sn!=null || olp.pt!=null) {
                 lf.snField.isVisible = true
@@ -412,11 +321,6 @@ class OrderForm(
 
             val hr = HorizontalLayout(lf, button)
 
-            button.addClickListener {
-                linesContainer.remove(hr)
-            }
-
-            linesContainer.add(hr)
         }
 
         optionPending.value = true
@@ -424,7 +328,6 @@ class OrderForm(
         binder.bean = op
 
         addLineButton.isVisible = true
-        linesContainer.isVisible = true
     }
 }
 
