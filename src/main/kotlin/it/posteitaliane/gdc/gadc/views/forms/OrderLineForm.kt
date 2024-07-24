@@ -40,7 +40,7 @@ data class OrderLinePresentation(
 
 class OrderLineForm(
     private var order:OrderPresentation,
-    items:List<String>,
+    private val items:List<String>,
     positions:MutableList<String>,
     private val ss:StorageService
 ) : HorizontalLayout() {
@@ -236,6 +236,24 @@ class OrderLineForm(
         if ( binder.validate().isOk ) {
             binder.writeBean(bean)
         }
+    }
+
+    fun reset2(o: OrderPresentation) {
+        when(o.type!!){
+            Order.Type.OUTBOUND  -> {
+                ss.findAll()
+                    .filter { o.datacenter!!.short == it.dc.short }
+                    .map(Storage::item)
+                    .distinct()
+                    .also {
+                        itemsField.setItems(it)
+                    }
+            }
+            Order.Type.INBOUND -> {
+                itemsField.setItems(items)
+            }
+        }
+
     }
 
 }

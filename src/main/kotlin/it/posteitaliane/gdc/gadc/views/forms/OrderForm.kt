@@ -214,6 +214,15 @@ class OrderForm(
             }
         }
 
+        typeField.addValueChangeListener {
+            linesContainer.children.forEach { hr ->
+                if( hr is HorizontalLayout ) {
+                    (hr.children.findFirst().get() as OrderLineForm)
+                        .reset2(binder.bean)
+                }
+            }
+        }
+
         fileUpload = Upload(MemoryBuffer()).apply {
             addClassNames(
                 LumoUtility.Padding.NONE,
