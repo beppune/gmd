@@ -17,7 +17,10 @@ import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer
 import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.theme.lumo.LumoUtility
-import it.posteitaliane.gdc.gadc.model.*
+import it.posteitaliane.gdc.gadc.model.Datacenter
+import it.posteitaliane.gdc.gadc.model.Operator
+import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.model.Supplier
 import it.posteitaliane.gdc.gadc.services.*
 import java.time.LocalDateTime
 import java.util.*
@@ -65,8 +68,6 @@ class OrderForm(
 
     private var cancelItemsButton: Button
 
-    private var itemsButton:Button
-
     private val addLineButton:Button
 
     private val optionPending:Checkbox
@@ -74,6 +75,8 @@ class OrderForm(
     private val fileUpload:Upload
 
     private val remarksText:TextArea
+
+    private val lineContainer:VerticalLayout
 
     var savePath:String?=null
 
@@ -167,32 +170,17 @@ class OrderForm(
             }
         }
 
-        itemsButton = Button("MERCI")
-            .apply {
-                addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS)
-            }
-
         cancelItemsButton = Button("ANNULLA")
             .apply {
                 addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR)
                 isEnabled = false
             }
 
-        itemsButton.addClickListener {
-            val res = binder.validate()
-            if( res.isOk ) {
-
-                //update view
-                it.source.isEnabled = false
-                cancelItemsButton.isEnabled = true
-            }
-        }
 
         cancelItemsButton.addClickListener {
 
             //update view
             it.source.isEnabled = false
-            itemsButton.isEnabled = true
         }
 
 
@@ -230,9 +218,10 @@ class OrderForm(
             refField, HorizontalLayout(optionPending, fileUpload))
 
         add(remarksText, 2)
-        add(HorizontalLayout(itemsButton, cancelItemsButton))
 
         addLineButton = Button("AGGIUNGI")
+
+        lineContainer = VerticalLayout()
 
         add(addLineButton, 1)
 
