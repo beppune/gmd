@@ -5,6 +5,8 @@ import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.formlayout.FormLayout
+import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
@@ -223,7 +225,7 @@ class OrderForm(
         addLineButton.addClickListener {
             if(validate()) {
 
-                lineContainer.add( OrderLineForm(binder.bean, ss, dcs) )
+                lineContainer.add( makeLineform() )
             }
         }
 
@@ -243,7 +245,15 @@ class OrderForm(
 
     }
 
-    private fun linesForms() = lineContainer.children.map{ it as OrderLineForm }
+    private fun makeLineform(): HorizontalLayout {
+        val hr = HorizontalLayout()
+        hr.add(OrderLineForm(binder.bean, ss, dcs))
+        hr.add(Button(Icon(VaadinIcon.MINUS)) { lineContainer.remove(hr) })
+
+        return hr
+    }
+    private fun linesForms() = lineContainer.children
+                                    .map{ (it as HorizontalLayout).children.findFirst().get() as OrderLineForm }
 
     fun reset(type: Order.Type?=null) {
         optionPending.value = false
