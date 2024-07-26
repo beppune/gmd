@@ -17,7 +17,10 @@ import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer
 import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.theme.lumo.LumoUtility
-import it.posteitaliane.gdc.gadc.model.*
+import it.posteitaliane.gdc.gadc.model.Datacenter
+import it.posteitaliane.gdc.gadc.model.Operator
+import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.model.Supplier
 import it.posteitaliane.gdc.gadc.services.*
 import java.time.LocalDateTime
 
@@ -249,6 +252,7 @@ class OrderForm(
         val hr = HorizontalLayout()
         hr.add(OrderLineForm(binder.bean, ss, dcs))
         hr.add(Button(Icon(VaadinIcon.MINUS)) { lineContainer.remove(hr) })
+        hr.add(Button(Icon(VaadinIcon.ERASER)) { (hr.children.findFirst().get() as OrderLineForm).reset() })
 
         return hr
     }

@@ -154,4 +154,9 @@ class OrderLineForm(
         }
     }
 
+    fun reset() {
+        bean = OrderLinePresentation()
+        binder.bean = bean
+    }
+
 }
