@@ -145,7 +145,7 @@ class  MainLayout(
 
         addAttachListener {
             ComponentUtil.addListener(ui.get(), EditOrderEvent::class.java) {
-                form.editOrder(it.o)
+                //form.editOrder(it.o)
                 dialog.header.removeAll()
                 dialog.header.add(H2("Modifica ordine n. ${it.o.number}"))
                 dialog.open()

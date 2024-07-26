@@ -6,9 +6,11 @@ import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.model.Storage
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.queryForList
 import org.springframework.stereotype.Service
 import org.springframework.transaction.TransactionException
 import org.springframework.transaction.support.TransactionTemplate
+import java.sql.ResultSet
 
 @Service
 class StorageService(
@@ -29,7 +31,13 @@ class StorageService(
         )
     }
 
+    private val itemMapper = RowMapper { rs, _ ->
+        rs.getString("name")
+    }
+
     private val QUERY_ALL = "SELECT item,dc,pos,amount,sn,pt FROM STORAGE"
+
+    private val QUERY_ITEMS = "SELECT name FROM ITEMS ORDER BY name";
 
     private val QUERY_FOR_COUNT = "SELECT item,dc,pos,amount,sn,pt FROM STORAGE" +
             " WHERE item = ? AND dc = ? AND pos = ?"
@@ -37,6 +45,10 @@ class StorageService(
 
     fun findAll() : List<Storage> {
         return db.query(QUERY_ALL, storageMapper)
+    }
+
+    fun findAllItems() : List<String> {
+        return db.query(QUERY_ITEMS, itemMapper)
     }
 
     fun findForCount(item:String, dc:String, pos:String): Storage? {

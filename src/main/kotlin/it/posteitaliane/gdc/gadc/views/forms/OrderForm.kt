@@ -5,8 +5,6 @@ import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.formlayout.FormLayout
-import com.vaadin.flow.component.icon.Icon
-import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
@@ -17,13 +15,9 @@ import com.vaadin.flow.component.upload.Upload
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer
 import com.vaadin.flow.data.binder.Binder
 import com.vaadin.flow.theme.lumo.LumoUtility
-import it.posteitaliane.gdc.gadc.model.Datacenter
-import it.posteitaliane.gdc.gadc.model.Operator
-import it.posteitaliane.gdc.gadc.model.Order
-import it.posteitaliane.gdc.gadc.model.Supplier
+import it.posteitaliane.gdc.gadc.model.*
 import it.posteitaliane.gdc.gadc.services.*
 import java.time.LocalDateTime
-import java.util.*
 
 data class OrderPresentation(
     var number: Int=-1,
@@ -222,14 +216,34 @@ class OrderForm(
         addLineButton = Button("AGGIUNGI")
 
         lineContainer = VerticalLayout()
+        add(lineContainer, 2)
 
         add(addLineButton, 1)
+
+        addLineButton.addClickListener {
+            if(validate()) {
+
+                lineContainer.add( OrderLineForm(binder.bean, ss, dcs) )
+            }
+        }
 
         if( type != null ) {
             typeField.value = type
         }
 
+        typeField.addValueChangeListener {
+            lineContainer.children.forEach { form ->
+                (form as OrderLineForm).setItemFieldList()
+            }
+        }
+
+        dcSelect.addValueChangeListener {
+            linesForms().forEach { it.setPositionsByDc() }
+        }
+
     }
+
+    private fun linesForms() = lineContainer.children.map{ it as OrderLineForm }
 
     fun reset(type: Order.Type?=null) {
         optionPending.value = false
@@ -269,7 +283,7 @@ class OrderForm(
         return order
     }
 
-    fun editOrder(o: Order) {
+    /*fun editOrder(o: Order) {
 
         val op = OrderPresentation(
             number = o.number,
@@ -294,8 +308,7 @@ class OrderForm(
             val lf = OrderLineForm(
                 order = bean,
                 ss = ss,
-                items = os.findItems(),
-                positions = dcs.findAll(true).filter { it.short == o.dc.short }.first().locations
+                dcs = dcs
             )
 
             if(olp.sn!=null || olp.pt!=null) {
@@ -317,7 +330,7 @@ class OrderForm(
         binder.bean = op
 
         addLineButton.isVisible = true
-    }
+    }*/
 }
 
 
