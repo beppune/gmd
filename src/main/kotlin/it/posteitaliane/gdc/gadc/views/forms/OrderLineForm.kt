@@ -130,6 +130,17 @@ class OrderLineForm(
         if(saveItem) itemsField.value = value
     }
 
+    private fun setMaxAmountOnChange() {
+        if(order.type == Order.Type.OUTBOUND && itemsField.value.isNullOrEmpty().not() && posField.value.isNullOrEmpty().not() ) {
+            ss.findForCount(itemsField.value, order.datacenter!!.short, posField.value)
+                .also {
+                    amountField.max = it!!.amount
+                }
+        } else {
+            amountField.max = Integer.MAX_VALUE
+        }
+    }
+
     fun validate() {
         if ( binder.validate().isOk ) {
             binder.writeBean(bean)
