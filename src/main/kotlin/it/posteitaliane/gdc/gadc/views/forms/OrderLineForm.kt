@@ -3,8 +3,8 @@ package it.posteitaliane.gdc.gadc.views.forms
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.select.Select
+import com.vaadin.flow.component.textfield.IntegerField
 import com.vaadin.flow.data.binder.Binder
-import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Storage
 import it.posteitaliane.gdc.gadc.services.DatacenterService
@@ -46,6 +46,7 @@ class OrderLineForm(
 
     private val itemsField:ComboBox<String> = ComboBox<String>()
     private val posField: Select<String> = Select()
+    private val amountField: IntegerField = IntegerField()
 
     init {
 
@@ -65,15 +66,39 @@ class OrderLineForm(
         posField.apply {
             placeholder = "POSIZIONE"
             setPositionsByDc()
+
+            addValueChangeListener { ev ->
+                if(order.type == Order.Type.OUTBOUND ) {
+                    ss.findAll()
+                        .filter { it.pos == ev.value }
+                        .map(Storage::item)
+                        .also {
+                            itemsField.setItems(it)
+                        }
+                }
+            }
         }
 
-        add(itemsField, posField)
+        amountField.apply {
+            placeholder = "#"
+            min = 1
+        }
+
+        add(itemsField, posField, amountField)
     }
 
     private fun bind() {
         binder.forField(itemsField)
             .asRequired()
             .bind("item")
+
+        binder.forField(posField)
+            .asRequired()
+            .bind("position")
+
+        binder.forField(amountField)
+            .asRequired()
+            .bind("amount")
     }
 
     fun setPositionsByDc() {
