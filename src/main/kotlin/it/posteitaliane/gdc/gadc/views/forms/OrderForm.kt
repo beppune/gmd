@@ -238,7 +238,8 @@ class OrderForm(
 
         typeField.addValueChangeListener {
             linesForms().forEach { form ->
-                (form as OrderLineForm).setItemFieldList()
+                form.setItemFieldList()
+                form.setSnItems()
             }
         }
 

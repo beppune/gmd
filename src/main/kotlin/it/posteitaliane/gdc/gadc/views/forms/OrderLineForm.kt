@@ -47,6 +47,7 @@ class OrderLineForm(
     private val itemsField:ComboBox<String> = ComboBox<String>()
     private val posField: Select<String> = Select()
     private val amountField: IntegerField = IntegerField()
+    private val snField: ComboBox<String> = ComboBox()
 
     init {
 
@@ -89,21 +90,30 @@ class OrderLineForm(
             min = 1
         }
 
-        add(itemsField, posField, amountField)
+        snField.apply {
+            placeholder = "S/N"
+            setSnItems()
+
+            addValueChangeListener {
+                setUnique(sn=it.value)
+            }
+        }
+
+        add(itemsField, posField, amountField, snField)
     }
 
     private fun bind() {
         binder.forField(itemsField)
             .asRequired()
-            .bind("item")
+            .bind({it.item},{line, value -> line.item = value})
 
         binder.forField(posField)
             .asRequired()
-            .bind("position")
+            .bind({it.position},{line, value -> line.position = value})
 
         binder.forField(amountField)
             .asRequired()
-            .bind("amount")
+            .bind({it.amount},{line, value -> line.amount = value})
     }
 
     fun setPositionsByDc() {
@@ -148,6 +158,54 @@ class OrderLineForm(
         }
     }
 
+    fun setSnItems() {
+        when(order.type!!) {
+            Order.Type.INBOUND -> {
+                snField.isAllowCustomValue = true
+                snField.setItems(listOf())
+            }
+            Order.Type.OUTBOUND -> {
+                snField.isAllowCustomValue = false
+                ss.findAll()
+                    .filter {
+                        (order.datacenter == it.dc)
+                            .and( it.sn.isNullOrEmpty().not() )
+                    }
+                    .map(Storage::sn)
+                    .also {
+                        snField.setItems(it)
+                    }
+            }
+        }
+    }
+
+    fun setUnique(sn:String?=null, pt:String?=null) {
+        if( sn.isNullOrEmpty() && pt.isNullOrEmpty() ) {
+            itemsField.isEnabled = true
+            posField.isEnabled = true
+            amountField.isEnabled = true
+            snField.value = null
+            setItemFieldList()
+            setSnItems()
+            return
+        }
+
+        if( sn.isNullOrEmpty().not() ) {
+            val storage = ss.findBySn(sn)!!
+            println(storage)
+
+            itemsField.setItems(storage.item)
+            itemsField.value = storage.item
+            itemsField.isEnabled = false
+
+            posField.value = storage.pos
+            posField.isEnabled = false
+
+            amountField.value = 1
+            amountField.isEnabled = false
+        }
+    }
+
     fun validate() {
         if ( binder.validate().isOk ) {
             binder.writeBean(bean)
@@ -156,6 +214,8 @@ class OrderLineForm(
 
     fun reset() {
         bean = OrderLinePresentation()
+        setUnique()
+        setItemFieldList()
         binder.bean = bean
     }
 
