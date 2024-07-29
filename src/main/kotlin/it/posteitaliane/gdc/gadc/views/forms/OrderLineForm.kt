@@ -50,6 +50,7 @@ class OrderLineForm(
     private val posField: Select<String> = Select()
     private val amountField: IntegerField = IntegerField()
     private val snField: ComboBox<String> = ComboBox()
+    private val ptField: ComboBox<String> = ComboBox()
 
     init {
 
@@ -107,7 +108,16 @@ class OrderLineForm(
             }
         }
 
-        add(itemByUnique, itemsField, posField, amountField, snField)
+        ptField.apply {
+            placeholder = "PT"
+            setPtItems()
+
+            addValueChangeListener {
+                setUnique(sn=null, pt=it.value)
+            }
+        }
+
+        add(itemByUnique, itemsField, posField, amountField, snField, ptField)
     }
 
     private fun bind() {
@@ -126,6 +136,14 @@ class OrderLineForm(
         binder.forField(amountField)
             .asRequired()
             .bind({it.amount},{line, value -> line.amount = value})
+
+        binder.forField(snField)
+            .asRequired()
+            .bind({it.sn},{line, value -> line.sn = value})
+
+        binder.forField(ptField)
+            .asRequired()
+            .bind({it.pt},{line, value -> line.pt = value})
     }
 
     fun setPositionsByDc() {
@@ -138,7 +156,7 @@ class OrderLineForm(
             }
     }
 
-    fun setItemFieldList(saveItem:Boolean=true) {
+    fun setItemFieldList() {
         when(order.type!!) {
             Order.Type.INBOUND -> {
                 itemsField.setItems(ss.findAllItems())
@@ -188,6 +206,27 @@ class OrderLineForm(
         }
     }
 
+    fun setPtItems() {
+        when(order.type!!) {
+            Order.Type.INBOUND -> {
+                ptField.isAllowCustomValue = true
+                ptField.setItems(listOf())
+            }
+            Order.Type.OUTBOUND -> {
+                ptField.isAllowCustomValue = false
+                ss.findAll()
+                    .filter {
+                        (order.datacenter == it.dc)
+                            .and( it.pt.isNullOrEmpty().not() )
+                    }
+                    .map(Storage::pt)
+                    .also {
+                        ptField.setItems(it)
+                    }
+            }
+        }
+    }
+
     fun setUnique(sn:String?, pt:String?) {
 
         if(sn.isNullOrEmpty() && pt.isNullOrEmpty()) {
@@ -202,6 +241,9 @@ class OrderLineForm(
 
             snField.value = null
 
+            ptField.value = null
+
+            return
         }
 
         if( sn.isNullOrEmpty().not() ) {
@@ -217,6 +259,31 @@ class OrderLineForm(
 
             amountField.value = 1
             amountField.isEnabled = false
+
+            ptField.value = storage.pt
+            ptField.isEnabled = false
+
+            return
+        }
+
+        if( pt.isNullOrEmpty().not() ) {
+            val storage = ss.findByPt(pt)!!
+
+            itemsField.isEnabled = false
+            itemsField.isVisible = false
+            itemByUnique.value = storage.item
+            itemByUnique.isVisible = true
+
+            posField.value = storage.pos
+            posField.isEnabled = false
+
+            amountField.value = 1
+            amountField.isEnabled = false
+
+            snField.value = storage.sn
+            snField.isEnabled = false
+
+            return
         }
     }
 
