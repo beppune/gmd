@@ -1,60 +1,60 @@
 package it.posteitaliane.gdc.gadc.views
 
-import com.vaadin.flow.component.button.Button
-import com.vaadin.flow.component.customfield.CustomField
 import com.vaadin.flow.component.html.Div
-import com.vaadin.flow.component.html.H1
-import com.vaadin.flow.component.textfield.TextField
-import com.vaadin.flow.data.binder.Binder
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout
+import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.router.Route
-import com.vaadin.flow.server.auth.AnonymousAllowed
+import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.services.DatacenterService
+import it.posteitaliane.gdc.gadc.services.OrderService
+import it.posteitaliane.gdc.gadc.services.StorageService
+import it.posteitaliane.gdc.gadc.views.forms.OrderLineForm2
+import it.posteitaliane.gdc.gadc.views.forms.OrderPresentation
+import jakarta.annotation.security.RolesAllowed
 
-data class Info(var office:String, var score:Int?, var sn:String?)
-data class Person(var name:String?=null)
-
-class PersonField : CustomField<Person>() {
-
-    private val nameField:TextField = TextField()
-
-    init {
-        add(nameField)
-    }
-
-    override fun setPresentationValue(person: Person?) {
-        if( person != null ) {
-            nameField.value = person.name
-        }
-    }
-
-    override fun generateModelValue(): Person = Person(nameField.value)
-
-
-
-}
 
 @Route("test2")
-@AnonymousAllowed
-class TextView : Div() {
+@RolesAllowed("ADMIN")
+class TestView(
+    private val ss: StorageService,
+    private val os:OrderService,
+    private val dcs:DatacenterService
+) : Div() {
 
-    private val binder = Binder(Person::class.java)
-
-    private val pField = PersonField()
 
     init {
 
-        binder.forField(pField)
-            .asRequired()
-            .bind({it}, {it, value->it.name=value.name})
-
-        add(
-            pField,
-            Button("Validate") {
-                binder.validate()
-            },
-            Button("Clear") {
-                binder.bean = Person()
+        val order = os.findAll(true).first()
+            .run {
+                OrderPresentation(
+                    number = number,
+                    operator = op,
+                    type = type,
+                    subject = subject,
+                    supplier = supplier,
+                    datacenter = dc
+                )
             }
+
+        val form = OrderLineForm2(order, ss, dcs)
+        val typeField = Select<Order.Type>().apply {
+                setItems(Order.Type.values().toList())
+                setItemLabelGenerator { it.name.uppercase() }
+                value = Order.Type.INBOUND
+
+                addValueChangeListener {
+                    order.type = it.value
+                    form.setItemsByType(it.value)
+                }
+        }
+
+        val hl = HorizontalLayout(
+            typeField
         )
+
+        add(hl)
+        add(form)
+
     }
 
 }
