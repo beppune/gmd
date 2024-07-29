@@ -4,6 +4,7 @@ import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.IntegerField
+import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Storage
@@ -45,6 +46,7 @@ class OrderLineForm(
     var bean = OrderLinePresentation()
 
     private val itemsField:ComboBox<String> = ComboBox<String>()
+    private val itemByUnique:TextField = TextField()
     private val posField: Select<String> = Select()
     private val amountField: IntegerField = IntegerField()
     private val snField: ComboBox<String> = ComboBox()
@@ -66,6 +68,12 @@ class OrderLineForm(
             addValueChangeListener {
                 setMaxAmountOnChange()
             }
+        }
+
+        itemByUnique.apply {
+            placeholder = "MERCE"
+            isVisible = false
+            isEnabled = false
         }
 
         posField.apply {
@@ -95,15 +103,19 @@ class OrderLineForm(
             setSnItems()
 
             addValueChangeListener {
-                setUnique(sn=it.value)
+                setUnique(sn=it.value, pt=null)
             }
         }
 
-        add(itemsField, posField, amountField, snField)
+        add(itemByUnique, itemsField, posField, amountField, snField)
     }
 
     private fun bind() {
         binder.forField(itemsField)
+            .asRequired()
+            .bind({it.item},{line, value -> line.item = value})
+
+        binder.forField(itemByUnique)
             .asRequired()
             .bind({it.item},{line, value -> line.item = value})
 
@@ -127,7 +139,6 @@ class OrderLineForm(
     }
 
     fun setItemFieldList(saveItem:Boolean=true) {
-        val value = itemsField.value
         when(order.type!!) {
             Order.Type.INBOUND -> {
                 itemsField.setItems(ss.findAllItems())
@@ -141,8 +152,6 @@ class OrderLineForm(
                     }
             }
         }
-
-        if(saveItem) itemsField.value = value
     }
 
     private fun setMaxAmountOnChange() {
@@ -179,24 +188,29 @@ class OrderLineForm(
         }
     }
 
-    fun setUnique(sn:String?=null, pt:String?=null) {
-        if( sn.isNullOrEmpty() && pt.isNullOrEmpty() ) {
+    fun setUnique(sn:String?, pt:String?) {
+
+        if(sn.isNullOrEmpty() && pt.isNullOrEmpty()) {
+
+            itemByUnique.isVisible = false
+            itemsField.isVisible = true
             itemsField.isEnabled = true
+
             posField.isEnabled = true
+
             amountField.isEnabled = true
+
             snField.value = null
-            setItemFieldList()
-            setSnItems()
-            return
+
         }
 
         if( sn.isNullOrEmpty().not() ) {
             val storage = ss.findBySn(sn)!!
-            println(storage)
 
-            itemsField.setItems(storage.item)
-            itemsField.value = storage.item
             itemsField.isEnabled = false
+            itemsField.isVisible = false
+            itemByUnique.value = storage.item
+            itemByUnique.isVisible = true
 
             posField.value = storage.pos
             posField.isEnabled = false
@@ -212,9 +226,10 @@ class OrderLineForm(
         }
     }
 
-    fun reset() {
+    fun reset(type: Order.Type) {
         bean = OrderLinePresentation()
-        setUnique()
+        order.type = type
+        setUnique(null,null)
         setItemFieldList()
         binder.bean = bean
     }

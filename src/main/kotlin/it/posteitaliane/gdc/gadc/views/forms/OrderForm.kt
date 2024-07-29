@@ -253,7 +253,7 @@ class OrderForm(
         val hr = HorizontalLayout()
         hr.add(OrderLineForm(binder.bean, ss, dcs))
         hr.add(Button(Icon(VaadinIcon.MINUS)) { lineContainer.remove(hr) })
-        hr.add(Button(Icon(VaadinIcon.ERASER)) { (hr.children.findFirst().get() as OrderLineForm).reset() })
+        hr.add(Button(Icon(VaadinIcon.ERASER)) { (hr.children.findFirst().get() as OrderLineForm).reset(type!!) })
 
         return hr
     }
