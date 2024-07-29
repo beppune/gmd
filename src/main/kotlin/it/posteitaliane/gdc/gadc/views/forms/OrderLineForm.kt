@@ -6,7 +6,9 @@ import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.IntegerField
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
+import com.vaadin.flow.data.binder.ValidationResult
 import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.model.Storage
 import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.StorageService
@@ -122,11 +124,17 @@ class OrderLineForm(
 
     private fun bind() {
         binder.forField(itemsField)
-            .asRequired()
+            .withValidator { value, _ ->
+                if( itemsField.isVisible && value.isNullOrEmpty() ) ValidationResult.error("Obbligatorio")
+                else ValidationResult.ok()
+            }
             .bind({it.item},{line, value -> line.item = value})
 
         binder.forField(itemByUnique)
-            .asRequired()
+            .withValidator { value, _ ->
+                if( itemByUnique.isVisible && value.isNullOrEmpty() ) ValidationResult.error("Obbligatorio")
+                else ValidationResult.ok()
+            }
             .bind({it.item},{line, value -> line.item = value})
 
         binder.forField(posField)
@@ -138,11 +146,9 @@ class OrderLineForm(
             .bind({it.amount},{line, value -> line.amount = value})
 
         binder.forField(snField)
-            .asRequired()
             .bind({it.sn},{line, value -> line.sn = value})
 
         binder.forField(ptField)
-            .asRequired()
             .bind({it.pt},{line, value -> line.pt = value})
     }
 
@@ -287,10 +293,15 @@ class OrderLineForm(
         }
     }
 
-    fun validate() {
-        if ( binder.validate().isOk ) {
+    fun validate(): Boolean {
+        val status = binder.validate()
+        if ( status.isOk ) {
             binder.writeBean(bean)
+            return true
         }
+
+        status.validationErrors.forEach(::println)
+        return false
     }
 
     fun reset(type: Order.Type) {
@@ -299,6 +310,22 @@ class OrderLineForm(
         setUnique(null,null)
         setItemFieldList()
         binder.bean = bean
+    }
+
+    fun compileLine(o:Order): OrderLine {
+        binder.writeBean(bean)
+        bean.item = if( itemsField.isVisible ) itemsField.value
+                    else itemByUnique.value
+        val line = OrderLine(
+            order = o,
+            item = bean.item!!,
+            position = bean.position!!,
+            amount = bean.amount!!,
+            sn = bean.sn,
+            pt = bean.pt
+        )
+
+        return line
     }
 
 }

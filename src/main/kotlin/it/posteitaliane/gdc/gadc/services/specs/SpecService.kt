@@ -56,10 +56,15 @@ class SpecService(
         supplier = sups.findByName(config.firmName)
     }
 
+    private val ITEM_MUST_NOT_BE_NULL_OR_EMPTY:OrderPredicate = {
+        lines.map(OrderLine::item).all(String::isNotBlank)
+    }
+
     val INBOUND_INTERNAL_SPEC = OrderSpec()
         .amend(AMEND_INTERNAL_SUPPLIER)
         .amend(AMEND_UNIQUE_AMOUNT)
         .amend(AMEND_EMPTY_UNIQUE)
+        .define("ITEM_MUST_NOT_BE_NULL_OR_EMPTY", ITEM_MUST_NOT_BE_NULL_OR_EMPTY)
         .define("UNIQUE_MUST_NOT_BE_IN_STORAGE", UNIQUE_MUST_NOT_BE_IN_STORAGE)
         .define("NO_REPEATED_UNIQUES", NO_REPEATED_UNIQUES)
 
@@ -67,17 +72,20 @@ class SpecService(
         .amend(AMEND_INTERNAL_SUPPLIER)
         .amend(AMEND_UNIQUE_AMOUNT)
         .amend(AMEND_EMPTY_UNIQUE)
+        .define("ITEM_MUST_NOT_BE_NULL_OR_EMPTY", ITEM_MUST_NOT_BE_NULL_OR_EMPTY)
         .define("UNIQUE_MUST_BE_IN_STORAGE", UNIQUE_MUST_BE_IN_STORAGE)
 
     val INBOUND_SUPPLIER_SPEC = OrderSpec()
         .amend(AMEND_UNIQUE_AMOUNT)
         .amend(AMEND_EMPTY_UNIQUE)
+        .define("ITEM_MUST_NOT_BE_NULL_OR_EMPTY", ITEM_MUST_NOT_BE_NULL_OR_EMPTY)
         .define("UNIQUE_MUST_NOT_BE_IN_STORAGE", UNIQUE_MUST_NOT_BE_IN_STORAGE)
         .define("NO_REPEATED_UNIQUES", NO_REPEATED_UNIQUES)
 
     val OUTBOUND_SUPPLIER_SPEC = OrderSpec()
         .amend(AMEND_UNIQUE_AMOUNT)
         .amend(AMEND_EMPTY_UNIQUE)
+        .define("ITEM_MUST_NOT_BE_NULL_OR_EMPTY", ITEM_MUST_NOT_BE_NULL_OR_EMPTY)
         .define("UNIQUE_MUST_BE_IN_STORAGE", UNIQUE_MUST_BE_IN_STORAGE)
 
     val ORDER_TO_SHIPPING_SPEC = OrderSpec()

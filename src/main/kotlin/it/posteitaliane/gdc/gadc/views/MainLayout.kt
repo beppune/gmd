@@ -17,7 +17,6 @@ import com.vaadin.flow.component.orderedlayout.Scroller
 import com.vaadin.flow.component.sidenav.SideNav
 import com.vaadin.flow.component.sidenav.SideNavItem
 import com.vaadin.flow.theme.lumo.LumoUtility
-import it.posteitaliane.gdc.gadc.services.SecurityService
 import it.posteitaliane.gdc.gadc.config.GMDConfig
 import it.posteitaliane.gdc.gadc.events.EditOrderEvent
 import it.posteitaliane.gdc.gadc.model.Operator
@@ -79,18 +78,22 @@ class  MainLayout(
                         addThemeVariants(ButtonVariant.LUMO_PRIMARY)
 
                         if( form.validate() ) {
-                            val o = form.compileOrder()
+                            try {
+                                val o = form.compileOrder()
 
-                            val result = os.submit(o)
+                                val result = os.submit(o)
 
-                            if(result.isError()) {
-                                Notification.show(result.error)
-                                println(result.error)
-                                return@addClickListener
-                            }
+                                if (result.isError()) {
+                                    Notification.show(result.error)
+                                    println(result.error)
+                                    return@addClickListener
+                                }
 
-                            if( form.savePath.isNullOrEmpty().not() ) {
-                                files.updateOrderFile(o, form.savePath!!)
+                                if (form.savePath.isNullOrEmpty().not()) {
+                                    files.updateOrderFile(o, form.savePath!!)
+                                }
+                            }catch(ex:Exception) {
+                                ex.printStackTrace()
                             }
 
                             if (content is StorageView) (content as StorageView).refresh()
@@ -145,7 +148,7 @@ class  MainLayout(
 
         addAttachListener {
             ComponentUtil.addListener(ui.get(), EditOrderEvent::class.java) {
-                //form.editOrder(it.o)
+                form.editOrder(it.o)
                 dialog.header.removeAll()
                 dialog.header.add(H2("Modifica ordine n. ${it.o.number}"))
                 dialog.open()

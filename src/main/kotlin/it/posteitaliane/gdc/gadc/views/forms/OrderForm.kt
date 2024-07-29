@@ -23,6 +23,7 @@ import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Supplier
 import it.posteitaliane.gdc.gadc.services.*
 import java.time.LocalDateTime
+import java.util.*
 
 data class OrderPresentation(
     var number: Int=-1,
@@ -270,7 +271,12 @@ class OrderForm(
     fun validate() : Boolean {
 
         isValid = binder.validate().isOk
-        return  isValid
+
+        if(isValid.not()) return false
+
+        val all = linesForms().allMatch(OrderLineForm::validate)
+
+        return  all && isValid
     }
 
     fun compileOrder() : Order {
@@ -295,10 +301,13 @@ class OrderForm(
             order.status = Order.Status.PENDING
         }
 
+        linesForms()
+            .forEach { order.lines.add( it.compileLine(order) ) }
+
         return order
     }
 
-    /*fun editOrder(o: Order) {
+    fun editOrder(o: Order) {
 
         val op = OrderPresentation(
             number = o.number,
@@ -320,32 +329,22 @@ class OrderForm(
                 viewid = UUID.randomUUID()
             )
 
-            val lf = OrderLineForm(
-                order = bean,
-                ss = ss,
-                dcs = dcs
-            )
+            val hl = makeLineform()
+            val form = hl.children.findFirst().get() as OrderLineForm
+            form.bean = olp
 
             if(olp.sn!=null || olp.pt!=null) {
-                lf.snField.isVisible = true
-                lf.ptField.isVisible = true
-
-                lf.amountField.value = 1
-                lf.amountField.isEnabled = false
+                form.setUnique(olp.sn, olp.pt)
             }
 
-            val button = Button(Icon(VaadinIcon.MINUS))
-
-            val hr = HorizontalLayout(lf, button)
+            lineContainer.add(hl)
 
         }
 
         optionPending.value = true
 
         binder.bean = op
-
-        addLineButton.isVisible = true
-    }*/
+    }
 }
 
 
