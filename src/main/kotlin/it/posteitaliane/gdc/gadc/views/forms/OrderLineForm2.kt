@@ -41,7 +41,7 @@ class OrderLineForm2(
             setItemsByType(order.type!!)
 
             addValueChangeListener {
-                setAmountByItemAndPos(value!!, posField.value)
+                setAmountByStorage(it.value, posField.value)
             }
         }
 
@@ -51,6 +51,7 @@ class OrderLineForm2(
             addValueChangeListener {
                 setItemsByType(order.type!!)
                 setItemsByPos(it.value)
+                setAmountByStorage(itemField.value, it.value)
             }
         }
 
@@ -98,24 +99,43 @@ class OrderLineForm2(
     }
 
     fun setLocationsByDc(dc:Datacenter) {
-        dcs.findAll(true)
-            .filter { it == dc }
-            .first()
-            .locations
-            .also {
-                posField.setItems(it)
+        when(order.type!!){
+            Order.Type.OUTBOUND -> {
+                ss.findAll()
+                    .filter { it.dc ==  dc  }
+                    .map(Storage::pos)
+                    .also {
+                        posField.setItems(it)
+                    }
             }
+            else -> {
+                dcs.findAll(true)
+                    .filter { it == dc }
+                    .first()
+                    .locations
+                    .also {
+                        posField.setItems(it)
+                    }
+            }
+        }
     }
 
-    fun setAmountByItemAndPos(item:String?, pos:String?) {
-        if(posField.value.isNullOrEmpty().not()) {
-            amountField.let {
-                ss.findAll().filter { it.item == item && it.pos == pos && order.type == Order.Type.OUTBOUND }
-                    .first().also { amountField.placeholder = "MAX: ${it.amount}" }
-            }
+    fun setAmountByStorage(item:String?, pos:String?) {
+        if(item.isNullOrEmpty().not() && pos.isNullOrEmpty().not()) {
+            ss.findAll()
+                .filter { it.item == item && it.pos == pos && it.dc == order.datacenter }
+                .firstOrNull().also {
+                    if (it != null) {
+                        amountField.max = it.amount
+                        amountField.placeholder = "Max: ${it.amount}"
+                    } else {
+                        amountField.max = Int.MAX_VALUE
+                        amountField.placeholder = "#"
+                    }
+                }
         } else {
             amountField.max = Int.MAX_VALUE
-            amountField.placeholder == "#"
+            amountField.placeholder = "#"
         }
     }
 
