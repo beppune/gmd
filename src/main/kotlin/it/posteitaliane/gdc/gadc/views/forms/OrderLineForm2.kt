@@ -51,7 +51,7 @@ class OrderLineForm2(
             setLocationsByDc(order.datacenter!!)
 
             addValueChangeListener {
-                if(snField.value.isNullOrEmpty()) {
+                if(snField.value.isNullOrEmpty() && ptField.value.isNullOrEmpty() ) {
                     setLocationsByDc(order.datacenter!!)
                     setItemsByType(order.type!!)
                     setItemsByPos(it.value)
@@ -81,7 +81,7 @@ class OrderLineForm2(
             setPtListByType()
 
             addValueChangeListener {
-                //setFormByPt(it.value)
+                setFormByPt(it.value)
             }
         }
 
@@ -182,12 +182,13 @@ class OrderLineForm2(
     fun setFormBySn(sn:String) {
         if(order.type!! == Order.Type.OUTBOUND) {
             ss.findBySn(sn).also {
-                it!!.also(::println)
                 amountField.value = 1
-                posField.setItems(it.pos)
+                posField.setItems(it!!.pos)
                 posField.value = it.pos
 
                 itemField.value = it.item
+
+                ptField.value = it.pt
             }
         }
     }
@@ -204,6 +205,20 @@ class OrderLineForm2(
         } else {
             ptField.isAllowCustomValue = true
             ptField.setItems(listOf())
+        }
+    }
+
+    fun setFormByPt(pt:String) {
+        if(order.type!! == Order.Type.OUTBOUND) {
+            ss.findByPt(pt).also {
+                amountField.value = 1
+                posField.setItems(it!!.pos)
+                posField.value = it.pos
+
+                itemField.value = it.item
+
+                snField.value = it.sn
+            }
         }
     }
 
