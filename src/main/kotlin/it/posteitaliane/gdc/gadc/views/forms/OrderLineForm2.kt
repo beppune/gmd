@@ -50,7 +50,7 @@ class OrderLineForm2(
 
             addValueChangeListener {
                 setItemsByType(order.type!!)
-                setAmountByItemAndPos(itemField.value, posField.value)
+                setItemsByPos(it.value)
             }
         }
 
@@ -63,18 +63,24 @@ class OrderLineForm2(
 
     }
 
+    private fun setItemsByPos(pos: String) {
+        if(order.type!! == Order.Type.OUTBOUND) {
+            ss.findAll()
+                .filter { it.dc == order.datacenter && it.pos == pos }
+                .map(Storage::item)
+                .also {
+                    itemField.clear()
+                    itemField.setItems(it)
+                }
+        }
+    }
+
     fun setItemsByType(type: Order.Type) {
         when(type) {
             Order.Type.OUTBOUND -> {
                 itemField.isAllowCustomValue = false
                 ss.findAll()
-                    .filter {
-                        var p = it.dc == order.datacenter
-                        if( posField.value.isNullOrEmpty().not() ) {
-                            p = p && it.pos == posField.value
-                        }
-                        p
-                    }
+                    .filter { it.dc == order.datacenter }
                     .map(Storage::item)
                     .distinct().also {
                         itemField.setItems(it)
