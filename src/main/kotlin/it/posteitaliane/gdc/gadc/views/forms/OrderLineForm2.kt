@@ -25,6 +25,7 @@ class OrderLineForm2(
     private val posField = Select<String>()
     private val amountField = IntegerField()
     private val snField = ComboBox<String>()
+    private val ptField = ComboBox<String>()
 
     init {
 
@@ -74,7 +75,18 @@ class OrderLineForm2(
             }
         }
 
-        add(itemField, posField, amountField, snField)
+        ptField.apply {
+            placeholder = "PT"
+
+            setPtListByType()
+
+            addValueChangeListener {
+                //setFormByPt(it.value)
+            }
+        }
+
+
+        add(itemField, posField, amountField, snField, ptField)
 
     }
 
@@ -177,6 +189,21 @@ class OrderLineForm2(
 
                 itemField.value = it.item
             }
+        }
+    }
+
+    fun setPtListByType() {
+        if(order.type!! == Order.Type.OUTBOUND) {
+            ptField.isAllowCustomValue = false
+            ss.findAll().filter { it.dc == order.datacenter && it.pt.isNullOrEmpty().not() }
+                .map(Storage::pt)
+                .also {
+
+                    ptField.setItems(it)
+                }
+        } else {
+            ptField.isAllowCustomValue = true
+            ptField.setItems(listOf())
         }
     }
 
