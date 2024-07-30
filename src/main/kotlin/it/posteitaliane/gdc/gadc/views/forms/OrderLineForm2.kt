@@ -24,6 +24,7 @@ class OrderLineForm2(
     private val itemField = ComboBox<String>()
     private val posField = Select<String>()
     private val amountField = IntegerField()
+    private val snField = ComboBox<String>()
 
     init {
 
@@ -49,9 +50,12 @@ class OrderLineForm2(
             setLocationsByDc(order.datacenter!!)
 
             addValueChangeListener {
-                setItemsByType(order.type!!)
-                setItemsByPos(it.value)
-                setAmountByStorage(itemField.value, it.value)
+                if(snField.value.isNullOrEmpty()) {
+                    setLocationsByDc(order.datacenter!!)
+                    setItemsByType(order.type!!)
+                    setItemsByPos(it.value)
+                    setAmountByStorage(itemField.value, it.value)
+                }
             }
         }
 
@@ -60,7 +64,17 @@ class OrderLineForm2(
             placeholder = "#"
         }
 
-        add(itemField, posField, amountField)
+        snField.apply {
+            placeholder = "S/N"
+
+            setSnListByType()
+
+            addValueChangeListener {
+                setFormBySn(it.value)
+            }
+        }
+
+        add(itemField, posField, amountField, snField)
 
     }
 
@@ -136,6 +150,33 @@ class OrderLineForm2(
         } else {
             amountField.max = Int.MAX_VALUE
             amountField.placeholder = "#"
+        }
+    }
+
+    fun setSnListByType() {
+        if(order.type!! == Order.Type.OUTBOUND) {
+            snField.isAllowCustomValue = false
+            ss.findAll().filter { it.dc == order.datacenter && it.sn.isNullOrEmpty().not() }
+                .map(Storage::sn)
+                .also {
+                    snField.setItems(it)
+                }
+        } else {
+            snField.isAllowCustomValue = true
+            snField.setItems(listOf())
+        }
+    }
+
+    fun setFormBySn(sn:String) {
+        if(order.type!! == Order.Type.OUTBOUND) {
+            ss.findBySn(sn).also {
+                it!!.also(::println)
+                amountField.value = 1
+                posField.setItems(it.pos)
+                posField.value = it.pos
+
+                itemField.value = it.item
+            }
         }
     }
 

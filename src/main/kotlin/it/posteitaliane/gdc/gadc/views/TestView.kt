@@ -45,6 +45,7 @@ class TestView(
                 addValueChangeListener {
                     order.type = it.value
                     form.setItemsByType(it.value)
+                    form.setSnListByType()
                 }
         }
 
