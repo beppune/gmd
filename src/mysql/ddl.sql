@@ -106,8 +106,8 @@
             item            VARCHAR(250) NOT NULL,
             pos             VARCHAR(15) NOT NULL,
             amount          INT NOT NULL CHECK ( amount > 0),
-            sn              VARCHAR(100) NULL UNIQUE,
-            pt              VARCHAR(100) NULL UNIQUE,
+            sn              VARCHAR(100) NULL,
+            pt              VARCHAR(100) NULL,
             
             PRIMARY KEY(ownedby,datacenter,item,pos,amount),
             FOREIGN KEY(item) REFERENCES ITEMS(name),
