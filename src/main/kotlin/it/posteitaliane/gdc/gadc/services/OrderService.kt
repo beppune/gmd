@@ -142,6 +142,7 @@ class OrderService(
     fun register(o: Order): Result<Order>  = tr.execute { it ->
 
         try {
+                val REMARKS = if(o.remarks.isNullOrEmpty()) null else o.remarks
                 if( o.number == -1 ) { //if New
                     db.update(
                         QUERY_SUBMIT_ORDER,
@@ -153,15 +154,13 @@ class OrderService(
                         o.subject.name,
                         o.status.name,
                         o.ref,
-                        o.remarks
+                        REMARKS
                     )
 
                     o.number = db.queryForObject("SELECT LAST_INSERT_ID()", Int::class.java)!!
                 } else { //if registered
 
                     db.update(QUERY_DELETE_LINES, o.number)
-
-                    val REMARKS = if(o.remarks.isNullOrEmpty()) null else o.remarks
 
                     db.update(
                         QUERY_UPDATE_ORDER,
