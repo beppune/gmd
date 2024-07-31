@@ -5,6 +5,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.IntegerField
 import com.vaadin.flow.data.binder.Binder
+import com.vaadin.flow.data.binder.ValidationResult
+import com.vaadin.flow.data.binder.Validator
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Storage
@@ -17,6 +19,8 @@ class OrderLineForm2(
     private val dcs: DatacenterService
 ) : HorizontalLayout() {
 
+
+
     private val binder = Binder(OrderLinePresentation::class.java, false)
 
     var bean = OrderLinePresentation()
@@ -27,11 +31,66 @@ class OrderLineForm2(
     private val snField = ComboBox<String>()
     private val ptField = ComboBox<String>()
 
+    private val SNRegistration = Validator<String> { value, _ ->
+        val found = ss.findBySn(value) != null
+
+        if( found && order.type!! == Order.Type.INBOUND ) {
+            return@Validator ValidationResult.error("SN già registrato")
+        }
+
+        if( found.not() && order.type!! == Order.Type.OUTBOUND) {
+            return@Validator ValidationResult.error("SN non registrato")
+        }
+
+        return@Validator ValidationResult.ok()
+
+    }
+
+    private val PTRegistration = Validator<String> { value, _ ->
+        val found = ss.findByPt(value) != null
+
+        if( found && order.type!! == Order.Type.INBOUND ) {
+            return@Validator ValidationResult.error("PT già registrato")
+        }
+
+        if( found.not() && order.type!! == Order.Type.OUTBOUND) {
+            return@Validator ValidationResult.error("PT non registrato")
+        }
+
+        return@Validator ValidationResult.ok()
+
+    }
+
     init {
 
-        binder.readBean(bean)
+        binder.bean = bean
 
         gui()
+
+        bind()
+
+    }
+
+    private fun bind() {
+        binder.forField(itemField)
+            .asRequired("Campo obbligatorio")
+            .bind({it.item}, {olp, value -> olp.item = value})
+
+        binder.forField(posField)
+            .asRequired("Campo obbligatorio")
+            .bind({it.position},{olp, value -> olp.position = value})
+
+        binder.forField(amountField)
+            .asRequired("Campo obbligatorio")
+            .bind({it.amount},{olp, value -> olp.amount = value})
+
+        binder.forField(snField)
+            .withValidator(SNRegistration)
+            .bind({it.sn},{olp, value -> olp.sn = value})
+
+        binder.forField(ptField)
+            .withValidator(PTRegistration)
+            .bind({it.pt},{olp, value -> olp.pt = value})
 
     }
 
@@ -56,6 +115,8 @@ class OrderLineForm2(
                     setItemsByType(order.type!!)
                     setItemsByPos(it.value)
                     setAmountByStorage(itemField.value, it.value)
+                }else {
+                    setLocationsByDc(order.datacenter!!)
                 }
             }
         }
@@ -114,11 +175,13 @@ class OrderLineForm2(
                     }
             }
             else -> {
+                val saved = itemField.value
                 itemField.isAllowCustomValue = true
                 ss.findAll()
                     .map(Storage::item)
                     .distinct().also {
                         itemField.setItems(it)
+                        itemField.value = saved
                     }
             }
         }
@@ -183,8 +246,8 @@ class OrderLineForm2(
         if(order.type!! == Order.Type.OUTBOUND) {
             ss.findBySn(sn).also {
                 amountField.value = 1
-                posField.setItems(it!!.pos)
-                posField.value = it.pos
+                setLocationsByDc(order.datacenter!!)
+                posField.value = it!!.pos
 
                 itemField.value = it.item
 
@@ -212,14 +275,22 @@ class OrderLineForm2(
         if(order.type!! == Order.Type.OUTBOUND) {
             ss.findByPt(pt).also {
                 amountField.value = 1
-                posField.setItems(it!!.pos)
-                posField.value = it.pos
+                setLocationsByDc(order.datacenter!!)
+                posField.value = it!!.pos
 
                 itemField.value = it.item
 
                 snField.value = it.sn
             }
         }
+    }
+
+    fun validate(): Boolean {
+        val states = binder.validate()
+
+        states.validationErrors.forEach(::println)
+
+        return states.isOk
     }
 
 }
