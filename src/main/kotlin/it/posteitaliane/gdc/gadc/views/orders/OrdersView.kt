@@ -8,6 +8,7 @@ import com.vaadin.flow.component.details.Details
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.html.Anchor
+import com.vaadin.flow.component.html.AnchorTarget
 import com.vaadin.flow.component.html.Paragraph
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
@@ -87,7 +88,9 @@ class OrdersView(
         filterProvider = provider.withConfigurableFilter()
 
         grid = Grid(Order::class.java, false)
-        grid.addColumn( idRenderer ).setHeader("Order °")
+        //grid.addColumn( idRenderer ).setHeader("Order °")
+        grid.addColumn(ComponentRenderer({Span()}, subjectComponent()))
+            .setHeader("Tipo").setSortProperty("subject")
         grid.addColumn({"${it.op.firstName} ${it.op.lastName}"}, "operator")
             .setHeader("Operatore")
         grid.addColumn({makeTypeLabel(it)}, "type")
@@ -158,6 +161,33 @@ class OrdersView(
                 Order.Status.COMPLETED -> "CHIUSO"
                 Order.Status.CANCELED -> "ANNULATO"
             }
+        }
+    }
+
+    private fun subjectComponent(): SerializableBiConsumer<Span, Order> {
+        return SerializableBiConsumer<Span,Order> { span, order ->
+            val theme = "badge"
+
+            if(order.filepath != null) {
+                Anchor("docstorage/sample.pdf", order.subject.name).run {
+                    setTarget(AnchorTarget.BLANK)
+                    isRouterIgnore = true
+                    span.add(this)
+                }
+            } else {
+                span.add(order.subject.name)
+            }
+
+            span.run {
+                val icon = when(order.type) {
+                    Order.Type.INBOUND -> Icon(VaadinIcon.DOWNLOAD)
+                    Order.Type.OUTBOUND -> Icon(VaadinIcon.UPLOAD)
+                }
+
+                add(icon)
+            }
+
+            span.element.setAttribute("theme", theme)
         }
     }
 
