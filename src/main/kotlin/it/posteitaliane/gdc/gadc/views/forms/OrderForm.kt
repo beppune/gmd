@@ -112,7 +112,7 @@ class OrderForm(
         subjectField = Select<Order.Subject>()
             .apply {
                 placeholder = "TIPO DI ORDINE"
-                setItems(Order.Subject.entries)
+                setItems(Order.Subject.INTERNAL, Order.Subject.SUPPLIER)
                 setItemLabelGenerator {
                     when(it) {
                         Order.Subject.INTERNAL -> "INTERNO"
