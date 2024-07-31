@@ -262,6 +262,7 @@ class OrderForm(
                                     .map{ (it as HorizontalLayout).children.findFirst().get() as OrderLineForm }
 
     fun reset(type: Order.Type?=null) {
+        lineContainer.removeAll()
         optionPending.value = false
         bean = OrderPresentation()
         bean.type = type
@@ -309,6 +310,8 @@ class OrderForm(
 
     fun editOrder(o: Order) {
 
+        lineContainer.removeAll()
+
         val op = OrderPresentation(
             number = o.number,
             operator = o.op,
@@ -318,6 +321,8 @@ class OrderForm(
             supplier = o.supplier,
             datacenter = o.dc
         )
+
+        binder.bean = op
 
         o.lines.forEach { line ->
             val olp = OrderLinePresentation(
@@ -332,6 +337,7 @@ class OrderForm(
             val hl = makeLineform()
             val form = hl.children.findFirst().get() as OrderLineForm
             form.bean = olp
+            form.binder.readBean(form.bean)
 
             if(olp.sn!=null || olp.pt!=null) {
                 form.setUnique(olp.sn, olp.pt)
@@ -342,8 +348,6 @@ class OrderForm(
         }
 
         optionPending.value = true
-
-        binder.bean = op
     }
 }
 

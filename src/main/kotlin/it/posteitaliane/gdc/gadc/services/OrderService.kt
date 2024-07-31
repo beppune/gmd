@@ -135,7 +135,7 @@ class OrderService(
             "VALUES(?,?,?,?,?,?,?)"
 
     private val QUERY_UPDATE_ORDER = "UPDATE ORDERS " +
-            " SET operator = ?, datacenter = ?, supplier = ?, issued = ?, type = ?, subject = ?, status = ?, ref = ?, remakrs = ?" +
+            " SET operator = ?, datacenter = ?, supplier = ?, issued = ?, type = ?, subject = ?, status = ?, ref = ?, remarks = ?" +
             " WHERE id = ? ORDER BY id LIMIT 1"
     private val QUERY_DELETE_LINES = "DELETE FROM ORDERS_LINES WHERE ownedby = ?"
 
@@ -164,7 +164,7 @@ class OrderService(
                     db.update(
                         QUERY_UPDATE_ORDER,
                         o.op.username, o.dc.short, o.supplier.name, LocalDateTime.now(),
-                        o.type.name, o.subject.name, o.status.name, o.ref, o.number
+                        o.type.name, o.subject.name, o.status.name, o.ref, REMARKS, o.number
                     )
                 }
 
