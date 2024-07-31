@@ -161,6 +161,8 @@ class OrderService(
 
                     db.update(QUERY_DELETE_LINES, o.number)
 
+                    val REMARKS = if(o.remarks.isNullOrEmpty()) null else o.remarks
+
                     db.update(
                         QUERY_UPDATE_ORDER,
                         o.op.username, o.dc.short, o.supplier.name, LocalDateTime.now(),
