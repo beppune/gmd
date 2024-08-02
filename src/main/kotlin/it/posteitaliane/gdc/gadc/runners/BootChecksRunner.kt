@@ -34,6 +34,7 @@ class BootChecksRunner(
         val storagePath = Path.of("", config.storageDirectory.toString())
         if( storagePath.notExists() ) {
             logger.info("Creating storage-path: ${storagePath.pathString}")
+            Files.createDirectories(storagePath.parent)
             Files.createDirectory(storagePath)
         }
 
