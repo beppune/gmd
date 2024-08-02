@@ -170,3 +170,4 @@ build/
 /upload/
 /docstorage/
 /public/
+/.npmrc
