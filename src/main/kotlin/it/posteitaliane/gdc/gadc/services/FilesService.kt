@@ -5,7 +5,6 @@ import it.posteitaliane.gdc.gadc.model.Order
 import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
-import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.util.FileSystemUtils
 import java.io.IOException
 import java.io.InputStream
@@ -13,7 +12,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.io.path.name
 
 @Service
 class FilesService(
@@ -47,10 +45,12 @@ class FilesService(
             FileSystemUtils.copyRecursively(from, dest)
             FileSystemUtils.deleteRecursively(from)
 
+            dest.fileName.also(::println)
+
             if (count == 0) {
-                db.update(QUERY_INSERT_FILE, o.number, LocalDateTime.now(), dest.toString())
+                db.update(QUERY_INSERT_FILE, o.number, LocalDateTime.now(), dest.fileName)
             } else {
-                db.update(QUERY_UPDATE_FILE, dest.toString(), o.number)
+                db.update(QUERY_UPDATE_FILE, dest.fileName, o.number)
             }
 
         }catch (ex:DataAccessException) {
