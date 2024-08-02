@@ -12,12 +12,18 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Service
 class FilesService(
     private val config:FilesConfig,
     private val db:JdbcTemplate
 ) {
+
+    private val dateFormatter:DateTimeFormatter = DateTimeFormatter.ofPattern("dd_MM_yyyy_hhmmss")
+
+    private fun generateFileName(o:Order) =
+        "${o.number}_${o.dc.short}_${o.op.username}_${o.type.name}_${o.issued.format(dateFormatter)}.pdf"
 
     fun copyTemp(username:String, instream:InputStream) : String {
 
@@ -33,19 +39,16 @@ class FilesService(
     private val QUERY_UPDATE_FILE = "UPDATE SHIPPINGS SET filepath = ? WHERE ownedby = ?"
 
     fun updateOrderFile(o:Order, uploadpath:String) {
-        println(uploadpath)
         val count = db.queryForObject("SELECT COUNT(*) FROM SHIPPINGS WHERE ownedby = ${o.number}", Int::class.java)
 
         try {
 
 
             val from = Path.of(uploadpath)
-            val dest = Path.of( config.storageDirectory.toString(), from.fileName.toString() )
+            val dest = Path.of( config.storageDirectory.toString(), generateFileName(o))
 
             FileSystemUtils.copyRecursively(from, dest)
             FileSystemUtils.deleteRecursively(from)
-
-            dest.fileName.also(::println)
 
             if (count == 0) {
                 db.update(QUERY_INSERT_FILE, o.number, LocalDateTime.now(), dest.fileName.toString())
