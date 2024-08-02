@@ -17,8 +17,10 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
+import com.vaadin.flow.data.provider.Query
 import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.data.renderer.ComponentRenderer
+import com.vaadin.flow.data.renderer.Renderer
 import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.events.EditOrderEvent
@@ -29,6 +31,8 @@ import it.posteitaliane.gdc.gadc.services.OrderService
 import it.posteitaliane.gdc.gadc.views.MainLayout
 import jakarta.annotation.security.PermitAll
 import java.time.format.DateTimeFormatter
+import java.util.Collections
+import java.util.stream.Collectors
 
 @PermitAll
 @Route(value = "orders", layout = MainLayout::class)
@@ -36,6 +40,7 @@ class OrdersView(
     os:OrderService,
     dcs:DatacenterService
 ) : VerticalLayout() {
+    private val isDetailsVisible:MutableList<Order> = mutableListOf()
 
     private val provider: OrdersProvider
 
@@ -142,7 +147,28 @@ class OrdersView(
             }
         }
 
-        add(HorizontalLayout(searchField, dcSelect).apply { setWidthFull() })
+        grid.isDetailsVisibleOnClick = false
+        grid.addItemClickListener { ev ->
+
+            if( grid.isDetailsVisible(ev.item) ) {
+                grid.setDetailsVisible(ev.item, false)
+                isDetailsVisible.remove(ev.item)
+            } else {
+                grid.setDetailsVisible(ev.item, true)
+                isDetailsVisible.add(ev.item)
+            }
+
+        }
+
+        val collapseAllButton = Button("CHIUDI TUTTI I DETTAGLI") { _ ->
+            val it = isDetailsVisible.iterator()
+            while (it.hasNext()) {
+                grid.setDetailsVisible(it.next(), false)
+                it.remove()
+            }
+        }
+
+        add(HorizontalLayout(searchField, dcSelect, collapseAllButton).apply { setWidthFull() })
         add(grid)
     }
 
