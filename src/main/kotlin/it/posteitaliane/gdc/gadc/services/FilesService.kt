@@ -40,7 +40,7 @@ class FilesService(
 
 
             val from = Path.of(uploadpath)
-            val dest = Path.of( config.storageDirectory, from.fileName.toString() )
+            val dest = Path.of( config.storageDirectory.toString(), from.fileName.toString() )
 
             FileSystemUtils.copyRecursively(from, dest)
             FileSystemUtils.deleteRecursively(from)
@@ -48,9 +48,9 @@ class FilesService(
             dest.fileName.also(::println)
 
             if (count == 0) {
-                db.update(QUERY_INSERT_FILE, o.number, LocalDateTime.now(), dest.fileName)
+                db.update(QUERY_INSERT_FILE, o.number, LocalDateTime.now(), dest.fileName.toString())
             } else {
-                db.update(QUERY_UPDATE_FILE, dest.fileName, o.number)
+                db.update(QUERY_UPDATE_FILE, dest.fileName.toString(), o.number)
             }
 
         }catch (ex:DataAccessException) {

@@ -6,7 +6,6 @@ import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
 import org.springframework.util.FileSystemUtils
-import java.nio.file.FileSystem
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.notExists
@@ -32,7 +31,7 @@ class BootChecksRunner(
             Files.createDirectory(uploadPath)
         }
 
-        val storagePath = Path.of("", config.storageDirectory)
+        val storagePath = Path.of("", config.storageDirectory.toString())
         if( storagePath.notExists() ) {
             logger.info("Creating storage-path: ${storagePath.pathString}")
             Files.createDirectory(storagePath)
