@@ -2,11 +2,13 @@ package it.posteitaliane.gdc.gadc.views.orders
 
 import com.vaadin.flow.component.ComponentUtil
 import com.vaadin.flow.component.Key
+import com.vaadin.flow.component.Unit
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.checkbox.CheckboxGroup
 import com.vaadin.flow.component.details.Details
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
+import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Anchor
 import com.vaadin.flow.component.html.AnchorTarget
 import com.vaadin.flow.component.html.Paragraph
@@ -26,6 +28,7 @@ import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.events.EditOrderEvent
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
+import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.OrderService
 import it.posteitaliane.gdc.gadc.views.MainLayout
@@ -250,13 +253,30 @@ class OrdersView(
                         add(edit)
                     }
 
-                    add(Details("Note", Paragraph(field!!.remarks)))
-
                     os.fillOrderLines(field!!)
-                    field!!.lines.forEach { add(Span( "${it.item} ${it.position} ${it.amount}" +
+                    val linesGrid = Grid(OrderLine::class.java, false).apply {
+                        addComponentAsFirst(Paragraph("CIAONE"))
+                        removeAll()
+                        addColumn { it.item }.setHeader("Merce").setAutoWidth(true)
+                        addColumn { it.position }.setHeader("Position").setAutoWidth(true)
+                        addColumn { it.amount }.setHeader("Quantità").setAutoWidth(true)
+
+                        addThemeVariants(GridVariant.LUMO_COMPACT)
+
+                        setWidth(40.0F, Unit.REM)
+                        setHeight(15.0F, Unit.REM)
+
+                        setItems(field!!.lines)
+                    }
+                    add(HorizontalLayout(
+                        linesGrid,
+                        Details("Note", Paragraph(field!!.remarks)).apply { isOpened = true }
+                    ))
+
+                    /*field!!.lines.forEach { add(Span( "${it.item} ${it.position} ${it.amount}" +
                             " ${if(it.sn!=null) it.sn else ""}" +
                             " ${if(it.pt!=null) it.pt else ""}"
-                    ))}
+                    ))}*/
                 }
             }
 
