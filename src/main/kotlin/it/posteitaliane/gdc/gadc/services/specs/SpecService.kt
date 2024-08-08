@@ -53,7 +53,7 @@ class SpecService(
     }
 
     private val AMEND_INTERNAL_SUPPLIER:Order.()->Unit = {
-        supplier = sups.findByName(config.firmName)
+        supplier = sups.findByName(config.firmName)!!
     }
 
     private val ITEM_MUST_NOT_BE_NULL_OR_EMPTY:OrderPredicate = {

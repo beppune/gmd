@@ -39,8 +39,8 @@ class SupplierService(
         return list
     }
 
-    fun findByName(name: String): Supplier {
-        return db.queryForObject(QUERY_BY_NAME, mapper, name)!!
+    fun findByName(name: String): Supplier? {
+        return db.queryForObject(QUERY_BY_NAME, mapper, name)
     }
 
     fun find(offset: Int=0, limit: Int=1000, searchKey: String?=null, ascending: Boolean=true, sortKey: String?=null) : List<Supplier> {

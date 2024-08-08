@@ -30,7 +30,7 @@ class OrderService(
             number = rs.getInt("id"),
             op = ops.findAll().find { it.username == rs.getString("operator") }!!,
             dc = dcs.findAll(locations = false).find { it.short == rs.getString("datacenter") }!!,
-            supplier = sups.findByName(rs.getString("supplier")),
+            supplier = sups.findByName(rs.getString("supplier"))!!,
             issued = rs.getTimestamp("issued").toLocalDateTime(),
             type = Order.Type.valueOf(rs.getString("type")),
             subject = Order.Subject.valueOf(rs.getString("subject")),

@@ -48,7 +48,7 @@ class BackOffice(
             subject = Order.Subject.INTERNAL
             type = Order.Type.INBOUND
             dc = datacenter
-            supplier = bo.sups.findByName(bo.config.firmName)
+            supplier = bo.sups.findByName(bo.config.firmName)!!
         }
 
         fun sendToDc(datacenter:Datacenter) {
