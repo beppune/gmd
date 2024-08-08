@@ -43,6 +43,7 @@ class SupplierService(
     fun findByName(name: String): Supplier? {
         try {
             val res = db.queryForObject(QUERY_BY_NAME, mapper, name)
+            return res
         }catch (ex:EmptyResultDataAccessException) {
             return null
         }
