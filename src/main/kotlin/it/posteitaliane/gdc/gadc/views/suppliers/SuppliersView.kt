@@ -12,12 +12,14 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
+import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.Supplier
 import it.posteitaliane.gdc.gadc.services.SupplierService
 import it.posteitaliane.gdc.gadc.views.MainLayout
 import it.posteitaliane.gdc.gadc.views.forms.SupplierForm
+import it.posteitaliane.gdc.gadc.views.forms.SupplierForm2
 import jakarta.annotation.security.RolesAllowed
 
 @RolesAllowed("ADMIN")
@@ -117,6 +119,27 @@ class SuppliersView(
         }
 
         add(HorizontalLayout(searchField, addSupplierButton).apply { setWidthFull() })
+
+        grid.setItemDetailsRenderer(SupplierComponent.createOrderDetails(sups))
         add(grid)
+    }
+
+    class SupplierComponent(private val sups:SupplierService): VerticalLayout() {
+
+
+        companion object {
+            fun createOrderDetails(sups: SupplierService) : ComponentRenderer<SupplierComponent, Supplier> {
+                return ComponentRenderer({ SupplierComponent(sups) }, SupplierComponent::setSupplier )
+            }
+        }
+
+        fun setSupplier(s:Supplier?=null) {
+            if(s!=null) {
+                removeAll()
+                val form = SupplierForm2(sups)
+                form.setSupplier(s, false)
+                add(form)
+            }
+        }
     }
 }

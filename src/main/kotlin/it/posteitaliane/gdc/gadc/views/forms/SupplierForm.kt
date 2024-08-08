@@ -12,7 +12,20 @@ data class SupplierPresentation(
     var name:String?=null,
     var piva:String?=null,
     var legal:String?=null
-)
+) {
+
+    val addresses:MutableList<String> = mutableListOf()
+
+    companion object {
+        fun fromSupplier(s:Supplier) = SupplierPresentation(
+            name = s.name,
+            piva = s.piva,
+            legal = s.legal
+        ).apply {
+            addresses.addAll(s.addresses)
+        }
+    }
+}
 
 class SupplierForm(
     private val sups:SupplierService

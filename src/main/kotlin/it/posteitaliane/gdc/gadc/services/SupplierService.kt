@@ -1,6 +1,7 @@
 package it.posteitaliane.gdc.gadc.services
 
 import it.posteitaliane.gdc.gadc.model.Supplier
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
@@ -40,7 +41,12 @@ class SupplierService(
     }
 
     fun findByName(name: String): Supplier? {
-        return db.queryForObject(QUERY_BY_NAME, mapper, name)
+        try {
+            val res = db.queryForObject(QUERY_BY_NAME, mapper, name)
+        }catch (ex:EmptyResultDataAccessException) {
+            return null
+        }
+        return null
     }
 
     fun find(offset: Int=0, limit: Int=1000, searchKey: String?=null, ascending: Boolean=true, sortKey: String?=null) : List<Supplier> {
