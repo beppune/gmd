@@ -9,7 +9,6 @@ import it.posteitaliane.gdc.gadc.CustomErrorHandler
 @SpringComponent
 class ServletInitializer : VaadinServiceInitListener{
     override fun serviceInit(ev: ServiceInitEvent) {
-        println("£££££££££")
         ev.source.addSessionInitListener {
             it.session.errorHandler = CustomErrorHandler()
         }
