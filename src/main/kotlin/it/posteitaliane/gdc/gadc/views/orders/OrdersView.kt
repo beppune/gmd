@@ -246,13 +246,6 @@ class OrdersView(
 
                 if(field != null) {
 
-                    if( field!!.status == Order.Status.PENDING ) {
-                        val edit = Button("MODIFICA ORDINE") {
-                            ComponentUtil.fireEvent(ui.get(), EditOrderEvent(this, false, field!!))
-                        }
-                        add(edit)
-                    }
-
                     os.fillOrderLines(field!!)
                     val linesGrid = Grid(OrderLine::class.java, false).apply {
                         addComponentAsFirst(Paragraph("CIAONE"))
@@ -268,15 +261,20 @@ class OrdersView(
 
                         setItems(field!!.lines)
                     }
-                    add(HorizontalLayout(
+                    val hl = HorizontalLayout(
                         linesGrid,
                         Details("Note", Paragraph(field!!.remarks)).apply { isOpened = true }
-                    ))
+                    )
 
-                    /*field!!.lines.forEach { add(Span( "${it.item} ${it.position} ${it.amount}" +
-                            " ${if(it.sn!=null) it.sn else ""}" +
-                            " ${if(it.pt!=null) it.pt else ""}"
-                    ))}*/
+
+                    if( field!!.status == Order.Status.PENDING ) {
+                        val edit = Button("MODIFICA ORDINE") {
+                            ComponentUtil.fireEvent(ui.get(), EditOrderEvent(this, false, field!!))
+                        }
+                        hl.add(edit)
+                    }
+
+                    add(hl)
                 }
             }
 
