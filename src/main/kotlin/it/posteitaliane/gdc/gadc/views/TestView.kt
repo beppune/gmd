@@ -36,10 +36,11 @@ class TestView(
         add(form)
 
         val ok = Button("OK") {
-            form.validate()
-            form.compile().also {
-                filename = it?.filename
-                Notification.show(it.toString())
+            if( form.validate().isOk ) {
+                form.compile().also {
+                    filename = it?.filename
+                    Notification.show(it.toString())
+                }
             }
         }
         val reset = Button("RESET") { form.reset() }
