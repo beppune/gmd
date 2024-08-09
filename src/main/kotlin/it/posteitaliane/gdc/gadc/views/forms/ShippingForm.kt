@@ -11,7 +11,7 @@ data class ShippingPresentation(
     var motive:String?=null,
     var hauler:String?=null,
     var address:String?=null,
-    var numpack:Int=0
+    var numpack:Int?=null
 )
 
 class ShippingForm: FormLayout() {
@@ -64,8 +64,6 @@ class ShippingForm: FormLayout() {
         binder.forField(numpackField)
             .asRequired("Campo obbligatorio")
             .bind({it.numpack},{sp,value->sp.numpack=value})
-
-        binder.forField(addressField)
     }
 
     private fun gui() {
@@ -74,11 +72,15 @@ class ShippingForm: FormLayout() {
                 it.addThemeVariants(TextFieldVariant.LUMO_SMALL)
             }
 
-        numpackField.value = 1
         numpackField.min = 1
 
         add(motiveField, haulerField)
         add(addressField, numpackField)
+    }
+
+    fun reset() {
+        bean = ShippingPresentation()
+        binder.bean = bean
     }
 
 

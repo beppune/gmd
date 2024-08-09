@@ -2,17 +2,12 @@ package it.posteitaliane.gdc.gadc.views
 
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.html.Div
-import com.vaadin.flow.component.icon.Icon
-import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout
-import com.vaadin.flow.component.select.Select
+import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.router.Route
-import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.services.DatacenterService
 import it.posteitaliane.gdc.gadc.services.OrderService
 import it.posteitaliane.gdc.gadc.services.StorageService
-import it.posteitaliane.gdc.gadc.views.forms.OrderLineForm2
-import it.posteitaliane.gdc.gadc.views.forms.OrderPresentation
+import it.posteitaliane.gdc.gadc.views.forms.ShippingForm
 import jakarta.annotation.security.RolesAllowed
 
 
@@ -26,47 +21,21 @@ class TestView(
 
 
     init {
-
-        val order = os.findAll(true).first()
-            .run {
-                OrderPresentation(
-                    number = number,
-                    operator = op,
-                    type = type,
-                    subject = subject,
-                    supplier = supplier,
-                    datacenter = dc
-                )
-            }
-
-        val form = OrderLineForm2(order, ss, dcs)
-        val typeField = Select<Order.Type>().apply {
-                setItems(Order.Type.values().toList())
-                setItemLabelGenerator { it.name.uppercase() }
-                value = Order.Type.INBOUND
-
-                addValueChangeListener {
-                    order.type = it.value
-                    form.setItemsByType(it.value)
-                    form.setSnListByType()
-                    form.setPtListByType()
-                }
+        val form = ShippingForm().apply { setWidth("40%") }
+        val button = Button("RESET") {
+            form.reset()
         }
-
-        val resetButton = Button(Icon(VaadinIcon.ERASER))
-            .apply {
-                addClickListener {
-                    form.validate()
-                }
+        val button2 = Button("OK") {
+            val e = form.validate()
+            if(e.hasErrors()) {
+                return@Button
             }
 
-        val hl = HorizontalLayout(
-            typeField
-        )
-
-        add(hl)
-        add(HorizontalLayout(form, resetButton))
-
+            val c = form.compile()
+            Notification.show(c.toString())
+        }
+        add(form,button,button2)
     }
+
 
 }
