@@ -27,7 +27,8 @@ data class OrderDetails(
     var datacenter: Datacenter?=null,
     var supplier: Supplier?=null,
     var pending: Boolean=false,
-    var remarks:String?=null,
+    var remarks: String?=null,
+    var filename: String?=null,
 )
 
 class TypeChangeEvent(component: OrderDetailsForm, val type: Order.Type)
@@ -191,6 +192,7 @@ class OrderDetailsForm(
                 //files.copyTemp("username", stream)
 
                 fakeUpload.text = it.fileName
+                binder.bean.filename = it.fileName
 
                 fireEvent(FileUploadEvent(this@OrderDetailsForm, stream))
             }
@@ -205,6 +207,7 @@ class OrderDetailsForm(
         fakeUpload.apply {
             addThemeVariants(ButtonVariant.LUMO_SMALL)
             addClickListener {
+                realUpload.clearFileList()
                 if(realUpload.uploadButton is Button) {
                     (realUpload.uploadButton as Button).clickInClient()
                 }

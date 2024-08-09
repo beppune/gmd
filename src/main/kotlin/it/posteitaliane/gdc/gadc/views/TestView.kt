@@ -22,6 +22,7 @@ class TestView(
     private val conf: GMDConfig,
 ) : Div() {
 
+    private var filename:String?=null
 
     init {
         val form = OrderDetailsForm(
@@ -29,15 +30,18 @@ class TestView(
             sups = sups.findAll(true),
             firm = sups.findAll().filter { it.piva == conf.firmPiva }.first()
         )
-        form.addTypeChangeListener {
-            Notification.show(it.type.name)
-        }
         form.addFileUploadListener {
-            files.copyTemp(sec.op().username, it.stream)
+            filename = files.copyTemp(sec.op().username, it.stream)
         }
         add(form)
 
-        val ok = Button("OK") { form.validate() }
+        val ok = Button("OK") {
+            form.validate()
+            form.compile().also {
+                filename = it?.filename
+                Notification.show(it.toString())
+            }
+        }
         val reset = Button("RESET") { form.reset() }
         add(reset, ok)
     }
