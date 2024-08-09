@@ -2,20 +2,32 @@ package it.posteitaliane.gdc.gadc.views.forms
 
 import com.vaadin.flow.component.ComponentEvent
 import com.vaadin.flow.component.ComponentEventListener
+import com.vaadin.flow.component.Unit
+import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.button.ButtonVariant
+import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.formlayout.FormLayout
+import com.vaadin.flow.component.notification.Notification
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.select.Select
+import com.vaadin.flow.component.textfield.TextArea
+import com.vaadin.flow.component.upload.Upload
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer
 import com.vaadin.flow.data.binder.Binder
+import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.Supplier
+import java.io.InputStream
 
 data class OrderDetails(
     var type: Order.Type?=null,
     var subject: Order.Subject?=null,
     var datacenter: Datacenter?=null,
     var supplier: Supplier?=null,
-
+    var pending: Boolean=false,
+    var remarks:String?=null,
 )
 
 class TypeChangeEvent(component: OrderDetailsForm, val type: Order.Type)
@@ -27,16 +39,23 @@ class SubjectChangeEvent(component: OrderDetailsForm, val subject: Order.Subject
 class DcChangeEvent(component: OrderDetailsForm, val dc: Datacenter)
     : ComponentEvent<OrderDetailsForm>(component, false)
 
+class FileUploadEvent(component: OrderDetailsForm, val stream: InputStream)
+    : ComponentEvent<OrderDetailsForm>(component, false)
+
 class OrderDetailsForm(
     private val dcs: List<Datacenter>,
     private val sups: List<Supplier>,
-    private val firm: Supplier
+    private val firm: Supplier,
 ): FormLayout() {
 
     private val typeField = Select<Order.Type>()
     private val subjectField = Select<Order.Subject>()
     private val dcField = Select<Datacenter>()
     private val supplierField = ComboBox<Supplier>()
+    private val pendingField = Checkbox()
+    private val realUpload = Upload(MemoryBuffer())
+    private val fakeUpload = Button("UPLOAD SCAN")
+    private val remarksField = TextArea()
 
     private var bean = OrderDetails()
     val binder = Binder(OrderDetails::class.java)
@@ -59,6 +78,9 @@ class OrderDetailsForm(
 
     fun addDcChangeListener(listener: ComponentEventListener<DcChangeEvent>) =
         addListener(DcChangeEvent::class.java, listener)
+
+    fun addFileUploadListener(listener: ComponentEventListener<FileUploadEvent>) =
+        addListener(FileUploadEvent::class.java, listener)
 
     fun compile(): OrderDetails? {
         if(validate().isOk) {
@@ -86,6 +108,12 @@ class OrderDetailsForm(
         binder.forField(supplierField)
             .asRequired()
             .bind({it.supplier},{odp,value->odp.supplier=value})
+
+        binder.forField(pendingField)
+            .bind({it.pending},{odp,value->odp.pending=value})
+
+        binder.forField(remarksField)
+            .bind({it.remarks},{odp,value->odp.remarks=value})
     }
 
     private fun gui() {
@@ -141,8 +169,57 @@ class OrderDetailsForm(
             supplierField.setItemLabelGenerator { it.name.uppercase() }
         }
 
+        pendingField.apply {
+            label = "IN ATTESA"
+            setWidth(10.0f, Unit.REM)
+        }
+
+        realUpload.apply {
+            addClassNames(
+                LumoUtility.Padding.NONE,
+                LumoUtility.Margin.NONE
+            )
+
+            setAcceptedFileTypes("application/pdf")
+
+            addSucceededListener {
+                val stream = (it.source.receiver as MemoryBuffer)
+                    .inputStream
+
+
+                Notification.show("Copy in Temporary")
+                //files.copyTemp("username", stream)
+
+                fakeUpload.text = it.fileName
+
+                fireEvent(FileUploadEvent(this@OrderDetailsForm, stream))
+            }
+
+            width = "0px"
+            height = "0px"
+
+            maxFiles = 1
+            maxFileSize = 1024 * 1024 *2
+        }
+
+        fakeUpload.apply {
+            addThemeVariants(ButtonVariant.LUMO_SMALL)
+            addClickListener {
+                if(realUpload.uploadButton is Button) {
+                    (realUpload.uploadButton as Button).clickInClient()
+                }
+            }
+            setWidth(20.0f, Unit.REM)
+        }
+
+        remarksField.apply {
+            placeholder = "NOTE"
+        }
+
         add(typeField, subjectField)
         add(dcField, supplierField)
+        add(HorizontalLayout(pendingField, realUpload, fakeUpload), 2)
+        add(remarksField, 2)
     }
 
     fun reset() {
@@ -150,6 +227,8 @@ class OrderDetailsForm(
         binder.bean = bean
         supplierField.clear()
         supplierField.isEnabled = true
+        realUpload.clearFileList()
+        fakeUpload.text = "UPLOAD SCAN"
     }
 
 }

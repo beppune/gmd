@@ -18,7 +18,8 @@ class TestView(
     private val dcs:DatacenterService,
     private val sups:SupplierService,
     private val sec:SecurityService,
-    private val conf: GMDConfig
+    private val files: FilesService,
+    private val conf: GMDConfig,
 ) : Div() {
 
 
@@ -27,9 +28,12 @@ class TestView(
             dcs = sec.op().permissions,
             sups = sups.findAll(true),
             firm = sups.findAll().filter { it.piva == conf.firmPiva }.first()
-        ).apply { setWidth("40%") }
+        )
         form.addTypeChangeListener {
             Notification.show(it.type.name)
+        }
+        form.addFileUploadListener {
+            files.copyTemp(sec.op().username, it.stream)
         }
         add(form)
 
