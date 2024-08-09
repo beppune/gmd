@@ -155,6 +155,8 @@ class OrderDetailsForm(
                     supplierField.clear()
                     supplierField.isEnabled = true
                 }
+
+                fireEvent(SubjectChangeEvent(this@OrderDetailsForm, it.value))
             }
         }
 

@@ -2,11 +2,17 @@ package it.posteitaliane.gdc.gadc.views
 
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.html.Div
+import com.vaadin.flow.component.html.H5
 import com.vaadin.flow.component.notification.Notification
+import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.config.GMDConfig
+import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.services.*
 import it.posteitaliane.gdc.gadc.views.forms.OrderDetailsForm
+import it.posteitaliane.gdc.gadc.views.forms.ShippingForm
 import jakarta.annotation.security.RolesAllowed
 
 
@@ -25,6 +31,7 @@ class TestView(
     private var filename:String?=null
 
     init {
+        val shipping = ShippingForm()
         val form = OrderDetailsForm(
             dcs = sec.op().permissions,
             sups = sups.findAll(true),
@@ -33,7 +40,24 @@ class TestView(
         form.addFileUploadListener {
             filename = files.copyTemp(sec.op().username, it.stream)
         }
+
+        val sd = VerticalLayout(
+            H5("DETTAGLI SPEDIZIONE").apply { style.setFontWeight(Style.FontWeight.BOLDER) },
+            shipping
+        ).apply {
+            isPadding = false
+            addClassNames(LumoUtility.Gap.SMALL)
+        }
+
         add(form)
+
+        form.addSubjectChangeListener {
+            if( it.subject != Order.Subject.INTERNAL) {
+                addComponentAtIndex(1, sd)
+            } else {
+                remove(sd)
+            }
+        }
 
         val ok = Button("OK") {
             if( form.validate().isOk ) {

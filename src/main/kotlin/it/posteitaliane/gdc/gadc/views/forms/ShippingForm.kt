@@ -72,6 +72,11 @@ class ShippingForm: FormLayout() {
                 it.addThemeVariants(TextFieldVariant.LUMO_SMALL)
             }
 
+        haulerField.placeholder = "TRASPORTATORE"
+        motiveField.placeholder = "CAUSALE"
+        addressField.placeholder = "INDIRIZZO DI DESTINAZIONE"
+        numpackField.placeholder = "N. COLLI"
+
         numpackField.min = 1
 
         add(motiveField, haulerField)
