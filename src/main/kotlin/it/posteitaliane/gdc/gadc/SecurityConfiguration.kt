@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.provisioning.UserDetailsManager
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
@@ -44,7 +44,7 @@ class SecurityConfiguration(
     }
 
     @Bean
-    fun userDetailsManager() = object : UserDetailsManager {
+    fun userDetailsService() = object : UserDetailsService {
         override fun loadUserByUsername(username: String?): UserDetails? {
             try {
                 val op = ops.find(filter = username?.uppercase()).first()
@@ -58,26 +58,6 @@ class SecurityConfiguration(
                 println("Username not found: $username")
                 return null
             }
-        }
-
-        override fun createUser(user: UserDetails?) {
-            TODO("Not available as Maganer")
-        }
-
-        override fun updateUser(user: UserDetails?) {
-            TODO("Not available as Maganer")
-        }
-
-        override fun deleteUser(username: String?) {
-            TODO("Not yet implemented")
-        }
-
-        override fun changePassword(oldPassword: String?, newPassword: String?) {
-            TODO("Not available as Maganer")
-        }
-
-        override fun userExists(username: String?): Boolean {
-            return ops.find(filter = username).size == 1
         }
 
     }
