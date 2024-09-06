@@ -1,10 +1,10 @@
 package it.posteitaliane.gdc.gadc.security
 
 import it.posteitaliane.gdc.gadc.services.OperatorService
-import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import java.util.*
@@ -55,7 +55,9 @@ class ADSelfAuthenticationProvider(private val ops:OperatorService) : AbstractUs
             return null
         }
 
-        val auth = UsernamePasswordAuthenticationToken(username, password)
+        val granted = listOf(SimpleGrantedAuthority(ops.get(username).role.name))
+
+        val auth = UsernamePasswordAuthenticationToken(username, password, granted)
 
         return auth
     }
