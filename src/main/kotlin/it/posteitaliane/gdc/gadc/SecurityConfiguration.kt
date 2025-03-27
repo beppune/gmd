@@ -1,64 +1,56 @@
 package it.posteitaliane.gdc.gadc
 
-import com.vaadin.flow.spring.annotation.SpringComponent
 import com.vaadin.flow.spring.security.VaadinWebSecurity
-import it.posteitaliane.gdc.gadc.services.OperatorService
+import it.posteitaliane.gdc.gadc.security.LocalDBProvider
+import it.posteitaliane.gdc.gadc.security.ReteAuthenticationProvider
+import it.posteitaliane.gdc.gadc.security.TextAuthenticationConfig
+import it.posteitaliane.gdc.gadc.security.TextAuthenticationProvider
 import it.posteitaliane.gdc.gadc.views.LoginView
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.config.Customizer
+import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.core.userdetails.User
-import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.config.annotation.web.invoke
+import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @EnableWebSecurity
-@SpringComponent
 @Configuration
-class SecurityConfiguration(
-    private val ops:OperatorService
-) : VaadinWebSecurity() {
+class SecurityConfiguration : VaadinWebSecurity() {
 
+    private fun passwordEncoder() = PasswordEncoderFactories.createDelegatingPasswordEncoder()
 
-    override fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        http.authorizeHttpRequests { auth ->
-            auth.requestMatchers(AntPathRequestMatcher("/api/**"))
-                .authenticated()
+    @Bean
+    fun authenticationManager(db:JdbcTemplate, textauth:TextAuthenticationConfig) : AuthenticationManager {
+        val list = mutableListOf(
+            LocalDBProvider(db, passwordEncoder()),
+            ReteAuthenticationProvider(db)
+        ).apply {
+            if(textauth.enable) {
+                add(TextAuthenticationProvider(textauth))
+            }
         }
-            .httpBasic(Customizer.withDefaults())
-        return super.filterChain(http)
-
+        return ProviderManager(list)
     }
 
+    @Override
     override fun configure(http: HttpSecurity) {
-        http.authorizeHttpRequests { auth ->
-            auth.requestMatchers(AntPathRequestMatcher("/public/**"))
-                .permitAll()
-        }
         super.configure(http)
-
         setLoginView(http, LoginView::class.java)
     }
 
     @Bean
-    fun userDetailsService() = object : UserDetailsService {
-        override fun loadUserByUsername(username: String?): UserDetails? {
-            try {
-                val op = ops.find(filter = username?.uppercase()).first()
-
-                return User
-                    .withUsername(op.username)
-                    .roles(op.role.name)
-                    .password("{noop}${op.localPassword}")
-                    .build()
-            }catch (ex:NoSuchElementException) {
-                println("Username not found: $username")
-                return null
+    open fun apiChain(http:HttpSecurity): SecurityFilterChain {
+        http {
+            securityMatcher("/api/**")
+            authorizeHttpRequests {
+                authorize(anyRequest, authenticated)
             }
+            httpBasic {  }
         }
-
+        return http.build()
     }
 }
