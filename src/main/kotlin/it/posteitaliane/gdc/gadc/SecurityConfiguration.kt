@@ -6,9 +6,11 @@ import it.posteitaliane.gdc.gadc.security.ReteAuthenticationProvider
 import it.posteitaliane.gdc.gadc.security.TextAuthenticationConfig
 import it.posteitaliane.gdc.gadc.security.TextAuthenticationProvider
 import it.posteitaliane.gdc.gadc.views.LoginView
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.lang.Nullable
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -24,16 +26,24 @@ class SecurityConfiguration : VaadinWebSecurity() {
     private fun passwordEncoder() = PasswordEncoderFactories.createDelegatingPasswordEncoder()
 
     @Bean
-    fun authenticationManager(db:JdbcTemplate, textauth:TextAuthenticationConfig) : AuthenticationManager {
-        val list = mutableListOf(
-            LocalDBProvider(db, passwordEncoder()),
-            ReteAuthenticationProvider(db)
-        ).apply {
-            if(textauth.enable) {
-                add(TextAuthenticationProvider(textauth))
-            }
-        }
-        return ProviderManager(list)
+    fun localdbProvider(db:JdbcTemplate) = LocalDBProvider(db, passwordEncoder())
+
+    @Bean
+    fun reteProvider(db:JdbcTemplate) = ReteAuthenticationProvider(db)
+
+    @Bean
+    @ConditionalOnProperty(prefix = "textauth", name = arrayOf("enable"), havingValue = "true")
+    fun textProvider(conf:TextAuthenticationConfig) = TextAuthenticationProvider(conf)
+
+    @Bean
+    fun authenticationManager(
+        db:LocalDBProvider,
+        rete:ReteAuthenticationProvider,
+        @Nullable text:TextAuthenticationProvider?
+    ) : AuthenticationManager {
+
+        if(text == null ) return ProviderManager(rete,db)
+        else return ProviderManager(rete,db,text)
     }
 
     @Override
@@ -43,7 +53,7 @@ class SecurityConfiguration : VaadinWebSecurity() {
     }
 
     @Bean
-    open fun apiChain(http:HttpSecurity): SecurityFilterChain {
+    fun apiChain(http:HttpSecurity): SecurityFilterChain {
         http {
             securityMatcher("/api/**")
             authorizeHttpRequests {
