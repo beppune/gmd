@@ -36,7 +36,7 @@ class LocalDBProvider(private val db:JdbcTemplate, private val pe:PasswordEncode
             return null
         }
 
-        val roles = listOf(SimpleGrantedAuthority(map["role"] as String))
+        val roles = listOf(SimpleGrantedAuthority("ROLE_" + map["role"] as String))
 
         return UsernamePasswordAuthenticationToken(username, password, roles)
 

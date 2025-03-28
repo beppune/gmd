@@ -23,7 +23,7 @@ class TextAuthenticationProvider(private val config:TextAuthenticationConfig) : 
 
 
         println("TEXTAUTH: authenticating [${username}] with role [${config.role}]")
-        val roles = listOf(SimpleGrantedAuthority(config.role))
+        val roles = listOf(SimpleGrantedAuthority("ROLE_" + config.role))
         return UsernamePasswordAuthenticationToken(username, password, roles)
 
     }
