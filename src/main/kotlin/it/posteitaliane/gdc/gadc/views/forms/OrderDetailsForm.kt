@@ -121,7 +121,7 @@ class OrderDetailsForm(
         typeField.apply {
             placeholder = "OPERAZIONE"
             setItemLabelGenerator {
-                when (it) {
+                when (it!!) {
                     Order.Type.INBOUND -> "CARICO"
                     Order.Type.OUTBOUND -> "SCARICO"
                 }
@@ -139,7 +139,7 @@ class OrderDetailsForm(
         subjectField.apply {
             placeholder = "TIPO"
             setItemLabelGenerator {
-                when(it) {
+                when(it!!) {
                     Order.Subject.INTERNAL -> "INTERNO"
                     Order.Subject.SUPPLIER -> "FORNITORE"
                     Order.Subject.SUPPLIER_DC -> "MOVING"

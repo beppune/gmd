@@ -11,7 +11,6 @@ import javax.naming.AuthenticationException
 import javax.naming.Context
 import javax.naming.PartialResultException
 import javax.naming.directory.InitialDirContext
-import javax.naming.directory.SearchControls
 
 class ReteAuthenticationProvider(private val db:JdbcTemplate) : AuthenticationProvider {
 
@@ -33,13 +32,13 @@ class ReteAuthenticationProvider(private val db:JdbcTemplate) : AuthenticationPr
                 }
 
             //println("-----ALPHA")
-            var dir = InitialDirContext(env)
+            InitialDirContext(env)
 
-            var attrs = SearchControls()
+            /*var attrs = SearchControls()
                 .apply {
                     returningAttributes = arrayOf("cn", "sn", "givenName", "mail", "proxyAddresses")
                     searchScope = SearchControls.SUBTREE_SCOPE
-                }
+                }*/
 
             // for later use
             //var answer = dir.search("", "(&(objectClass=person)(sAMAccountName=MANZOGI9))", attrs)

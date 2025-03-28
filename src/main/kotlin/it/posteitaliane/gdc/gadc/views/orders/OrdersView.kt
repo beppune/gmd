@@ -19,10 +19,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
-import com.vaadin.flow.data.provider.Query
 import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.data.renderer.ComponentRenderer
-import com.vaadin.flow.data.renderer.Renderer
 import com.vaadin.flow.function.SerializableBiConsumer
 import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gadc.events.EditOrderEvent
@@ -34,8 +32,6 @@ import it.posteitaliane.gdc.gadc.services.OrderService
 import it.posteitaliane.gdc.gadc.views.MainLayout
 import jakarta.annotation.security.PermitAll
 import java.time.format.DateTimeFormatter
-import java.util.Collections
-import java.util.stream.Collectors
 
 @PermitAll
 @Route(value = "orders", layout = MainLayout::class)
@@ -80,7 +76,7 @@ class OrdersView(
 
         setHeightFull()
 
-        val idRenderer = ComponentRenderer { o:Order->
+        /*val idRenderer = ComponentRenderer { o:Order->
 
             if( o.filepath.isNullOrEmpty() ) {
                 Span("${o.number}")
@@ -89,7 +85,7 @@ class OrdersView(
                     add(Anchor(o.filepath, o.number.toString()))
                 }
             }
-        }
+        }*/
 
         provider = OrdersProvider(os)
 

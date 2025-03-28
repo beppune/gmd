@@ -18,9 +18,9 @@ class ReportService(
     private val ds:DataSource
 ) {
 
-    val engine:IReportEngine
+    final val engine:IReportEngine
 
-    val formatter:DateTimeFormatter
+    final val formatter:DateTimeFormatter
 
     init {
 
@@ -48,7 +48,7 @@ class ReportService(
         val from = filter.from ?: LocalDateTime.of(2000, 1, 1, 0, 0, 0)
         val to = filter.to ?: LocalDateTime.of(2050, 12, 31, 23, 59, 59)
 
-        task.setParameterValue("dcParam", "${filter?.dc?.short ?: '%'}%")
+        task.setParameterValue("dcParam", "${filter.dc?.short ?: '%'}%")
         task.setParameterValue("fromParam", from.format(formatter))
         task.setParameterValue("toParam", to.format(formatter))
 

@@ -47,7 +47,6 @@ class SupplierService(
         }catch (ex:EmptyResultDataAccessException) {
             return null
         }
-        return null
     }
 
     fun find(offset: Int=0, limit: Int=1000, searchKey: String?=null, ascending: Boolean=true, sortKey: String?=null) : List<Supplier> {

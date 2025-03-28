@@ -6,11 +6,9 @@ import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.model.Storage
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.queryForList
 import org.springframework.stereotype.Service
 import org.springframework.transaction.TransactionException
 import org.springframework.transaction.support.TransactionTemplate
-import java.sql.ResultSet
 
 @Service
 class StorageService(
@@ -142,7 +140,7 @@ class StorageService(
                     if (s == null) {
                         db.update(
                             CREATE_STORAGE_SQL,
-                            line.item, line.order.dc.short, line.position, line.amount, line.sn?.uppercase() ?: null, line.pt
+                            line.item, line.order.dc.short, line.position, line.amount, line.sn?.uppercase(), line.pt
                         )
                     } else {
                         s.amount += line.amount

@@ -14,7 +14,7 @@ import it.posteitaliane.gdc.gadc.model.Supplier
 import it.posteitaliane.gdc.gadc.services.SupplierService
 import java.util.stream.Collectors
 
-class SupplierForm2(private val sups:SupplierService,s:SupplierPresentation?=null): FormLayout() {
+class SupplierForm2(private val sups:SupplierService): FormLayout() {
 
     private val nameField = TextField()
     private val pivaField = TextField()

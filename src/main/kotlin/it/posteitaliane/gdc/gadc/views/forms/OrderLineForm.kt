@@ -183,7 +183,7 @@ class OrderLineForm(
             ss.findForCount(itemsField.value, order.datacenter!!.short, posField.value)
                 .also {
                     amountField.max = it!!.amount
-                    amountField.placeholder = "Max ${it!!.amount}"
+                    amountField.placeholder = "Max ${it.amount}"
                 }
         } else {
             amountField.max = Integer.MAX_VALUE
