@@ -1,9 +1,9 @@
 package it.posteitaliane.gdc.gadc.services
 
-import it.posteitaliane.gdc.gadc.model.Datacenter
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.model.Storage
+import org.slf4j.Logger
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
@@ -15,7 +15,9 @@ class StorageService(
     private val db:JdbcTemplate,
     private val trs:TransactionTemplate,
 
-    private val dcs:DatacenterService
+    private val dcs:DatacenterService,
+
+    private val logger:Logger
 ) {
 
     private val storageMapper = RowMapper { rs, _ ->
@@ -60,13 +62,19 @@ class StorageService(
         else return null
     }
 
-    fun find(offset: Int=0, limit: Int=1000, searchKey: String?=null, ascending: Boolean=true, sortKey: String?=null, dc:Datacenter?=null) : List<Storage> {
+    fun find(offset: Int=0, limit: Int=1000, searchKey: String?=null, ascending: Boolean=true, sortKey: String?=null, dcsKey:List<String>?=null) : List<Storage> {
         var query = QUERY_ALL
 
         query += " WHERE TRUE "
 
-        if(dc!=null) {
-            query += " AND dc LIKE '${dc.short}' "
+        if(dcsKey!=null && dcsKey.isNotEmpty()) {
+            val arg = dcsKey.joinToString(
+                prefix = "(",
+                postfix = ")",
+                separator = ",",
+                transform = { "'$it'" }
+            )
+            query += " AND dc IN ${arg} "
         }
 
         if ( searchKey != null ) {
@@ -85,6 +93,7 @@ class StorageService(
 
         query += " OFFSET $offset"
 
+        logger.debug(query)
         return db.query(query, storageMapper)
     }
 
