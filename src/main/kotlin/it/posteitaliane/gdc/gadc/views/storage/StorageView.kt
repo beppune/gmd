@@ -85,14 +85,12 @@ class StorageView(
             if( it.key == Key.ENTER ) {
                 storageFilter.key = searchField.value.lowercase().trim()
                 filterProvider.setFilter(storageFilter)
-                logger.info(storageFilter.toString())
             }
 
             if( it.key.toString() == "Escape" || it.key.toString() == "Delete" ) {
                 searchField.clear()
                 storageFilter.key = null
                 filterProvider.setFilter(storageFilter)
-                logger.info(storageFilter.toString())
             }
         }
 
@@ -100,7 +98,6 @@ class StorageView(
             storageFilter.dcs.clear()
             if(  it.value.size != 0 ) storageFilter.dcs.addAll(it.value)
             filterProvider.setFilter(storageFilter)
-            logger.info(storageFilter.toString())
         }
 
         add(HorizontalLayout(searchField, dcSelect).apply { setWidthFull() })

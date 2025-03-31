@@ -78,7 +78,7 @@ class StorageService(
         }
 
         if ( searchKey != null ) {
-            query += " AND item LIKE '$searchKey%' "
+            query += " AND item LIKE '%$searchKey%' "
         }
 
         if( sortKey != null ) {
