@@ -3,6 +3,7 @@ package it.posteitaliane.gdc.gadc.services
 import it.posteitaliane.gdc.gadc.model.Order
 import it.posteitaliane.gdc.gadc.model.OrderLine
 import it.posteitaliane.gdc.gadc.services.specs.SpecService
+import org.slf4j.Logger
 import org.springframework.dao.DataAccessException
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
@@ -22,7 +23,8 @@ class OrderService(
     private val sups:SupplierService,
     private val ss:StorageService,
     private val trs:TransactionsService,
-    private val specs: SpecService
+    private val specs: SpecService,
+    private val logger:Logger
 ) {
 
     val orderMapper = RowMapper { rs, _ ->
@@ -241,6 +243,7 @@ class OrderService(
                 }
             }
 
+            logger.info("SUMBMITTIN ORDER: ${o.number}")
             return@execute Result(o)
         }catch (ex:TransactionException) {
             it.setRollbackOnly()
