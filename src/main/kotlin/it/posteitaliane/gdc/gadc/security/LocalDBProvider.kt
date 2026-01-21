@@ -17,7 +17,8 @@ class LocalDBProvider(private val db:JdbcTemplate, private val pe:PasswordEncode
 
         val map = try {
             db.queryForMap("SELECT uid,role,active,localpassword FROM operators WHERE UID = ?", username)
-        } catch (_:DataAccessException) {
+        } catch (ex:DataAccessException) {
+            ex.printStackTrace()
             null
         }
 
@@ -38,6 +39,7 @@ class LocalDBProvider(private val db:JdbcTemplate, private val pe:PasswordEncode
 
         val roles = listOf(SimpleGrantedAuthority("ROLE_" + map["role"] as String))
 
+        println("LOCALDB: Authenticating as ${username}")
         return UsernamePasswordAuthenticationToken(username, password, roles)
 
     }
