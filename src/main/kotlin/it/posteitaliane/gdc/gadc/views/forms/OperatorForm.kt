@@ -6,6 +6,7 @@ import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.EmailField
+import com.vaadin.flow.component.textfield.PasswordField
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.Binder
 import it.posteitaliane.gdc.gadc.model.Datacenter
@@ -18,7 +19,8 @@ data class OperatorPresentation(
     var email:String?=null,
     var active:Boolean=true,
     var role:Operator.Role=Operator.Role.OPERATOR,
-    val permissions:MutableList<Datacenter> = mutableListOf()
+    val permissions:MutableList<Datacenter> = mutableListOf(),
+    var localPassword:String?=null,
 )
 
 class OperatorForm(private val dcs:List<Datacenter>) : FormLayout() {
@@ -36,6 +38,8 @@ class OperatorForm(private val dcs:List<Datacenter>) : FormLayout() {
     private val firstNameField:TextField
 
     private val datacenterGroup:CheckboxGroup<Datacenter>
+
+    private val localPasswordField: PasswordField
 
     private val binder:Binder<OperatorPresentation>
 
@@ -65,6 +69,14 @@ class OperatorForm(private val dcs:List<Datacenter>) : FormLayout() {
             setItemLabelGenerator { "${it.short} - ${it.fullName}" }
 
         }
+
+        localPasswordField = PasswordField()
+            .apply {
+                placeholder = "LOCAL DB PASSWORD"
+                isEnabled = true
+                isReadOnly = false
+                isRequired = false
+            }
 
         binder = Binder(OperatorPresentation::class.java, false)
 
@@ -97,12 +109,20 @@ class OperatorForm(private val dcs:List<Datacenter>) : FormLayout() {
                 op.permissions.addAll(list)
             })
 
+        binder.forField(localPasswordField)
+            .bind("localPassword")
+            /*.bind(
+                {""},
+                { bean, value -> bean.localPassword = value }
+            )*/
+
         add(userNameField, activeField)
         add(emailField, 2)
         add(roleSelect, 2)
         add(lastNameField)
         add(firstNameField)
         add(datacenterGroup, 2)
+        add(localPasswordField)
 
         width = "500px"
 
@@ -121,7 +141,7 @@ class OperatorForm(private val dcs:List<Datacenter>) : FormLayout() {
             isActive = op.active,
             lastName = op.lastname!!,
             firstName = op.firstname!!,
-            localPassword = null
+            localPassword = op.localPassword
         ).apply {
             permissions.addAll(datacenterGroup.value)
         }

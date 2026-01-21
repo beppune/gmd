@@ -94,15 +94,15 @@ class OperatorService(
         return affected
     }
 
-    private val CREATE_OPERATOR_SQL = "INSERT INTO OPERATORS(uid,lastname,firstname,email,role,active)" +
-            " VALUES(?,?,?,?,?,?)"
+    private val CREATE_OPERATOR_SQL = "INSERT INTO OPERATORS(uid,lastname,firstname,email,role,active,localpassword)" +
+            " VALUES(?,?,?,?,?,?,?)"
     private val ADD_OPERATOR_PERMISSION = "INSERT INTO PERMISSIONS(operator,dc) VALUES(?,?)"
     fun create(op:Operator) : Result<Operator> = tr.execute {
 
         try {
             db.update(
                 CREATE_OPERATOR_SQL,
-                op.username.uppercase(), op.lastName, op.firstName, op.email, op.role.name, op.isActive
+                op.username.uppercase(), op.lastName, op.firstName, op.email, op.role.name, op.isActive, op.localPassword
                 )
 
             op.permissions.forEach { dc ->
