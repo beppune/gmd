@@ -57,6 +57,7 @@ class OperatorService(
 
         if(!filter.isNullOrEmpty()) {
             query += " WHERE" +
+                    " uid LIKE '%$filter%' OR " +
                     " lastname LIKE '%$filter%' OR " +
                     " firstname LIKE '%$filter%' OR " +
                     " email LIKE '%$filter%'"
