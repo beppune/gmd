@@ -12,7 +12,7 @@ class LocalDBProvider(private val db:JdbcTemplate, private val pe:PasswordEncode
 
     override fun authenticate(authentication: Authentication): Authentication? {
 
-        val username = authentication.principal as String
+        val username = (authentication.principal as String).uppercase()
         val password = authentication.principal as String
 
         val map = try {

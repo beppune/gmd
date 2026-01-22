@@ -15,7 +15,7 @@ import javax.naming.directory.InitialDirContext
 class ReteAuthenticationProvider(private val db:JdbcTemplate) : AuthenticationProvider {
 
     override fun authenticate(authentication: Authentication): Authentication? {
-        val username:String = authentication.principal as String
+        val username:String = (authentication.principal as String ).uppercase()
         val password:String = authentication.credentials as String
 
         try {

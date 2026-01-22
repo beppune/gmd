@@ -8,7 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 class TextAuthenticationProvider(private val config:TextAuthenticationConfig) : AuthenticationProvider {
     override fun authenticate(authentication: Authentication): Authentication? {
 
-        val username = authentication.principal
+        val username = authentication.principal.toString().uppercase()
         val password = authentication.credentials
 
         if(config.enable.not()) {
