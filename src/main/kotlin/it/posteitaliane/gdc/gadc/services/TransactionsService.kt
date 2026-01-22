@@ -39,6 +39,11 @@ class TransactionsService(
         return list
     }
 
+    fun count(): Int {
+        val query = "SELECT COUNT(*) FROM TRANSACTIONS"
+        return db.queryForObject(query, Int::class.java)!!
+    }
+
     fun logTransaction(line:OrderLine) {
 
         val o = line.order
