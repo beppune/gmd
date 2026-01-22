@@ -53,6 +53,41 @@ class OrdersProvider(
     }
 
     override fun sizeInBackEnd(query: Query<Order, OrdersFilter>?): Int {
-        return fetchFromBackEnd(query).count().toInt()
+        if( query == null ) return 0
+
+        val filter:String? = query.filter.getOrNull()?.searchKery
+        var sort:String?=null
+        var dcs:String?=null
+        var asc = true
+
+        if( query.sortOrders.size > 0 ) {
+            sort = query.sortOrders.first().sorted
+
+            if( query.sortOrders.first().direction == SortDirection.DESCENDING ) {
+                asc = false
+            }
+        }
+
+        if( query.filter.isPresent ) {
+            val list = query.filter.get().dcs
+            if(list.isNotEmpty() ) {
+                dcs = list.map(Datacenter::short)
+                    .joinToString(
+                        separator = ",",
+                        prefix = "(",
+                        postfix = ")",
+                        transform = { "'$it'" }
+                    )
+            }
+        }
+
+        return service.count(
+            offset = query.offset,
+            limit = query.limit,
+            searchKey = filter,
+            sortKey = sort,
+            dcs = dcs,
+            ascending = asc
+        )
     }
 }

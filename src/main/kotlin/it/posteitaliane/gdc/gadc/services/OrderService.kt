@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.TransactionException
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
+import kotlin.text.isNullOrEmpty
 
 @Service
 class OrderService(
@@ -88,9 +89,8 @@ class OrderService(
         return db.queryForObject(QUERY_BY_ID, orderMapper, id)!!
     }
 
-    fun find(offset: Int, limit: Int, searchKey: String?, sortKey:String?, dcs:String?, ascending:Boolean): List<Order> {
-        var query = QUERY_SEARCH_KEY
-
+    private fun queryBuilder(q:String, offset: Int, limit: Int, searchKey: String?, sortKey:String?, dcs:String?, ascending:Boolean): String {
+        var  query = q
         if ( searchKey != null ) {
 
             query += " WHERE "
@@ -117,6 +117,14 @@ class OrderService(
         query += " LIMIT $limit "
 
         query += " OFFSET $offset"
+
+        return query
+    }
+
+    fun find(offset: Int, limit: Int, searchKey: String?, sortKey:String?, dcs:String?, ascending:Boolean): List<Order> {
+        val query = queryBuilder(QUERY_SEARCH_KEY, offset, limit, searchKey, sortKey, dcs, ascending)
+
+
         return db.query(query, orderMapper)
 
     }
@@ -140,6 +148,12 @@ class OrderService(
             " SET operator = ?, datacenter = ?, supplier = ?, issued = ?, type = ?, subject = ?, status = ?, ref = ?, remarks = ?" +
             " WHERE id = ? ORDER BY id LIMIT 1"
     private val QUERY_DELETE_LINES = "DELETE FROM ORDERS_LINES WHERE ownedby = ?"
+
+    fun count(offset: Int, limit: Int, searchKey: String?, sortKey: String?, dcs: String?, ascending: Boolean): Int {
+        val query = queryBuilder("SELECT COUNT(*) FROM ORDERS", offset, limit, searchKey, sortKey, dcs, ascending)
+
+        return db.queryForObject(query, Int::class.java)!!
+    }
 
     fun register(o: Order): Result<Order>  = tr.execute { it ->
 
