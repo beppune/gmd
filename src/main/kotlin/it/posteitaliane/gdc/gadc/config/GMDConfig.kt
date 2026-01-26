@@ -11,4 +11,6 @@ class GMDConfig {
     lateinit var firmLegal:String
     lateinit var firmPiva:String
 
+    lateinit var operableDcs:String
+
 }
