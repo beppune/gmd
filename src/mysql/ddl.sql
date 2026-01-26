@@ -152,7 +152,8 @@ CREATE TABLE `permissions` (
   PRIMARY KEY (`operator`,`dc`),
   KEY `dc` (`dc`),
   CONSTRAINT `permissions_ibfk_1` FOREIGN KEY (`operator`) REFERENCES `operators` (`uid`),
-  CONSTRAINT `permissions_ibfk_2` FOREIGN KEY (`dc`) REFERENCES `dcs` (`shortname`)
+  CONSTRAINT `permissions_ibfk_2` FOREIGN KEY (`dc`) REFERENCES `dcs` (`shortname`),
+  CONSTRAINT `permissions_ibfk_3` UNIQUE (`operator`,`dc`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -285,5 +286,4 @@ CREATE TABLE `transactions` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
 -- Dump completed on 2026-01-21 16:09:57

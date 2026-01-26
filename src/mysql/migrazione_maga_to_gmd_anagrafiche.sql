@@ -264,3 +264,5 @@ WHERE go.active = 1
   AND mo.dc IS NOT NULL;
 
 SET sql_safe_updates = 1;
+
+UPDATE gmd.operators SET localpassword = 'PASSWORD' WHERE uid = 'MANZOGI9';
