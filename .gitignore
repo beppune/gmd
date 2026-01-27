@@ -172,3 +172,4 @@ build/
 /public/
 /.npmrc
 /application.properties
+/src/mysql/test_data.sql
