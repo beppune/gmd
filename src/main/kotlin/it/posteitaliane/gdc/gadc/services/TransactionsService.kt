@@ -47,7 +47,7 @@ class TransactionsService(
         if (filter != null) {
             query += " WHERE true"
             if (filter.dc != null) {
-                query += " OR dc LIKE '%${filter.from}%"
+                query += " OR dc LIKE '%${filter.dc!!.short}%"
             }
             if (filter.type != null) {
                 query += " OR type = ${filter.type}"
