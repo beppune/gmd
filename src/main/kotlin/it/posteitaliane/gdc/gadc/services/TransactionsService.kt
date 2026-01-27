@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.queryForList
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.stream.Stream
 
 @Service
@@ -31,6 +32,9 @@ class TransactionsService(
                 rs.getString("pt").orEmpty()
             )
         }
+
+
+        val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss")
     }
 
     private val QUERY_ALL = "SELECT id,operator,type,timestamp,item,dc,pos,amount,sn,pt FROM TRANSACTIONS"
@@ -41,7 +45,7 @@ class TransactionsService(
         var query = q;
 
         if (filter != null) {
-            query = " WHERE true"
+            query += " WHERE true"
             if (filter.dc != null) {
                 query += " OR dc LIKE '%${filter.from}%"
             }
@@ -54,6 +58,26 @@ class TransactionsService(
             if (filter.operator != null) {
                 query += " OR operator ${filter.operator}"
             }
+            if( (filter.from ?: filter.to) != null) {
+                val both = if ( filter.from != null && filter.to != null) {
+                    " AND "
+                } else {
+                    ""
+                }
+
+                var q_from = ""
+                var q_to = ""
+                if (filter.from != null) {
+                    q_from = "timestamp > \"${filter.from!!.format(dateTimeFormatter)}\""
+                }
+                if (filter.to != null) {
+                    q_to = "timestamp < \"${filter.to!!.format(dateTimeFormatter)}\""
+                }
+
+                query += " AND ($q_from $both $q_to)"
+            }
+
+            println(query)
         }
 
         if (sortKey != null) {
