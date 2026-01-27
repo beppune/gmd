@@ -45,18 +45,23 @@ class TransactionsService(
         var query = q;
 
         if (filter != null) {
-            query += " WHERE true"
+            var dc = ""
+            var type = ""
+            var item = ""
+            var operator = ""
+            var timestamp = ""
+
             if (filter.dc != null) {
-                query += " OR dc LIKE '%${filter.dc!!.short}%"
+                dc = " dc = '${filter.dc!!.short}' "
             }
             if (filter.type != null) {
-                query += " OR type = ${filter.type}"
+                type = " type = '${filter.type}' "
             }
             if (filter.item != null) {
-                query += " OR item LIKE '%${filter.item}%"
+                item = " item LIKE '%${filter.item}%' "
             }
             if (filter.operator != null) {
-                query += " OR operator ${filter.operator}"
+                operator = "operator = '${filter.operator}'"
             }
             if( (filter.from ?: filter.to) != null) {
                 val both = if ( filter.from != null && filter.to != null) {
@@ -68,15 +73,20 @@ class TransactionsService(
                 var q_from = ""
                 var q_to = ""
                 if (filter.from != null) {
-                    q_from = "timestamp > \"${filter.from!!.format(dateTimeFormatter)}\""
+                    q_from = "timestamp > '${filter.from!!.format(dateTimeFormatter)}'"
                 }
                 if (filter.to != null) {
-                    q_to = "timestamp < \"${filter.to!!.format(dateTimeFormatter)}\""
+                    q_to = "timestamp < '${filter.to!!.format(dateTimeFormatter)}'"
                 }
 
-                query += " AND ($q_from $both $q_to)"
+                timestamp = " ($q_from $both $q_to) "
             }
 
+            val f = arrayOf(dc, type, item, operator, timestamp)
+                .filter { it.isNullOrBlank().not() }
+                .joinToString(separator = " AND ", prefix = " WHERE ")
+
+            query += f
             println(query)
         }
 

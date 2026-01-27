@@ -1,7 +1,9 @@
 package it.posteitaliane.gdc.gadc.views.transactions
 
+import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.UI
 import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.combobox.MultiSelectComboBox
 import com.vaadin.flow.component.datepicker.DatePicker
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
@@ -16,8 +18,10 @@ import com.vaadin.flow.server.InputStreamFactory
 import com.vaadin.flow.server.StreamResource
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gadc.model.Datacenter
+import it.posteitaliane.gdc.gadc.model.Operator
 import it.posteitaliane.gdc.gadc.model.Transaction
 import it.posteitaliane.gdc.gadc.services.DatacenterService
+import it.posteitaliane.gdc.gadc.services.OperatorService
 import it.posteitaliane.gdc.gadc.services.ReportService
 import it.posteitaliane.gdc.gadc.services.TransactionsService
 import it.posteitaliane.gdc.gadc.views.MainLayout
@@ -30,6 +34,7 @@ import java.time.format.DateTimeFormatter
 class TransactionsView(
     dcs:DatacenterService,
     trs:TransactionsService,
+    ops: OperatorService,
 
     private val rpt:ReportService
 ) : VerticalLayout() {
@@ -117,6 +122,13 @@ class TransactionsView(
                 filterProvider.setFilter(null)
             }
 
+            val operatorsCombo = MultiSelectComboBox<Operator>("OPERATORI").apply {
+                setItems( ops.findAll() )
+                itemLabelGenerator = ItemLabelGenerator {
+                    "${it.lastName} ${it.firstName}"
+                }
+            }
+
             setWidthFull()
 
             val reportButton = Button("Report Excel") {
@@ -138,7 +150,8 @@ class TransactionsView(
                 UI.getCurrent().element.removeChild(els.toList())
             }
 
-            add(dcSelect,fromPicker, toPicker)
+            add(fromPicker, toPicker)
+            add(operatorsCombo, dcSelect)
             add(reportButton)
             add(clearButton)
         }
