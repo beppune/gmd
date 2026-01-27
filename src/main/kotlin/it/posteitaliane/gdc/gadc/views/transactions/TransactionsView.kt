@@ -13,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.data.provider.SortDirection
+import com.vaadin.flow.data.renderer.Renderer
 import com.vaadin.flow.router.Route
 import com.vaadin.flow.server.InputStreamFactory
 import com.vaadin.flow.server.StreamResource
@@ -64,7 +65,7 @@ class TransactionsView(
 
         grid = Grid(Transaction::class.java, false)
 
-        grid.addColumn("operator").setSortProperty("operator")
+        grid.addColumn("operator").setHeader("OPERATORE").setSortProperty("operator")
         grid.addColumn("type").isSortable = false
         val timeStampColumn = grid.addColumn({defaultFormatter.format(it.timestamp)}).setHeader("Data").setSortProperty("timestamp")
         grid.addColumn("item").setSortProperty("item")
@@ -122,10 +123,18 @@ class TransactionsView(
                 filterProvider.setFilter(null)
             }
 
-            val operatorsCombo = MultiSelectComboBox<Operator>("OPERATORI").apply {
+            val operatorsCombo = MultiSelectComboBox<Operator>().apply {
+                placeholder = "OPERATORI"
                 setItems( ops.findAll() )
                 itemLabelGenerator = ItemLabelGenerator {
                     "${it.lastName} ${it.firstName}"
+                }
+                addValueChangeListener {
+                    if(it.value.isNotEmpty()) {
+                        filter.operators.clear()
+                        filter.operators.addAll(it.value)
+                        filterProvider.setFilter(filter)
+                    }
                 }
             }
 

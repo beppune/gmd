@@ -6,11 +6,9 @@ import it.posteitaliane.gdc.gadc.model.Transaction
 import it.posteitaliane.gdc.gadc.views.transactions.TransactionFilter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.queryForList
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.stream.Stream
 
 @Service
 class TransactionsService(
@@ -60,8 +58,12 @@ class TransactionsService(
             if (filter.item != null) {
                 item = " item LIKE '%${filter.item}%' "
             }
-            if (filter.operator != null) {
-                operator = "operator = '${filter.operator}'"
+            if (filter.operators.isNullOrEmpty().not()) {
+                operator = " operator IN " + filter.operators.joinToString(
+                    prefix = "(",
+                    postfix = ") ",
+                    separator = ",",
+                ) { " '${it.username}'" }
             }
             if( (filter.from ?: filter.to) != null) {
                 val both = if ( filter.from != null && filter.to != null) {
