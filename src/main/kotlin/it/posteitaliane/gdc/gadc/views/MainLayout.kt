@@ -137,8 +137,8 @@ class  MainLayout(
         if( op.isAdmin ) {
             nav.addItem(SideNavItem("Fornitori", SuppliersView::class.java))
             nav.addItem(SideNavItem("Utenze", OperatorsView::class.java))
-            nav.addItem(SideNavItem("Transazioni", TransactionsView::class.java))
         }
+        nav.addItem(SideNavItem("Transazioni", TransactionsView::class.java))
 
         val scroller = Scroller(nav)
         scroller.className = LumoUtility.Padding.SMALL
