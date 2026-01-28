@@ -1,5 +1,7 @@
 package it.posteitaliane.gdc.gadc.security
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.security.authentication.AuthenticationProvider
@@ -9,6 +11,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.crypto.password.PasswordEncoder
 
 class LocalDBProvider(private val db:JdbcTemplate, private val pe:PasswordEncoder) : AuthenticationProvider {
+
+    private val logger: Logger = LoggerFactory.getLogger("LocalDB")
 
     override fun authenticate(authentication: Authentication): Authentication? {
 
@@ -23,7 +27,7 @@ class LocalDBProvider(private val db:JdbcTemplate, private val pe:PasswordEncode
         }
 
         if( map == null ) {
-            println("LOCALDB: Username not FOUND [${username}]")
+            logger.info("Username not FOUND [${username}]")
             return null
         }
 
@@ -33,13 +37,13 @@ class LocalDBProvider(private val db:JdbcTemplate, private val pe:PasswordEncode
         }
 
         if( map["active"].toString() == "0" ) {
-            println("LOCALDB: Username disabled [${username}]")
+            logger.info("LOCALDB: Username disabled [${username}]")
             return null
         }
 
         val roles = listOf(SimpleGrantedAuthority("ROLE_" + map["role"] as String))
 
-        println("LOCALDB: Authenticating as ${username}")
+        logger.info("LOCALDB: Authenticating as ${username}")
         return UsernamePasswordAuthenticationToken(username, password, roles)
 
     }
