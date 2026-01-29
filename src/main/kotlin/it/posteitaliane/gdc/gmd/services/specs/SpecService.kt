@@ -60,10 +60,13 @@ class SpecService(
         lines.map(OrderLine::item).all(String::isNotBlank)
     }
 
+    private val DC_MUST_BE_ACTIVE: OrderPredicate = { dc.operating }
+
     val INBOUND_INTERNAL_SPEC = OrderSpec()
         .amend(AMEND_INTERNAL_SUPPLIER)
         .amend(AMEND_UNIQUE_AMOUNT)
         .amend(AMEND_EMPTY_UNIQUE)
+        .define("DC_MUST_BE_ACTIVE", DC_MUST_BE_ACTIVE)
         .define("ITEM_MUST_NOT_BE_NULL_OR_EMPTY", ITEM_MUST_NOT_BE_NULL_OR_EMPTY)
         .define("UNIQUE_MUST_NOT_BE_IN_STORAGE", UNIQUE_MUST_NOT_BE_IN_STORAGE)
         .define("NO_REPEATED_UNIQUES", NO_REPEATED_UNIQUES)
@@ -72,12 +75,14 @@ class SpecService(
         .amend(AMEND_INTERNAL_SUPPLIER)
         .amend(AMEND_UNIQUE_AMOUNT)
         .amend(AMEND_EMPTY_UNIQUE)
+        .define("DC_MUST_BE_ACTIVE", DC_MUST_BE_ACTIVE)
         .define("ITEM_MUST_NOT_BE_NULL_OR_EMPTY", ITEM_MUST_NOT_BE_NULL_OR_EMPTY)
         .define("UNIQUE_MUST_BE_IN_STORAGE", UNIQUE_MUST_BE_IN_STORAGE)
 
     val INBOUND_SUPPLIER_SPEC = OrderSpec()
         .amend(AMEND_UNIQUE_AMOUNT)
         .amend(AMEND_EMPTY_UNIQUE)
+        .define("DC_MUST_BE_ACTIVE", DC_MUST_BE_ACTIVE)
         .define("ITEM_MUST_NOT_BE_NULL_OR_EMPTY", ITEM_MUST_NOT_BE_NULL_OR_EMPTY)
         .define("UNIQUE_MUST_NOT_BE_IN_STORAGE", UNIQUE_MUST_NOT_BE_IN_STORAGE)
         .define("NO_REPEATED_UNIQUES", NO_REPEATED_UNIQUES)
@@ -85,6 +90,7 @@ class SpecService(
     val OUTBOUND_SUPPLIER_SPEC = OrderSpec()
         .amend(AMEND_UNIQUE_AMOUNT)
         .amend(AMEND_EMPTY_UNIQUE)
+        .define("DC_MUST_BE_ACTIVE", DC_MUST_BE_ACTIVE)
         .define("ITEM_MUST_NOT_BE_NULL_OR_EMPTY", ITEM_MUST_NOT_BE_NULL_OR_EMPTY)
         .define("UNIQUE_MUST_BE_IN_STORAGE", UNIQUE_MUST_BE_IN_STORAGE)
 
