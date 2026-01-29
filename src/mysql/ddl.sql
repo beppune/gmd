@@ -29,6 +29,7 @@ CREATE TABLE `dcs` (
   `shortname` char(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `fullname` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `legal` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `active` TINYINT NOT NULL DEFAULT FALSE,
   PRIMARY KEY (`shortname`),
   FULLTEXT KEY `dcs_fullname_fulltext` (`fullname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
