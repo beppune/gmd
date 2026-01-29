@@ -13,10 +13,10 @@
 	</parent>
 
 	<groupId>it.posteitaliane.gdc</groupId>
-	<artifactId>magazzino</artifactId>
+	<artifactId>gmd</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Gestione Magazzini Datacenter</name>
-	<description>Gestione Magazzini Datacenter</description>
+	<name>Gestione Magazzino Datacenter</name>
+	<description>Gestione Magazzino Datacenter</description>
 
 	<properties>
 		<java.version>17</java.version>
