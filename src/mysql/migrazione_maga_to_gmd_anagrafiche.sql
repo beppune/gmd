@@ -15,6 +15,12 @@ ON DUPLICATE KEY UPDATE
   fullname = VALUES(fullname),
   legal    = VALUES(legal);
 
+UPDATE dcs SET active = TRUE WHERE shortname = 'DGT';
+UPDATE dcs SET active = TRUE WHERE shortname = 'EUR';
+UPDATE dcs SET active = TRUE WHERE shortname = 'MGZ';
+UPDATE dcs SET active = TRUE WHERE shortname = 'TOR';
+UPDATE dcs SET active = TRUE WHERE shortname = 'TOT';
+
 /* 2) LOCATIONS -> gmd.locations (no CTE) */
 CREATE TABLE IF NOT EXISTS gmd.locations_stage (
   dc CHAR(4) NOT NULL,
