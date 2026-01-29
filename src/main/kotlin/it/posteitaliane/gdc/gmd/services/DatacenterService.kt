@@ -20,13 +20,20 @@ class DatacenterService(
             Datacenter(
                 short = rs.getString("shortname"),
                 fullName = rs.getString("fullname"),
-                legal = rs.getString("legal")
+                legal = rs.getString("legal"),
+                operating = rs.getBoolean("active"),
             )
         }
     }
 
-    fun findAll(locations:Boolean=false) : List<Datacenter> {
-        return db.query("SELECT shortname,fullname,legal FROM DCS", mapper)
+    fun findAll(locations:Boolean=false, onlyOperating: Boolean=true) : List<Datacenter> {
+        var query = "SELECT shortname,fullname,legal,active FROM DCS "
+
+        if (onlyOperating) {
+            query += " WHERE active IS TRUE"
+        }
+
+        return db.query(query, mapper)
             .apply {
                 if(locations) {
                     forEach { dc ->
@@ -37,16 +44,16 @@ class DatacenterService(
     }
 
     fun findByShortName(short:String) : Datacenter? {
-        return db.queryForObject("SELECT shortname,fullname,legal FROM DCS WHERE shortname LIKE ?", mapper, short)
+        return db.queryForObject("SELECT shortname,fullname,legal,active FROM DCS WHERE shortname LIKE ?", mapper, short)
     }
 
-    private val CREATE_DATACENTER_SQL = "INSERT INTO DCS(shortname,fullname,legal) VALUES(?,?,?)"
+    private val CREATE_DATACENTER_SQL = "INSERT INTO DCS(shortname,fullname,legal,active) VALUES(?,?,?,?)"
     private val CREATE_LOCATIONS_SQL = "INSERT INTO LOCATIONS(dc,name) VALUES(?,?)"
     fun create(dc: Datacenter) : Result<Datacenter> = tr.execute {
 
         try {
 
-            db.update(CREATE_DATACENTER_SQL, dc.short.uppercase(), dc.fullName, dc.legal)
+            db.update(CREATE_DATACENTER_SQL, dc.short.uppercase(), dc.fullName, dc.legal, "TRUE")
             dc.locations.forEach {
                 db.update(CREATE_LOCATIONS_SQL, dc.short.uppercase(), it)
             }

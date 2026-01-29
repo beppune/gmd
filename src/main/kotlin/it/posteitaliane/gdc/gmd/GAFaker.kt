@@ -73,7 +73,7 @@ class GaProvider : AbstractProvider<BaseProviders>(Faker()) {
         return Datacenter(
             short = dcshort(),
             fullName = dcfull(),
-            legal = faker.address().streetAddress()
+            legal = faker.address().streetAddress(),
         ).apply {
             locations = faker.getFaker<Faker>()
                 .collection({faker.expression("#{examplify 'AB - 12'}")})

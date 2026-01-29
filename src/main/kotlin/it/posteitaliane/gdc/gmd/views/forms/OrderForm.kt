@@ -22,6 +22,7 @@ import it.posteitaliane.gdc.gmd.model.Operator
 import it.posteitaliane.gdc.gmd.model.Order
 import it.posteitaliane.gdc.gmd.model.Supplier
 import it.posteitaliane.gdc.gmd.services.*
+import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
 
@@ -47,6 +48,8 @@ class OrderForm(
     private val op:Operator,
     private var type: Order.Type? = null
 ) : FormLayout() {
+
+    val logger = LoggerFactory.getLogger("OrderForm")
 
     var isValid: Boolean = false
 
@@ -131,9 +134,9 @@ class OrderForm(
             .apply {
                 placeholder = "DATACENTER"
                 setItemLabelGenerator {
-                    "${it.short} - ${it.fullName}"
+                    it.fullName
                 }
-                setItems(dcs.findAll(true).filter { op.permissions.contains(it) })
+                setItems(dcs.findAll(true).filter { op.isAdmin || op.permissions.contains(it) })
             }
 
         binder.forField(dcSelect)

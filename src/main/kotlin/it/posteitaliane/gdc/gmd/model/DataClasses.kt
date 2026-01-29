@@ -3,10 +3,11 @@ package it.posteitaliane.gdc.gmd.model
 import java.time.LocalDateTime
 
 data class Datacenter(
-    val short:String,
-    val fullName:String,
-    val legal: String
-    ) {
+    val short: String,
+    val fullName: String,
+    val legal: String,
+    val operating: Boolean=true,
+) {
 
 
         var locations: MutableList<String> = mutableListOf()

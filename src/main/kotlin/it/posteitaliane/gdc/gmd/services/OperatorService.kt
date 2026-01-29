@@ -32,7 +32,7 @@ class OperatorService(
     private fun fetchPermissions(ops:MutableList<Operator>) {
         ops.forEach { op ->
             val perms = db.query(
-                "SELECT shortname,fullname,legal FROM DCS JOIN PERMISSIONS ON shortname=dc WHERE operator = ?",
+                "SELECT shortname,fullname,legal,active FROM DCS JOIN PERMISSIONS ON shortname=dc WHERE operator = ?",
                 DatacenterService.mapper,
                 op.username
             )
