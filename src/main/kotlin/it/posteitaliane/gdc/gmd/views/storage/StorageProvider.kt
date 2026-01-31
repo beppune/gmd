@@ -33,6 +33,7 @@ class StorageProvider(
             offset = query.offset,
             limit = query.limit,
             sortKey = sort,
+            items = filter.items,
             searchKey = filter.key,
             dcs = dcs.toList(),
             ascending = asc,

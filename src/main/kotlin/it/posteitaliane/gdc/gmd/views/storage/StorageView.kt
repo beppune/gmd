@@ -1,8 +1,10 @@
 package it.posteitaliane.gdc.gmd.views.storage
 
 import com.vaadin.flow.component.Key
+import com.vaadin.flow.component.Unit
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.checkbox.CheckboxGroup
+import com.vaadin.flow.component.combobox.MultiSelectComboBox
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.icon.Icon
@@ -38,6 +40,8 @@ class StorageView(
 
     val grid: Grid<Storage>
 
+    private val itemField: MultiSelectComboBox<String>
+
     private val searchField:TextField
 
     private val dcSelect: CheckboxGroup<Datacenter>
@@ -71,6 +75,13 @@ class StorageView(
 
         storageFilter = StorageFilter()
 
+        itemField = MultiSelectComboBox<String>().apply {
+            placeholder = "MERCE"
+            isSelectedItemsOnTop = true
+            setWidth(20F, Unit.REM)
+            setItems(ss.findAllItems())
+        }
+
         searchField = TextField()
             .apply {
                 prefixComponent = Icon(VaadinIcon.SEARCH)
@@ -88,6 +99,12 @@ class StorageView(
             isVisible = false
             setItems(dcs.findOthers())
             setItemLabelGenerator { it.short }
+        }
+
+        itemField.addValueChangeListener { event ->
+            storageFilter.items.clear()
+            storageFilter.items.addAll( event.value )
+            filterProvider.setFilter(storageFilter)
         }
 
         searchField.addKeyUpListener {
@@ -125,7 +142,7 @@ class StorageView(
             }
         }
 
-        add(HorizontalLayout(searchField, dcSelect).apply { setWidthFull() })
+        add(HorizontalLayout(itemField, searchField, dcSelect).apply { setWidthFull() })
         add(HorizontalLayout(showAllCheck, otherDcSelect).apply { setWidthFull() })
         add(grid)
     }

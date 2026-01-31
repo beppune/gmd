@@ -69,7 +69,8 @@ class StorageService(
         ascending: Boolean = true,
         sortKey: String? = null,
         dcs: List<String>,
-        showOthers: Boolean
+        showOthers: Boolean,
+        items: MutableSet<String>
     ) : List<Storage> {
         var query = QUERY_ALL
 
@@ -83,6 +84,15 @@ class StorageService(
                 transform = { "'$it'" }
             )
             query += " AND dc IN ${arg} "
+        }
+
+        if (items.isNotEmpty()) {
+            query += items.joinToString(
+                prefix = " AND item IN (",
+                postfix = ") ",
+                separator = ",",
+                transform = { "'$it'" }
+            )
         }
 
         if ( searchKey != null ) {
