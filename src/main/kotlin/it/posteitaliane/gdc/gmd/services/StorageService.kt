@@ -65,6 +65,7 @@ class StorageService(
     fun find(
         offset: Int = 0,
         limit: Int = 1000,
+        positions: List<String>? = null,
         searchKey: String? = null,
         ascending: Boolean = true,
         sortKey: String? = null,
@@ -75,6 +76,15 @@ class StorageService(
         var query = QUERY_ALL
 
         query += " WHERE TRUE "
+
+        if (!positions.isNullOrEmpty()) {
+            query += positions.joinToString(
+                prefix = " AND pos IN (",
+                separator = ",",
+                postfix = ") ",
+                transform = { "'$it'" }
+            )
+        }
 
         if(dcs.isNotEmpty()) {
             val arg = dcs.joinToString(
@@ -223,5 +233,22 @@ class StorageService(
             return@execute Result(null, "StorageService::addItem: ${ex.message}")
         }
     }!!
+
+    fun findItemsFromStorage(dcs: List<String>? = null): List<String> {
+        var query = "SELECT DISTINCT pos FROM STORAGE WHERE TRUE "
+
+        if(!dcs.isNullOrEmpty()) {
+            query += dcs.joinToString(
+                separator = ",",
+                prefix = " AND dc in (",
+                postfix = ") ",
+                transform = {"'${it}'"}
+            )
+        }
+
+        query += " ORDER BY pos"
+
+        return db.queryForList(query, String::class.java)
+    }
 
 }

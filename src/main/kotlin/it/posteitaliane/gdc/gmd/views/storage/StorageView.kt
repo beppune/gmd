@@ -42,6 +42,8 @@ class StorageView(
 
     private val itemField: MultiSelectComboBox<String>
 
+    private val positionField: MultiSelectComboBox<String>
+
     private val searchField:TextField
 
     private val dcSelect: CheckboxGroup<Datacenter>
@@ -82,6 +84,14 @@ class StorageView(
             setItems(ss.findAllItems())
         }
 
+        positionField = MultiSelectComboBox<String>().apply {
+            placeholder = "POSIZIONE"
+
+            val dcs = storageFilter.dcs.union(storageFilter.others).toList()
+
+            setItems(ss.findItemsFromStorage(dcs = dcs))
+        }
+
         searchField = TextField()
             .apply {
                 prefixComponent = Icon(VaadinIcon.SEARCH)
@@ -107,6 +117,12 @@ class StorageView(
             filterProvider.setFilter(storageFilter)
         }
 
+        positionField.addValueChangeListener { event ->
+            storageFilter.positions.clear()
+            storageFilter.positions.addAll( ss.findItemsFromStorage(event.value.toList()) )
+            filterProvider.setFilter(storageFilter)
+        }
+
         searchField.addKeyUpListener {
             if( it.key == Key.ENTER ) {
                 storageFilter.key = searchField.value.lowercase().trim()
@@ -123,12 +139,24 @@ class StorageView(
         dcSelect.addValueChangeListener {
             storageFilter.dcs.clear()
             if(  it.value.size != 0 ) storageFilter.dcs.addAll(it.value.map(Datacenter::short))
+
+            val dcs = storageFilter.dcs.union(
+                if ( storageFilter.showOthers ) storageFilter.others.toList()
+                    else emptySet()
+            ).toList()
+            positionField.setItems( ss.findItemsFromStorage(dcs) )
             filterProvider.setFilter(storageFilter)
         }
 
         otherDcSelect.addValueChangeListener {
             storageFilter.others.clear()
             if(  it.value.size != 0 ) storageFilter.others.addAll(it.value.map(Datacenter::short))
+
+            val dcs = storageFilter.dcs.union(
+                if ( storageFilter.showOthers ) storageFilter.others.toList()
+                        else emptySet()
+            ).toList()
+            positionField.setItems( ss.findItemsFromStorage(dcs) )
             filterProvider.setFilter(storageFilter)
         }
 
@@ -142,7 +170,7 @@ class StorageView(
             }
         }
 
-        add(HorizontalLayout(itemField, searchField, dcSelect).apply { setWidthFull() })
+        add(HorizontalLayout(itemField, positionField, dcSelect).apply { setWidthFull() })
         add(HorizontalLayout(showAllCheck, otherDcSelect).apply { setWidthFull() })
         add(grid)
     }
