@@ -1,7 +1,10 @@
 package it.posteitaliane.gdc.gmd.views.storage
 
+import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.Unit
+import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.checkbox.CheckboxGroup
 import com.vaadin.flow.component.combobox.MultiSelectComboBox
@@ -9,12 +12,14 @@ import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.orderedlayout.FlexLayout
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gmd.model.Datacenter
 import it.posteitaliane.gdc.gmd.model.Storage
 import it.posteitaliane.gdc.gmd.services.DatacenterService
@@ -41,8 +46,10 @@ class StorageView(
     val grid: Grid<Storage>
 
     private val itemField: MultiSelectComboBox<String>
+    private val clearItemButton: Button
 
     private val positionField: MultiSelectComboBox<String>
+    private val clearPosButton: Button
 
     private val searchField:TextField
 
@@ -170,7 +177,37 @@ class StorageView(
             }
         }
 
-        add(HorizontalLayout(itemField, positionField, dcSelect).apply { setWidthFull() })
+        clearItemButton = Button().apply {
+            icon = Icon(VaadinIcon.CLOSE_CIRCLE)
+            isVisible = false
+            addClassNames(LumoUtility.Background.ERROR_50, LumoUtility.TextColor.WARNING_CONTRAST)
+            addClickListener {
+                itemField.clear()
+            }
+
+            itemField.addValueChangeListener { event ->
+                this.isVisible = event.value.toList().isNotEmpty()
+            }
+        }
+
+        clearPosButton = Button().apply {
+            icon = Icon(VaadinIcon.CLOSE_CIRCLE)
+            isVisible = false
+            addClassNames(LumoUtility.Background.ERROR_50, LumoUtility.TextColor.WARNING_CONTRAST)
+            addClickListener {
+                positionField.clear()
+            }
+
+            positionField.addValueChangeListener { event ->
+                this.isVisible = event.value.toList().isNotEmpty()
+            }
+        }
+
+        val flex = fun (c: Component, b:Button): FlexLayout {
+            return FlexLayout(c, b)
+        }
+
+        add(HorizontalLayout(flex(itemField, clearItemButton), flex(positionField,clearPosButton), dcSelect).apply { setWidthFull() })
         add(HorizontalLayout(showAllCheck, otherDcSelect).apply { setWidthFull() })
         add(grid)
     }
