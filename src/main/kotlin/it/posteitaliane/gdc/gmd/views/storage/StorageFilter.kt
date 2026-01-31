@@ -6,7 +6,8 @@ data class StorageFilter(
     var key:String?=null,
     var position:String?=null,
     var sn:String?=null,
-    var pt:String?=null
-) {
-    val dcs:MutableList<Datacenter> = mutableListOf()
-}
+    var pt:String?=null,
+    val dcs: MutableSet<String> = mutableSetOf(),
+    val others: MutableSet<String> = mutableSetOf(),
+    var showOthers: Boolean=false,
+)

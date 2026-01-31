@@ -3,19 +3,18 @@ package it.posteitaliane.gdc.gmd.views.storage
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider
 import com.vaadin.flow.data.provider.Query
 import com.vaadin.flow.data.provider.SortDirection
-import it.posteitaliane.gdc.gmd.model.Datacenter
 import it.posteitaliane.gdc.gmd.model.Storage
 import it.posteitaliane.gdc.gmd.services.StorageService
+import org.slf4j.LoggerFactory
 import java.util.stream.Stream
-import kotlin.jvm.optionals.getOrNull
 
 class StorageProvider(
     private val service:StorageService
 ) : AbstractBackEndDataProvider<Storage, StorageFilter>() {
-    override fun fetchFromBackEnd(query: Query<Storage, StorageFilter>?): Stream<Storage> {
-        if( query == null ) return service.findAll().stream()
+    private val logger = LoggerFactory.getLogger(javaClass)
+    override fun fetchFromBackEnd(query: Query<Storage, StorageFilter>): Stream<Storage> {
 
-        val filter: StorageFilter? = query.filter.getOrNull()
+        val filter: StorageFilter = query.filter.orElse(StorageFilter())
         var sort:String?=null
         var asc=true
 
@@ -28,17 +27,20 @@ class StorageProvider(
             }
         }
 
+        var dcs = filter.dcs.union(filter.others).toList()
+
         return service.find(
             offset = query.offset,
             limit = query.limit,
             sortKey = sort,
-            searchKey = filter?.key,
-            dcsKey = filter?.dcs?.map(Datacenter::short),
-            ascending = asc
+            searchKey = filter.key,
+            dcs = dcs.toList(),
+            ascending = asc,
+            showOthers = filter.showOthers,
         ).stream()
     }
 
-    override fun sizeInBackEnd(query: Query<Storage, StorageFilter>?): Int {
+    override fun sizeInBackEnd(query: Query<Storage, StorageFilter>): Int {
         return fetchFromBackEnd(query).count().toInt()
     }
 }

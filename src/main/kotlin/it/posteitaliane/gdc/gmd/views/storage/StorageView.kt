@@ -1,6 +1,7 @@
 package it.posteitaliane.gdc.gmd.views.storage
 
 import com.vaadin.flow.component.Key
+import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.checkbox.CheckboxGroup
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridSortOrder
@@ -40,6 +41,8 @@ class StorageView(
     private val searchField:TextField
 
     private val dcSelect: CheckboxGroup<Datacenter>
+
+    private val otherDcSelect: CheckboxGroup<Datacenter>
 
     private var storageFilter: StorageFilter
 
@@ -81,6 +84,12 @@ class StorageView(
             setItemLabelGenerator { it.short }
         }
 
+        otherDcSelect = CheckboxGroup<Datacenter>().apply {
+            isVisible = false
+            setItems(dcs.findOthers())
+            setItemLabelGenerator { it.short }
+        }
+
         searchField.addKeyUpListener {
             if( it.key == Key.ENTER ) {
                 storageFilter.key = searchField.value.lowercase().trim()
@@ -96,11 +105,28 @@ class StorageView(
 
         dcSelect.addValueChangeListener {
             storageFilter.dcs.clear()
-            if(  it.value.size != 0 ) storageFilter.dcs.addAll(it.value)
+            if(  it.value.size != 0 ) storageFilter.dcs.addAll(it.value.map(Datacenter::short))
             filterProvider.setFilter(storageFilter)
         }
 
+        otherDcSelect.addValueChangeListener {
+            storageFilter.others.clear()
+            if(  it.value.size != 0 ) storageFilter.others.addAll(it.value.map(Datacenter::short))
+            filterProvider.setFilter(storageFilter)
+        }
+
+        val showAllCheck= Checkbox().apply {
+            label = "MOSTRA  TUTTI"
+            addValueChangeListener { event ->
+                otherDcSelect.isVisible = event.value
+
+                storageFilter.showOthers = event.value
+                filterProvider.setFilter(storageFilter)
+            }
+        }
+
         add(HorizontalLayout(searchField, dcSelect).apply { setWidthFull() })
+        add(HorizontalLayout(showAllCheck, otherDcSelect).apply { setWidthFull() })
         add(grid)
     }
 }

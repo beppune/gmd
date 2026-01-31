@@ -65,4 +65,17 @@ class DatacenterService(
         }
     }!!
 
+    fun findOthers(locations: Boolean=false): List<Datacenter> {
+        var query = "SELECT shortname,fullname,legal,active FROM DCS WHERE active IS FALSE"
+
+        return db.query(query, mapper)
+            .apply {
+                if(locations) {
+                    forEach { dc ->
+                        dc.locations.addAll( db.queryForList("SELECT name FROM LOCATIONS WHERE dc = ?", String::class.java, dc.short) )
+                    }
+                }
+            }
+    }
+
 }

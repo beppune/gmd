@@ -23,7 +23,7 @@ class StorageService(
     private val storageMapper = RowMapper { rs, _ ->
         Storage(
             item = rs.getString("item"),
-            dc = dcs.findByShortName(rs.getString("dc"))!!,
+            dc = dcs.findByShortName(rs.getString("short"))!!,
             pos = rs.getString("pos"),
             amount = rs.getInt("amount"),
             sn = rs.getString("sn"),
@@ -35,7 +35,7 @@ class StorageService(
         rs.getString("name")
     }
 
-    private val QUERY_ALL = "SELECT item,dc,pos,amount,sn,pt FROM STORAGE"
+    private val QUERY_ALL = "SELECT item,dc AS short,dcs.fullname AS dc,pos,amount,sn,pt FROM STORAGE JOIN DCS ON dc=shortname "
 
     private val QUERY_ITEMS = "SELECT name FROM ITEMS ORDER BY name";
 
@@ -62,13 +62,21 @@ class StorageService(
         else return null
     }
 
-    fun find(offset: Int=0, limit: Int=1000, searchKey: String?=null, ascending: Boolean=true, sortKey: String?=null, dcsKey:List<String>?=null) : List<Storage> {
+    fun find(
+        offset: Int = 0,
+        limit: Int = 1000,
+        searchKey: String? = null,
+        ascending: Boolean = true,
+        sortKey: String? = null,
+        dcs: List<String>,
+        showOthers: Boolean
+    ) : List<Storage> {
         var query = QUERY_ALL
 
         query += " WHERE TRUE "
 
-        if(dcsKey!=null && dcsKey.isNotEmpty()) {
-            val arg = dcsKey.joinToString(
+        if(dcs.isNotEmpty()) {
+            val arg = dcs.joinToString(
                 prefix = "(",
                 postfix = ")",
                 separator = ",",
@@ -79,6 +87,10 @@ class StorageService(
 
         if ( searchKey != null ) {
             query += " AND item LIKE '%$searchKey%' "
+        }
+
+        if (!showOthers) {
+            query += " AND active IS TRUE "
         }
 
         if( sortKey != null ) {
