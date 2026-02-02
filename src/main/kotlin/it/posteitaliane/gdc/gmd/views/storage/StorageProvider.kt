@@ -36,6 +36,7 @@ class StorageProvider(
             items = filter.items,
             searchKey = filter.key,
             dcs = dcs.toList(),
+            positions = filter.positions.toList(),
             ascending = asc,
             showOthers = filter.showOthers,
         ).stream()

@@ -65,7 +65,7 @@ class StorageService(
     fun find(
         offset: Int = 0,
         limit: Int = 1000,
-        positions: List<String>? = null,
+        positions: List<String>,
         searchKey: String? = null,
         ascending: Boolean = true,
         sortKey: String? = null,
@@ -234,7 +234,7 @@ class StorageService(
         }
     }!!
 
-    fun findItemsFromStorage(dcs: List<String>? = null): List<String> {
+    fun findPosFromStorage(dcs: List<String>? = null): List<String> {
         var query = "SELECT DISTINCT pos FROM STORAGE WHERE TRUE "
 
         if(!dcs.isNullOrEmpty()) {

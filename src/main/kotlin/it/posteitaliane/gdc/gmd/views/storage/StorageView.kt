@@ -4,7 +4,6 @@ import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.Unit
 import com.vaadin.flow.component.button.Button
-import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.checkbox.CheckboxGroup
 import com.vaadin.flow.component.combobox.MultiSelectComboBox
@@ -96,7 +95,7 @@ class StorageView(
 
             val dcs = storageFilter.dcs.union(storageFilter.others).toList()
 
-            setItems(ss.findItemsFromStorage(dcs = dcs))
+            setItems(ss.findPosFromStorage(dcs = dcs))
         }
 
         searchField = TextField()
@@ -126,7 +125,7 @@ class StorageView(
 
         positionField.addValueChangeListener { event ->
             storageFilter.positions.clear()
-            storageFilter.positions.addAll( ss.findItemsFromStorage(event.value.toList()) )
+            storageFilter.positions.addAll( event.value )
             filterProvider.setFilter(storageFilter)
         }
 
@@ -151,7 +150,7 @@ class StorageView(
                 if ( storageFilter.showOthers ) storageFilter.others.toList()
                     else emptySet()
             ).toList()
-            positionField.setItems( ss.findItemsFromStorage(dcs) )
+            positionField.setItems( ss.findPosFromStorage(dcs) )
             filterProvider.setFilter(storageFilter)
         }
 
@@ -163,7 +162,7 @@ class StorageView(
                 if ( storageFilter.showOthers ) storageFilter.others.toList()
                         else emptySet()
             ).toList()
-            positionField.setItems( ss.findItemsFromStorage(dcs) )
+            positionField.setItems( ss.findPosFromStorage(dcs) )
             filterProvider.setFilter(storageFilter)
         }
 
