@@ -5,22 +5,24 @@ import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.checkbox.CheckboxGroup
 import com.vaadin.flow.component.combobox.MultiSelectComboBox
 import com.vaadin.flow.component.datepicker.DatePicker
+import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.orderedlayout.FlexLayout
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gmd.model.Datacenter
+import it.posteitaliane.gdc.gmd.model.Order
 import it.posteitaliane.gdc.gmd.services.DatacenterService
+import it.posteitaliane.gdc.gmd.services.StorageService
 import it.posteitaliane.gdc.gmd.views.storage.StorageFilter
-import org.slf4j.LoggerFactory
 
 class OperatorFilterForm<ModelType>(
     private var provider: ConfigurableFilterDataProvider<ModelType, Void, StorageFilter>,
     private val dcs: DatacenterService,
+    private val ss: StorageService,
 ): VerticalLayout() {
-
-    private val logger = LoggerFactory.getLogger(javaClass)
 
     private var filter = StorageFilter()
 
@@ -31,6 +33,8 @@ class OperatorFilterForm<ModelType>(
     /* UI */
     private val rowOne = FlexLayout()
     private val rowTwo = FlexLayout()
+    private val rowThree = FlexLayout()
+    private val rowFour = FlexLayout()
 
     /* Date filter */
     private lateinit var fromField: DatePicker;
@@ -114,8 +118,60 @@ class OperatorFilterForm<ModelType>(
         rowTwo.add(showOthersField, othersDcsField)
     }
 
+    /* Item, Position, s/n, pt */
+    private lateinit var itemFields: MultiSelectComboBox<String>
+    private lateinit var positionFields: MultiSelectComboBox<String>
+    private lateinit var snField: TextField
+    private lateinit var ptField: TextField
+
+    fun makeItems() {
+        itemFields = MultiSelectComboBox<String>().apply {
+            setItems( ss.findAllItems() )
+            placeholder = "MERCE"
+            addValueChangeListener {
+                filter.items.clear()
+                filter.items = it.value
+                defaultAmend.invoke(filter)
+            }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+        }
+
+        positionFields = MultiSelectComboBox<String>().apply {
+            placeholder = "MERCE"
+            addValueChangeListener {
+                filter.items.clear()
+                filter.items = it.value
+                defaultAmend.invoke(filter)
+            }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+        }
+
+        snField = TextField().apply {
+            placeholder = "S/N"
+            addValueChangeListener {
+                filter.sn = it.value
+                defaultAmend.invoke(filter)
+            }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+        }
+
+        ptField = TextField().apply {
+            placeholder = "PT"
+            addValueChangeListener {
+                filter.pt = it.value
+                defaultAmend.invoke(filter)
+            }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+        }
+
+        rowThree.add(itemFields, positionFields, snField, ptField)
+    }
+
+
     init {
         add( rowOne )
         add( rowTwo )
+        add( rowThree )
+        add( rowFour )
     }
 }
