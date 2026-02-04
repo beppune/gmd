@@ -10,6 +10,7 @@ import it.posteitaliane.gdc.gmd.model.Storage
 import it.posteitaliane.gdc.gmd.services.DatacenterService
 import it.posteitaliane.gdc.gmd.services.StorageService
 import it.posteitaliane.gdc.gmd.views.MainLayout
+import it.posteitaliane.gdc.gmd.views.forms.OperatorFilterForm
 import it.posteitaliane.gdc.gmd.views.forms.StorageFilterForm
 import jakarta.annotation.security.PermitAll
 import org.slf4j.Logger
@@ -54,8 +55,13 @@ class StorageView(
 
         grid.sort(mutableListOf(GridSortOrder(itemColumn, SortDirection.ASCENDING)))
 
-        var gridFilter = StorageFilterForm( filterProvider, dcs, ss)
-        add(gridFilter)
+//        var gridFilter = StorageFilterForm( filterProvider, dcs, ss)
+//        add(gridFilter)
+        var filterForm = OperatorFilterForm(filterProvider, dcs).apply {
+            makeDate()
+            makeDcs()
+        }
+        add(filterForm)
         add(grid)
     }
 }
