@@ -60,6 +60,7 @@ class StorageView(
         var filterForm = OperatorFilterForm(filterProvider, dcs).apply {
             makeDate()
             makeDcs()
+            makeOthers()
         }
         add(filterForm)
         add(grid)

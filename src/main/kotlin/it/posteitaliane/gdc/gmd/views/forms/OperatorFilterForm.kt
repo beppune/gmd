@@ -1,21 +1,19 @@
 package it.posteitaliane.gdc.gmd.views.forms
 
 import com.vaadin.flow.component.ItemLabelGenerator
-import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.checkbox.Checkbox
+import com.vaadin.flow.component.checkbox.CheckboxGroup
 import com.vaadin.flow.component.combobox.MultiSelectComboBox
 import com.vaadin.flow.component.datepicker.DatePicker
-import com.vaadin.flow.component.icon.Icon
-import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexLayout
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gmd.model.Datacenter
-import it.posteitaliane.gdc.gmd.model.Storage
 import it.posteitaliane.gdc.gmd.services.DatacenterService
 import it.posteitaliane.gdc.gmd.views.storage.StorageFilter
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 
 class OperatorFilterForm<ModelType>(
     private var provider: ConfigurableFilterDataProvider<ModelType, Void, StorageFilter>,
@@ -28,11 +26,11 @@ class OperatorFilterForm<ModelType>(
 
     private val defaultAmend:(StorageFilter) -> Unit = {
         provider.setFilter(it)
-        logger.info(it.toString())
     }
 
     /* UI */
     private val rowOne = FlexLayout()
+    private val rowTwo = FlexLayout()
 
     /* Date filter */
     private lateinit var fromField: DatePicker;
@@ -61,17 +59,17 @@ class OperatorFilterForm<ModelType>(
                     defaultAmend.invoke(filter)
                 }
             }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
         }
-
         rowOne.add(fromField, toField)
 
     }
 
     /* Datacenters */
-    private lateinit var dcsFeld: MultiSelectComboBox<Datacenter>
+    private lateinit var dcsField: CheckboxGroup<Datacenter>
 
     fun makeDcs() {
-        dcsFeld = MultiSelectComboBox<Datacenter>().apply {
+        dcsField = CheckboxGroup<Datacenter>().apply {
             setItems(dcs.findAll())
             itemLabelGenerator = ItemLabelGenerator { it.fullName.replace("DC ","") }
 
@@ -82,10 +80,42 @@ class OperatorFilterForm<ModelType>(
             }
         }
 
-        rowOne.add(dcsFeld)
+        rowOne.add(dcsField)
+    }
+
+    /* Other Datacenters */
+    private var others = HorizontalLayout()
+    private lateinit var showOthersField: Checkbox
+    private lateinit var othersDcsField: CheckboxGroup<Datacenter>
+
+    fun makeOthers() {
+        showOthersField = Checkbox().apply {
+            label = "MOSTRA TUTTI"
+            addValueChangeListener {
+                othersDcsField.isVisible = it.value
+                filter.showOthers = it.value
+                defaultAmend.invoke(filter)
+            }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+        }
+
+        othersDcsField = CheckboxGroup<Datacenter>().apply {
+            isVisible = false
+            setItems(dcs.findOthers())
+            itemLabelGenerator = ItemLabelGenerator { it.fullName.replace("DC ","") }
+            addValueChangeListener {
+                filter.others.clear()
+                filter.others.addAll(it.value.map(Datacenter::short))
+                defaultAmend.invoke(filter)
+            }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+        }
+
+        rowTwo.add(showOthersField, othersDcsField)
     }
 
     init {
         add( rowOne )
+        add( rowTwo )
     }
 }
