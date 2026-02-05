@@ -20,7 +20,5 @@ data class StorageFilter(
     var ref:String?=null,
     var supplier: Supplier?=null,
 
-    var key:String?=null,
-
     var showOthers: Boolean=false,
 )

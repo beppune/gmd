@@ -13,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
+import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gmd.model.Datacenter
 import it.posteitaliane.gdc.gmd.model.Operator
@@ -163,6 +164,7 @@ class OperatorFilterForm<ModelType>(
 
         snField = TextField().apply {
             placeholder = "S/N"
+            valueChangeMode = ValueChangeMode.EAGER
             addValueChangeListener {
                 filter.sn = it.value
                 defaultAmend.invoke(filter)
@@ -172,6 +174,7 @@ class OperatorFilterForm<ModelType>(
 
         ptField = TextField().apply {
             placeholder = "PT"
+            valueChangeMode = ValueChangeMode.EAGER
             addValueChangeListener {
                 filter.pt = it.value
                 defaultAmend.invoke(filter)

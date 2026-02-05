@@ -62,73 +62,138 @@ class StorageService(
         else return null
     }
 
-    fun find(
-        offset: Int = 0,
-        limit: Int = 1000,
+    fun buildQuery(
+        q:String,
+        offset: Int,
+        limit: Int,
         positions: List<String>,
-        searchKey: String? = null,
         ascending: Boolean = true,
         sortKey: String? = null,
         dcs: List<String>,
         showOthers: Boolean,
-        items: MutableSet<String>
-    ) : List<Storage> {
-        var query = QUERY_ALL
+        items: MutableSet<String>,
+        pt:String?=null,
+        sn:String?=null,
+        ): String {
 
-        query += " WHERE TRUE "
+        var query = q;
+        var queryparts = mutableListOf<String>()
 
-        if (!positions.isNullOrEmpty()) {
-            query += positions.joinToString(
-                prefix = " AND pos IN (",
-                separator = ",",
-                postfix = ") ",
-                transform = { "'$it'" }
-            )
-        }
-
-        if(dcs.isNotEmpty()) {
-            val arg = dcs.joinToString(
-                prefix = "(",
-                postfix = ")",
-                separator = ",",
-                transform = { "'$it'" }
-            )
-            query += " AND dc IN ${arg} "
-        }
-
-        if (items.isNotEmpty()) {
-            query += items.joinToString(
-                prefix = " AND item IN (",
+        if( positions.isNotEmpty() ) {
+            positions.joinToString(
+                prefix = " pos IN (",
                 postfix = ") ",
                 separator = ",",
                 transform = { "'$it'" }
-            )
+            ).also(queryparts::add)
         }
 
-        if ( searchKey != null ) {
-            query += " AND item LIKE '%$searchKey%' "
+        if( dcs.isNotEmpty()) {
+            dcs.joinToString(
+                prefix = " dc IN (",
+                postfix = ") ",
+                separator = ",",
+                transform = { "'$it'" }
+            ).also(queryparts::add)
         }
 
         if (!showOthers) {
-            query += " AND active IS TRUE "
+            queryparts.add(" active IS TRUE ")
         }
 
-        if( sortKey != null ) {
-            query += " ORDER BY $sortKey "
 
-            if( !ascending ) {
-                query += " DESC "
+        if( items.isNotEmpty() ) {
+            items.joinToString(
+                prefix = " item IN (",
+                postfix = ") ",
+                separator = ",",
+                transform = { "'$it'" }
+            ).also(queryparts::add)
+        }
+
+        if ( pt.isNullOrBlank().not() ) {
+            queryparts.add(" pt LIKE '$pt%' ")
+        }
+
+        if ( sn.isNullOrBlank().not() ) {
+            queryparts.add(" sn LIKE '$sn%' ")
+        }
+
+        if (queryparts.isNotEmpty()) {
+            query += " WHERE " + queryparts.joinToString(separator = " AND ")
+        }
+
+        if (sortKey.isNullOrEmpty().not()) {
+            var direction = if( ascending ) {
+                "ASC"
+            } else {
+                "DESC"
             }
+            query += " ORDER BY $sortKey $direction "
         }
 
-        query += " LIMIT $limit "
+        query += " LIMIT $limit OFFSET $offset "
 
-        query += " OFFSET $offset"
+        return query
+    }
 
-        logger.debug(query)
+    fun find(
+        offset: Int = 0,
+        limit: Int = 1000,
+        positions: List<String>,
+        ascending: Boolean = true,
+        sortKey: String? = null,
+        dcs: List<String>,
+        showOthers: Boolean,
+        items: MutableSet<String>,
+        sn: String?,
+        pt: String?
+    ) : List<Storage> {
+        var query = buildQuery(
+            q = QUERY_ALL,
+            offset = offset,
+            limit = limit,
+            positions = positions,
+            ascending = ascending,
+            sortKey = sortKey,
+            dcs = dcs,
+            showOthers = showOthers,
+            items = items,
+            sn = sn,
+            pt = pt,
+            )
+
         return db.query(query, storageMapper)
     }
 
+    fun count(
+        offset: Int = 0,
+        limit: Int = 1000,
+        positions: List<String>,
+        ascending: Boolean = true,
+        sortKey: String? = null,
+        dcs: List<String>,
+        showOthers: Boolean,
+        items: MutableSet<String>,
+        sn: String?,
+        pt: String?
+    ) : Int {
+        var query = buildQuery(
+            q = "SELECT COUNT(*) FROM STORAGE JOIN DCS ON dc=shortname ",
+            offset = offset,
+            limit = limit,
+            positions = positions,
+            ascending = ascending,
+            sortKey = sortKey,
+            dcs = dcs,
+            showOthers = showOthers,
+            items = items,
+            sn = sn,
+            pt = pt,
+        )
+
+        return db.queryForObject(query, Int::class.java)!!
+    }
 
     private val QUERY_FOR_SN = "$QUERY_ALL WHERE sn = ?"
     fun findBySn(sn:String?): Storage? {
