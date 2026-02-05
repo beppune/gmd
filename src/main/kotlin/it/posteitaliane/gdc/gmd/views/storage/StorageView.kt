@@ -62,11 +62,23 @@ class StorageView(
 //        var gridFilter = StorageFilterForm( filterProvider, dcs, ss)
 //        add(gridFilter)
         var filterForm = OperatorFilterForm(filterProvider, dcs, ss, sups, ops).apply {
-            makeDate()
-            makeDcs()
-            makeOthers()
-            makeItems()
-            makeOrder()
+
+            rowOne.apply {
+                add( makeItems() )
+                add( makeShowOthersField() )
+                isVisible = true
+            }
+
+            rowTwo.apply {
+                add( makeDcs())
+                isVisible = true
+            }
+
+            rowThree.apply {
+                add( makeOthers() )
+                isVisible = true
+            }
+
         }
         add(filterForm)
         add(grid)

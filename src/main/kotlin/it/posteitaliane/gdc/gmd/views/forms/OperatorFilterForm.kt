@@ -1,5 +1,7 @@
 package it.posteitaliane.gdc.gmd.views.forms
 
+import com.vaadin.flow.component.Component
+import com.vaadin.flow.component.HasValue
 import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.checkbox.CheckboxGroup
@@ -37,16 +39,16 @@ class OperatorFilterForm<ModelType>(
     }
 
     /* UI */
-    private val rowOne = FlexLayout()
-    private val rowTwo = FlexLayout()
-    private val rowThree = FlexLayout()
-    private val rowFour = FlexLayout()
+    val rowOne = FlexLayout().apply { isVisible = false }
+    val rowTwo = FlexLayout().apply { isVisible = false }
+    val rowThree = FlexLayout().apply { isVisible = false }
+    val rowFour = FlexLayout().apply { isVisible = false }
 
     /* Date filter */
     private lateinit var fromField: DatePicker;
     private lateinit var toField: DatePicker;
 
-    fun makeDate() {
+    fun makeDate(): List<Component> {
         fromField = DatePicker().apply {
             placeholder = "DAL"
             isRequired = false
@@ -71,14 +73,15 @@ class OperatorFilterForm<ModelType>(
             }
             addClassName(LumoUtility.Margin.Right.MEDIUM)
         }
-        rowOne.add(fromField, toField)
+
+        return listOf(fromField, toField)
 
     }
 
     /* Datacenters */
     private lateinit var dcsField: CheckboxGroup<Datacenter>
 
-    fun makeDcs() {
+    fun makeDcs(): CheckboxGroup<Datacenter> {
         dcsField = CheckboxGroup<Datacenter>().apply {
             setItems(dcs.findAll())
             itemLabelGenerator = ItemLabelGenerator { it.fullName.replace("DC ","") }
@@ -90,15 +93,14 @@ class OperatorFilterForm<ModelType>(
             }
         }
 
-        rowOne.add(dcsField)
+        return dcsField
     }
 
     /* Other Datacenters */
-    private var others = HorizontalLayout()
-    private lateinit var showOthersField: Checkbox
+   private lateinit var showOthersField: Checkbox
     private lateinit var othersDcsField: CheckboxGroup<Datacenter>
 
-    fun makeOthers() {
+    fun makeShowOthersField(): Checkbox {
         showOthersField = Checkbox().apply {
             label = "MOSTRA TUTTI"
             addValueChangeListener {
@@ -108,10 +110,16 @@ class OperatorFilterForm<ModelType>(
             }
             addClassName(LumoUtility.Margin.Right.MEDIUM)
         }
+        return showOthersField
+    }
+
+    fun makeOthers(): CheckboxGroup<Datacenter> {
+
 
         othersDcsField = CheckboxGroup<Datacenter>().apply {
             isVisible = false
             setItems(dcs.findOthers())
+            label = "Non operativi"
             itemLabelGenerator = ItemLabelGenerator { it.fullName.replace("DC ","") }
             addValueChangeListener {
                 filter.others.clear()
@@ -121,7 +129,7 @@ class OperatorFilterForm<ModelType>(
             addClassName(LumoUtility.Margin.Right.MEDIUM)
         }
 
-        rowTwo.add(showOthersField, othersDcsField)
+        return othersDcsField
     }
 
     /* Item, Position, s/n, pt */
@@ -130,23 +138,24 @@ class OperatorFilterForm<ModelType>(
     private lateinit var snField: TextField
     private lateinit var ptField: TextField
 
-    fun makeItems() {
+    fun makeItems(): List<Component> {
         itemFields = MultiSelectComboBox<String>().apply {
             setItems( ss.findAllItems() )
             placeholder = "MERCE"
             addValueChangeListener {
                 filter.items.clear()
-                filter.items = it.value
+                filter.items.addAll( it.value )
                 defaultAmend.invoke(filter)
             }
             addClassName(LumoUtility.Margin.Right.MEDIUM)
         }
 
         positionFields = MultiSelectComboBox<String>().apply {
-            placeholder = "MERCE"
+            placeholder = "POSIZIONI"
+            setItems(ss.findPosFromStorage())
             addValueChangeListener {
-                filter.items.clear()
-                filter.items = it.value
+                filter.positions.clear()
+                filter.positions.addAll( it.value )
                 defaultAmend.invoke(filter)
             }
             addClassName(LumoUtility.Margin.Right.MEDIUM)
@@ -170,7 +179,7 @@ class OperatorFilterForm<ModelType>(
             addClassName(LumoUtility.Margin.Right.MEDIUM)
         }
 
-        rowThree.add(itemFields, positionFields, snField, ptField)
+        return listOf(itemFields, positionFields, snField, ptField)
     }
 
     /* Oder */
@@ -178,9 +187,8 @@ class OperatorFilterForm<ModelType>(
     private lateinit var subjectField: MultiSelectComboBox<Order.Subject>
     private lateinit var satusField: MultiSelectComboBox<Order.Status>
     private lateinit var supsField: MultiSelectComboBox<Supplier>
-    private lateinit var usersFiels: MultiSelectComboBox<Operator>
 
-    fun makeOrder() {
+    fun makeOrder(): List<Component> {
         typeField = MultiSelectComboBox<Order.Type>().apply{
             placeholder = "ORDINE"
             setItems(Order.Type.entries)
@@ -225,6 +233,15 @@ class OperatorFilterForm<ModelType>(
             }
         }
 
+
+        return listOf(typeField, subjectField, satusField, supsField)
+    }
+
+    /* Operators */
+    private lateinit var usersFiels: MultiSelectComboBox<Operator>
+
+    fun makeOperator(): MultiSelectComboBox<Operator> {
+
         usersFiels = MultiSelectComboBox<Operator>().apply{
             placeholder = "OPERATORI"
             setItems( ops.findAll() )
@@ -237,13 +254,10 @@ class OperatorFilterForm<ModelType>(
             }
         }
 
-        rowFour.add(typeField, subjectField, satusField, supsField, usersFiels)
+        return usersFiels
     }
 
     init {
-        add( rowOne )
-        add( rowTwo )
-        add( rowThree )
-        add( rowFour )
+        add(rowOne, rowTwo, rowThree, rowFour)
     }
 }
