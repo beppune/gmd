@@ -16,6 +16,7 @@ data class StorageFilter(
     var from: LocalDate?=null,
     var to: LocalDate?=null,
     var status: Order.Status?=null,
+    var subject: Order.Subject?=null,
     var ref:String?=null,
     var supplier: Supplier?=null,
 

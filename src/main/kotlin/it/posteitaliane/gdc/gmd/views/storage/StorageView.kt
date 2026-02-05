@@ -8,7 +8,9 @@ import com.vaadin.flow.data.provider.SortDirection
 import com.vaadin.flow.router.Route
 import it.posteitaliane.gdc.gmd.model.Storage
 import it.posteitaliane.gdc.gmd.services.DatacenterService
+import it.posteitaliane.gdc.gmd.services.OperatorService
 import it.posteitaliane.gdc.gmd.services.StorageService
+import it.posteitaliane.gdc.gmd.services.SupplierService
 import it.posteitaliane.gdc.gmd.views.MainLayout
 import it.posteitaliane.gdc.gmd.views.forms.OperatorFilterForm
 import it.posteitaliane.gdc.gmd.views.forms.StorageFilterForm
@@ -20,6 +22,8 @@ import org.slf4j.Logger
 class StorageView(
     ss:StorageService,
     dcs:DatacenterService,
+    sups: SupplierService,
+    ops: OperatorService,
     private val logger:Logger
 ) : VerticalLayout() {
     fun refresh() {
@@ -57,11 +61,12 @@ class StorageView(
 
 //        var gridFilter = StorageFilterForm( filterProvider, dcs, ss)
 //        add(gridFilter)
-        var filterForm = OperatorFilterForm(filterProvider, dcs, ss).apply {
+        var filterForm = OperatorFilterForm(filterProvider, dcs, ss, sups, ops).apply {
             makeDate()
             makeDcs()
             makeOthers()
             makeItems()
+            makeOrder()
         }
         add(filterForm)
         add(grid)

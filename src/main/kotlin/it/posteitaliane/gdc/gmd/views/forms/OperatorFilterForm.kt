@@ -13,15 +13,21 @@ import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.theme.lumo.LumoUtility
 import it.posteitaliane.gdc.gmd.model.Datacenter
+import it.posteitaliane.gdc.gmd.model.Operator
 import it.posteitaliane.gdc.gmd.model.Order
+import it.posteitaliane.gdc.gmd.model.Supplier
 import it.posteitaliane.gdc.gmd.services.DatacenterService
+import it.posteitaliane.gdc.gmd.services.OperatorService
 import it.posteitaliane.gdc.gmd.services.StorageService
+import it.posteitaliane.gdc.gmd.services.SupplierService
 import it.posteitaliane.gdc.gmd.views.storage.StorageFilter
 
 class OperatorFilterForm<ModelType>(
     private var provider: ConfigurableFilterDataProvider<ModelType, Void, StorageFilter>,
     private val dcs: DatacenterService,
     private val ss: StorageService,
+    private val sups: SupplierService,
+    private val ops: OperatorService,
 ): VerticalLayout() {
 
     private var filter = StorageFilter()
@@ -167,6 +173,72 @@ class OperatorFilterForm<ModelType>(
         rowThree.add(itemFields, positionFields, snField, ptField)
     }
 
+    /* Oder */
+    private lateinit var typeField: MultiSelectComboBox<Order.Type>
+    private lateinit var subjectField: MultiSelectComboBox<Order.Subject>
+    private lateinit var satusField: MultiSelectComboBox<Order.Status>
+    private lateinit var supsField: MultiSelectComboBox<Supplier>
+    private lateinit var usersFiels: MultiSelectComboBox<Operator>
+
+    fun makeOrder() {
+        typeField = MultiSelectComboBox<Order.Type>().apply{
+            placeholder = "ORDINE"
+            setItems(Order.Type.entries)
+            itemLabelGenerator = ItemLabelGenerator { it.name }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+            addValueChangeListener {
+                filter.type = it.value as Order.Type?
+                defaultAmend.invoke(filter)
+            }
+        }
+
+        subjectField = MultiSelectComboBox<Order.Subject>().apply{
+            placeholder = "TIPO"
+            setItems(Order.Subject.entries)
+            itemLabelGenerator = ItemLabelGenerator { it.name }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+            addValueChangeListener {
+                filter.subject = it.value as Order.Subject?
+                defaultAmend.invoke(filter)
+            }
+        }
+
+        satusField = MultiSelectComboBox<Order.Status>().apply{
+            placeholder = "STATO"
+            setItems(Order.Status.entries)
+            itemLabelGenerator = ItemLabelGenerator { it.name }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+            addValueChangeListener {
+                filter.status = it.value.firstOrNull()
+                defaultAmend.invoke(filter)
+            }
+        }
+
+        supsField = MultiSelectComboBox<Supplier>().apply{
+            placeholder = "FORNITORE"
+            setItems(sups.findAll())
+            itemLabelGenerator = ItemLabelGenerator { it.name }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+            addValueChangeListener {
+                filter.supplier = it.value.firstOrNull()
+                defaultAmend.invoke(filter)
+            }
+        }
+
+        usersFiels = MultiSelectComboBox<Operator>().apply{
+            placeholder = "OPERATORI"
+            setItems( ops.findAll() )
+            itemLabelGenerator = ItemLabelGenerator { "${it.lastName} ${it.firstName}" }
+            addClassName(LumoUtility.Margin.Right.MEDIUM)
+            addValueChangeListener {
+                filter.operators.clear()
+                filter.operators.addAll( it.value.map(Operator::username) )
+                defaultAmend.invoke(filter)
+            }
+        }
+
+        rowFour.add(typeField, subjectField, satusField, supsField, usersFiels)
+    }
 
     init {
         add( rowOne )
