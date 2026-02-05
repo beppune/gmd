@@ -28,8 +28,13 @@ import it.posteitaliane.gdc.gmd.model.Datacenter
 import it.posteitaliane.gdc.gmd.model.Order
 import it.posteitaliane.gdc.gmd.model.OrderLine
 import it.posteitaliane.gdc.gmd.services.DatacenterService
+import it.posteitaliane.gdc.gmd.services.OperatorService
 import it.posteitaliane.gdc.gmd.services.OrderService
+import it.posteitaliane.gdc.gmd.services.StorageService
+import it.posteitaliane.gdc.gmd.services.SupplierService
 import it.posteitaliane.gdc.gmd.views.MainLayout
+import it.posteitaliane.gdc.gmd.views.forms.OperatorFilterForm
+import it.posteitaliane.gdc.gmd.views.storage.StorageFilter
 import jakarta.annotation.security.PermitAll
 import java.time.format.DateTimeFormatter
 
@@ -37,19 +42,18 @@ import java.time.format.DateTimeFormatter
 @Route(value = "orders", layout = MainLayout::class)
 class OrdersView(
     os:OrderService,
-    dcs:DatacenterService
+    dcs:DatacenterService,
+    ss: StorageService,
+    sups: SupplierService,
+    ops: OperatorService,
 ) : VerticalLayout() {
     private val isDetailsVisible:MutableList<Order> = mutableListOf()
 
     private val provider: OrdersProvider
 
-    private val filterProvider:ConfigurableFilterDataProvider<Order, Void, OrdersFilter>
+    private val filterProvider:ConfigurableFilterDataProvider<Order, Void, StorageFilter>
 
     val grid:Grid<Order>
-
-    private val searchField:TextField
-
-    private val dcSelect:CheckboxGroup<Datacenter>
 
     private val ordersFilter:OrdersFilter
 
@@ -113,52 +117,6 @@ class OrdersView(
 
         grid.setItemDetailsRenderer(OrderDetailsComponent.createOrderDetails(os))
 
-        searchField = TextField()
-            .apply {
-                prefixComponent = Icon(VaadinIcon.SEARCH)
-                placeholder = "Cerca per nome utente, datacenter, referente..."
-                width = "50%"
-                classNames.add("search")
-
-            }
-            searchField. addKeyUpListener {
-                    if( it.key == Key.ENTER) {
-                        ordersFilter.searchKery = searchField.value.trim().lowercase()
-                        filterProvider.setFilter(ordersFilter)
-                    }
-
-
-                    if( it.key.toString() == "Escape" || it.key.toString() == "Delete" ) {
-                        searchField.clear()
-                        filterProvider.setFilter(null)
-                    }
-                }
-
-        dcSelect = CheckboxGroup<Datacenter>().apply {
-            setItems(dcs.findAll())
-            setItemLabelGenerator { it.short }
-
-            addValueChangeListener {
-                ordersFilter.dcs.clear()
-                ordersFilter.dcs.addAll(it.value)
-
-                filterProvider.setFilter(ordersFilter)
-            }
-        }
-
-        grid.isDetailsVisibleOnClick = false
-        grid.addItemClickListener { ev ->
-
-            if( grid.isDetailsVisible(ev.item) ) {
-                grid.setDetailsVisible(ev.item, false)
-                isDetailsVisible.remove(ev.item)
-            } else {
-                grid.setDetailsVisible(ev.item, true)
-                isDetailsVisible.add(ev.item)
-            }
-
-        }
-
         val collapseAllButton = Button("CHIUDI TUTTI I DETTAGLI") { _ ->
             val it = isDetailsVisible.iterator()
             while (it.hasNext()) {
@@ -167,7 +125,32 @@ class OrdersView(
             }
         }
 
-        add(HorizontalLayout(searchField, dcSelect, collapseAllButton).apply { setWidthFull() })
+        var filterForm = OperatorFilterForm(filterProvider, dcs, ss, sups, ops).apply {
+            rowOne.apply {
+                add( makeDate() )
+                add( makeOperator() )
+                isVisible = true
+            }
+
+            rowTwo.apply {
+                add( makeOrder() )
+                isVisible = true
+            }
+
+            rowThree.apply {
+                add( makeItems() )
+                add( makeDcs() )
+                add( makeShowOthersField() )
+                isVisible = true
+            }
+
+            rowFour.apply {
+                add( makeOthers())
+                isVisible = true
+            }
+        }
+
+        add(filterForm)
         add(grid)
     }
 

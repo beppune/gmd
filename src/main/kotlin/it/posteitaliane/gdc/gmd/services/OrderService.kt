@@ -2,6 +2,7 @@ package it.posteitaliane.gdc.gmd.services
 
 import it.posteitaliane.gdc.gmd.model.Order
 import it.posteitaliane.gdc.gmd.model.OrderLine
+import it.posteitaliane.gdc.gmd.services.TransactionsService.Companion.dateTimeFormatter
 import it.posteitaliane.gdc.gmd.services.specs.SpecService
 import org.slf4j.Logger
 import org.springframework.dao.DataAccessException
@@ -11,6 +12,7 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.TransactionException
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.text.isNullOrEmpty
 
@@ -89,45 +91,135 @@ class OrderService(
         return db.queryForObject(QUERY_BY_ID, orderMapper, id)!!
     }
 
-    private fun queryBuilder(q:String, offset: Int, limit: Int, searchKey: String?, sortKey:String?, dcs:String?, ascending:Boolean): String {
+    fun queryBuilder(
+        q:String, offset: Int, limit: Int,
+        operators:List<String>, dcs:List<String>, from: LocalDate?=null, to: LocalDate?=null,
+        type: String?=null, subject: String?=null, status: String?=null, ref: List<String>,
+        items: List<String>, pos: List<String>, sn: String?=null, pt: String?=null
+        ): String {
         var  query = q
-        if ( searchKey != null ) {
 
+        var parts = mutableListOf<String>()
+
+        if (operators.isNotEmpty()) {
+            operators.joinToString(
+                prefix = " operator IN (",
+                postfix = ") ",
+                separator = ", ",
+                transform = { "'$it'" },
+            ).also(parts::add)
+        }
+
+        if (dcs.isNotEmpty()) {
+            dcs.joinToString(
+                prefix = " datacenter IN (",
+                postfix = ") ",
+                separator = ", ",
+                transform = { "'$it'" },
+            ).also(parts::add)
+        }
+
+        if( (from ?: to) != null) {
+            val both = if ( from != null && to != null) {
+                " AND "
+            } else {
+                ""
+            }
+
+            var q_from = ""
+            var q_to = ""
+            if (from != null) {
+                q_from = "timestamp > '${from!!.format(dateTimeFormatter)}'"
+            }
+            if (to != null) {
+                q_to = "timestamp < '${to!!.format(dateTimeFormatter)}'"
+            }
+
+            parts.add(" ($q_from $both $q_to) ")
+        }
+
+        if (type.isNullOrEmpty().not()) {
+            parts.add(" type = '$type'")
+        }
+
+        if (subject != null) {
+            parts.add(" subject = '$subject'")
+        }
+
+        if (status != null) {
+            parts.add(" status = '$status'")
+        }
+
+        if (ref != null) {
+            parts.add(" ref = '$ref'")
+        }
+
+        /* oder lines */
+        var lines = mutableListOf<String>()
+
+        if ( items.isNotEmpty() ) {
+            items.joinToString(
+                prefix = " item IN (",
+                postfix = ") ",
+                separator = ", ",
+                transform = { "'$it'" },
+            ).also(lines::add)
+        }
+
+        if ( pos.isNotEmpty() ) {
+            pos.joinToString(
+                prefix = " pos IN (",
+                postfix = ") ",
+                separator = ", ",
+                transform = { "'$it'" },
+            ).also(lines::add)
+        }
+
+        if (sn != null) {
+            lines.add( " sn LIKE '$sn%' " )
+        }
+
+        if (pt != null) {
+            lines.add( " pt LIKE '$sn%' " )
+        }
+
+        if (parts.isNotEmpty() || lines.isNotEmpty()) {
             query += " WHERE "
-            query +=  " fullname LIKE '$searchKey%' OR "
-            query +=  " lastname LIKE '$searchKey%' OR "
-            query +=  " operator LIKE '$searchKey%' OR "
-            query +=  " supplier LIKE '$searchKey%' OR "
-            query +=  " ref LIKE '$searchKey%' "
 
-        }
+            if (parts.isNotEmpty()) {
+                query += parts.joinToString(separator = " AND ")
+            }
 
-        if( dcs.isNullOrEmpty().not() ) {
-            query += " AND datacenter IN ${dcs} "
-        }
+            if (lines.isNotEmpty()) {
 
-        if( sortKey != null ) {
-            query += " ORDER BY $sortKey "
+                val prefix = """
+ EXISTS(
+	SELECT 1
+    FROM orders_lines
+    WHERE orders.id=order_lines.ownedby
+		AND
+                """.trimIndent()
 
-            if( ascending.not() ) {
-                query += " DESC "
+                query += lines.joinToString(
+                    prefix = prefix,
+                    separator = " AND ",
+                    postfix = ") "
+                )
             }
         }
 
-        query += " LIMIT $limit "
-
-        query += " OFFSET $offset"
+        query += " LIMIT $limit OFFSET $offset "
 
         return query
     }
 
-    fun find(offset: Int, limit: Int, searchKey: String?, sortKey:String?, dcs:String?, ascending:Boolean): List<Order> {
-        val query = queryBuilder(QUERY_SEARCH_KEY, offset, limit, searchKey, sortKey, dcs, ascending)
-
-
-        return db.query(query, orderMapper)
-
-    }
+//    fun find(offset: Int, limit: Int, searchKey: String?, sortKey:String?, dcs:String?, ascending:Boolean): List<Order> {
+//        val query = queryBuilder(QUERY_SEARCH_KEY, offset, limit, searchKey, sortKey, dcs, ascending)
+//
+//
+//        return db.query(query, orderMapper)
+//
+//    }
 
     fun fillOrderLines(o:Order) {
         o.lines.clear()
@@ -149,11 +241,11 @@ class OrderService(
             " WHERE id = ? ORDER BY id LIMIT 1"
     private val QUERY_DELETE_LINES = "DELETE FROM ORDERS_LINES WHERE ownedby = ?"
 
-    fun count(offset: Int, limit: Int, searchKey: String?, sortKey: String?, dcs: String?, ascending: Boolean): Int {
-        val query = queryBuilder("SELECT COUNT(*) FROM ORDERS", offset, limit, searchKey, sortKey, dcs, ascending)
-
-        return db.queryForObject(query, Int::class.java)!!
-    }
+//    fun count(offset: Int, limit: Int, searchKey: String?, sortKey: String?, dcs: String?, ascending: Boolean): Int {
+//        val query = queryBuilder("SELECT COUNT(*) FROM ORDERS", offset, limit, searchKey, sortKey, dcs, ascending)
+//
+//        return db.queryForObject(query, Int::class.java)!!
+//    }
 
     fun register(o: Order): Result<Order>  = tr.execute { it ->
 
