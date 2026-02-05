@@ -43,12 +43,12 @@ class StorageView(
         filterProvider = provider.withConfigurableFilter()
 
         grid = Grid(Storage::class.java, false)
-        grid.addColumn({"${it.dc.short} - ${it.dc.fullName}"}, "dc")
+        grid.addColumn({it.dc.fullName.replace("DC ", "")}, "dc")
             .setHeader("Datacenter")
         val itemColumn = grid.addColumn("item")
             .setHeader("Merce")
         grid.addColumn("pos")
-            .setHeader("Position")
+            .setHeader("Posizione")
         grid.addColumn("amount")
             .setHeader("Quantità")
         grid.addColumn("sn")
@@ -59,8 +59,6 @@ class StorageView(
 
         grid.sort(mutableListOf(GridSortOrder(itemColumn, SortDirection.ASCENDING)))
 
-//        var gridFilter = StorageFilterForm( filterProvider, dcs, ss)
-//        add(gridFilter)
         var filterForm = OperatorFilterForm(filterProvider, dcs, ss, sups, ops).apply {
 
             rowOne.apply {
