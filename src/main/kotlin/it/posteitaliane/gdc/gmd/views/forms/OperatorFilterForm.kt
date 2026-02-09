@@ -11,6 +11,7 @@ import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.orderedlayout.FlexLayout
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.select.Select
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider
 import com.vaadin.flow.data.value.ValueChangeMode
@@ -23,6 +24,8 @@ import it.posteitaliane.gdc.gmd.services.DatacenterService
 import it.posteitaliane.gdc.gmd.services.OperatorService
 import it.posteitaliane.gdc.gmd.services.StorageService
 import it.posteitaliane.gdc.gmd.services.SupplierService
+import it.posteitaliane.gdc.gmd.views.orderSubjectComponent
+import it.posteitaliane.gdc.gmd.views.orderTypeLabel
 import it.posteitaliane.gdc.gmd.views.storage.StorageFilter
 
 class OperatorFilterForm<ModelType>(
@@ -186,19 +189,19 @@ class OperatorFilterForm<ModelType>(
     }
 
     /* Oder */
-    private lateinit var typeField: MultiSelectComboBox<Order.Type>
+    private lateinit var typeField: Select<Order.Type>
     private lateinit var subjectField: MultiSelectComboBox<Order.Subject>
     private lateinit var satusField: MultiSelectComboBox<Order.Status>
     private lateinit var supsField: MultiSelectComboBox<Supplier>
 
     fun makeOrder(): List<Component> {
-        typeField = MultiSelectComboBox<Order.Type>().apply{
+        typeField = Select<Order.Type>().apply{
             placeholder = "ORDINE"
             setItems(Order.Type.entries)
-            itemLabelGenerator = ItemLabelGenerator { it.name }
+            itemLabelGenerator = ItemLabelGenerator { orderTypeLabel(it) }
             addClassName(LumoUtility.Margin.Right.MEDIUM)
             addValueChangeListener {
-                filter.type = it.value as Order.Type?
+                filter.type = it.value
                 defaultAmend.invoke(filter)
             }
         }
