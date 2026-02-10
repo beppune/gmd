@@ -55,8 +55,6 @@ class OrdersView(
 
     val grid:Grid<Order>
 
-    private val ordersFilter:OrdersFilter
-
     private fun makeTypeLabel(o:Order): String {
         var label =""
         label += when(o.type) {
@@ -72,11 +70,7 @@ class OrdersView(
         return label
     }
 
-
-
     init {
-
-        ordersFilter = OrdersFilter()
 
         setHeightFull()
 

@@ -14,7 +14,7 @@ class OrdersProvider(
 ) : AbstractBackEndDataProvider<Order, StorageFilter>() {
     override fun fetchFromBackEnd(query: Query<Order, StorageFilter>): Stream<Order> {
 
-        val filter = query.filter.get()
+        val filter = query.filter.orElse(StorageFilter())
         var sort:String?=null
         var asc = true
 
@@ -28,15 +28,14 @@ class OrdersProvider(
 
         var dcs = filter.dcs.union(filter.others)
 
-        LoggerFactory.getLogger(javaClass).info("Query $query")
         return service.find(query.offset, query.limit, filter.operators.toList(), dcs.toList(),
             filter.from, filter.to, filter.type?.name, filter.subject?.name, filter.status?.name,
-            listOf(filter.ref as String), filter.items.toList(), filter.positions.toList(),
+            listOf(), filter.items.toList(), filter.positions.toList(),
             filter.sn, filter.pt, sort, asc).stream()
     }
 
     override fun sizeInBackEnd(query: Query<Order, StorageFilter>): Int {
-        val filter = query.filter.get()
+        val filter = query.filter.orElse(StorageFilter())
         var sort:String?=null
         var asc = true
 
@@ -52,7 +51,7 @@ class OrdersProvider(
 
         return service.count(query.offset, query.limit, filter.operators.toList(), dcs.toList(),
             filter.from, filter.to, filter.type?.name, filter.subject?.name, filter.status?.name,
-            listOf(filter.ref as String), filter.items.toList(), filter.positions.toList(),
+            listOf(), filter.items.toList(), filter.positions.toList(),
             filter.sn, filter.pt, sort, asc)
     }
 }

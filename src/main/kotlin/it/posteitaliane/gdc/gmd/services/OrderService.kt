@@ -14,6 +14,7 @@ import org.springframework.transaction.TransactionException
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.text.isNullOrEmpty
 
 @Service
@@ -60,7 +61,7 @@ class OrderService(
         )
     }
 
-
+    private val  dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val QUERY_ALL =
         "SELECT id,operator,datacenter,supplier,issued,type,subject,status,ref,remarks FROM ORDERS"
 
@@ -130,10 +131,10 @@ class OrderService(
             var q_from = ""
             var q_to = ""
             if (from != null) {
-                q_from = "timestamp > '${from!!.format(dateTimeFormatter)}'"
+                q_from = "issued > '${from!!.format(dateFormatter)}'"
             }
             if (to != null) {
-                q_to = "timestamp < '${to!!.format(dateTimeFormatter)}'"
+                q_to = "issued < '${to!!.format(dateFormatter)}'"
             }
 
             parts.add(" ($q_from $both $q_to) ")
@@ -151,8 +152,13 @@ class OrderService(
             parts.add(" status = '$status'")
         }
 
-        if (ref != null) {
-            parts.add(" ref = '$ref'")
+        if (ref.isNotEmpty()) {
+            ref.joinToString(
+                prefix = " ref IN (",
+                postfix = ") ",
+                separator = ", ",
+                transform = { "'$it'" },
+            ).also(parts::add)
         }
 
         /* oder lines */
@@ -194,10 +200,10 @@ class OrderService(
             if (lines.isNotEmpty()) {
 
                 val prefix = """
- EXISTS(
+  EXISTS(
 	SELECT 1
     FROM orders_lines
-    WHERE orders.id=order_lines.ownedby
+    WHERE orders.id=orders_lines.ownedby
 		AND
                 """.trimIndent()
 
