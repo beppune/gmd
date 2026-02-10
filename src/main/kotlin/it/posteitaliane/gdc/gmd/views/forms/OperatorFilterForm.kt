@@ -27,6 +27,9 @@ import it.posteitaliane.gdc.gmd.services.SupplierService
 import it.posteitaliane.gdc.gmd.views.orderSubjectComponent
 import it.posteitaliane.gdc.gmd.views.orderTypeLabel
 import it.posteitaliane.gdc.gmd.views.storage.StorageFilter
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjusters.firstDayOfYear
 
 class OperatorFilterForm<ModelType>(
     private var provider: ConfigurableFilterDataProvider<ModelType, Void, StorageFilter>,
@@ -54,6 +57,7 @@ class OperatorFilterForm<ModelType>(
 
     fun makeDate(): List<Component> {
         fromField = DatePicker().apply {
+            value = LocalDate.now().minus(1L, ChronoUnit.YEARS)
             placeholder = "DAL"
             isRequired = false
             addValueChangeListener {

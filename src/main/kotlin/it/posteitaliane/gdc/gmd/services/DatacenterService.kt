@@ -1,6 +1,7 @@
 package it.posteitaliane.gdc.gmd.services
 
 import it.posteitaliane.gdc.gmd.model.Datacenter
+import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service

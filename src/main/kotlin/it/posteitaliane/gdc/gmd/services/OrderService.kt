@@ -199,7 +199,7 @@ class OrderService(
 
             if (lines.isNotEmpty()) {
 
-                val prefix = """
+                var prefix = """
   EXISTS(
 	SELECT 1
     FROM orders_lines
@@ -207,6 +207,9 @@ class OrderService(
 		AND
                 """.trimIndent()
 
+                if( parts.isNotEmpty() ) {
+                    prefix += " AND $prefix"
+                }
                 query += lines.joinToString(
                     prefix = prefix,
                     separator = " AND ",
