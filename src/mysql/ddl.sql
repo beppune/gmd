@@ -7,16 +7,13 @@
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 COLLATE utf8mb4_0900_ai_ci */;
+/*!50503 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
--- Added to align database default charset/collation with magazzino
-ALTER DATABASE `gmd` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-
 
 --
 -- Table structure for table `dcs`
@@ -29,7 +26,7 @@ CREATE TABLE `dcs` (
   `shortname` char(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `fullname` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `legal` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `active` TINYINT NOT NULL DEFAULT FALSE,
+  `active` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`shortname`),
   FULLTEXT KEY `dcs_fullname_fulltext` (`fullname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -108,7 +105,7 @@ CREATE TABLE `orders` (
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`operator`) REFERENCES `operators` (`uid`),
   CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`datacenter`) REFERENCES `dcs` (`shortname`),
   CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`supplier`) REFERENCES `suppliers` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4099 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -137,7 +134,7 @@ CREATE TABLE `orders_lines` (
   CONSTRAINT `orders_lines_ibfk_2` FOREIGN KEY (`ownedby`) REFERENCES `orders` (`id`),
   CONSTRAINT `orders_lines_ibfk_3` FOREIGN KEY (`datacenter`, `pos`) REFERENCES `locations` (`dc`, `name`),
   CONSTRAINT `orders_lines_chk_1` CHECK ((`amount` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4099 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -151,10 +148,10 @@ CREATE TABLE `permissions` (
   `operator` char(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `dc` char(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   PRIMARY KEY (`operator`,`dc`),
+  UNIQUE KEY `permissions_ibfk_3` (`operator`,`dc`),
   KEY `dc` (`dc`),
   CONSTRAINT `permissions_ibfk_1` FOREIGN KEY (`operator`) REFERENCES `operators` (`uid`),
-  CONSTRAINT `permissions_ibfk_2` FOREIGN KEY (`dc`) REFERENCES `dcs` (`shortname`),
-  CONSTRAINT `permissions_ibfk_3` UNIQUE (`operator`,`dc`)
+  CONSTRAINT `permissions_ibfk_2` FOREIGN KEY (`dc`) REFERENCES `dcs` (`shortname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -257,6 +254,7 @@ DROP TABLE IF EXISTS `transactions`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `transactions` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `ownedby` int DEFAULT NULL,
   `operator` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `type` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `timestamp` datetime NOT NULL,
@@ -268,7 +266,7 @@ CREATE TABLE `transactions` (
   `pt` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
   PRIMARY KEY (`id`),
   CONSTRAINT `transactions_chk_1` CHECK ((`amount` > 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4579 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -287,4 +285,5 @@ CREATE TABLE `transactions` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
--- Dump completed on 2026-01-21 16:09:57
+
+-- Dump completed on 2026-02-09 15:03:20
