@@ -91,12 +91,13 @@ class OrderService(
         return db.queryForObject(QUERY_BY_ID, orderMapper, id)!!
     }
 
-    fun queryBuilder(
-        q:String, offset: Int, limit: Int,
-        operators:List<String>, dcs:List<String>, from: LocalDate?=null, to: LocalDate?=null,
-        type: String?=null, subject: String?=null, status: String?=null, ref: List<String>,
-        items: List<String>, pos: List<String>, sn: String?=null, pt: String?=null
-        ): String {
+    private fun queryBuilder(
+        q: String, offset: Int, limit: Int,
+        operators: List<String>, dcs: List<String>, from: LocalDate? = null, to: LocalDate? = null,
+        type: String? = null, subject: String? = null, status: String? = null, ref: List<String>,
+        items: List<String>, pos: List<String>, sn: String? = null, pt: String? = null,
+        sortBy: String?=null, asc: Boolean=true
+    ): String {
         var  query = q
 
         var parts = mutableListOf<String>()
@@ -208,18 +209,47 @@ class OrderService(
             }
         }
 
+        if( sortBy.isNullOrEmpty().not()) {
+            val dir = if (asc) "ASC" else "DESC"
+            query += " ORDER BY $sortBy $dir "
+        }
+
         query += " LIMIT $limit OFFSET $offset "
 
         return query
     }
 
-//    fun find(offset: Int, limit: Int, searchKey: String?, sortKey:String?, dcs:String?, ascending:Boolean): List<Order> {
-//        val query = queryBuilder(QUERY_SEARCH_KEY, offset, limit, searchKey, sortKey, dcs, ascending)
-//
-//
-//        return db.query(query, orderMapper)
-//
-//    }
+    fun find(
+        offset: Int, limit: Int,
+        operators: List<String>, dcs: List<String>, from: LocalDate? = null, to: LocalDate? = null,
+        type: String? = null, subject: String? = null, status: String? = null, ref: List<String>,
+        items: List<String>, pos: List<String>, sn: String? = null, pt: String? = null,
+        sortBy: String?=null, asc: Boolean=true): List<Order> {
+        val query = queryBuilder(
+            q = QUERY_SEARCH_KEY, offset, limit,
+            operators, dcs, from, to, type, subject, status, ref,
+            items, pos, sn, pt, sortBy, asc
+        )
+
+
+        return db.query(query, orderMapper)
+
+    }
+
+    fun count(
+        offset: Int, limit: Int,
+        operators: List<String>, dcs: List<String>, from: LocalDate? = null, to: LocalDate? = null,
+        type: String? = null, subject: String? = null, status: String? = null, ref: List<String>,
+        items: List<String>, pos: List<String>, sn: String? = null, pt: String? = null,
+        sortBy: String?=null, asc: Boolean=true): Int {
+        val query = queryBuilder(
+            q = "SELECT COUNT(*) FROM ORDERS JOIN OPERATORS ON uid=operator JOIN DCS ON shortname=datacenter  ",
+            offset, limit, operators, dcs, from, to, type, subject, status, ref,
+            items, pos, sn, pt, sortBy, asc
+        )
+        return db.queryForObject(query, Int::class.java)!!
+
+    }
 
     fun fillOrderLines(o:Order) {
         o.lines.clear()
@@ -240,12 +270,6 @@ class OrderService(
             " SET operator = ?, datacenter = ?, supplier = ?, issued = ?, type = ?, subject = ?, status = ?, ref = ?, remarks = ?" +
             " WHERE id = ? ORDER BY id LIMIT 1"
     private val QUERY_DELETE_LINES = "DELETE FROM ORDERS_LINES WHERE ownedby = ?"
-
-//    fun count(offset: Int, limit: Int, searchKey: String?, sortKey: String?, dcs: String?, ascending: Boolean): Int {
-//        val query = queryBuilder("SELECT COUNT(*) FROM ORDERS", offset, limit, searchKey, sortKey, dcs, ascending)
-//
-//        return db.queryForObject(query, Int::class.java)!!
-//    }
 
     fun register(o: Order): Result<Order>  = tr.execute { it ->
 
