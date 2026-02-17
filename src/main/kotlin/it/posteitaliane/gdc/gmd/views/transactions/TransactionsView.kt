@@ -29,7 +29,7 @@ import jakarta.annotation.security.RolesAllowed
 import java.io.InputStream
 import java.time.format.DateTimeFormatter
 
-@RolesAllowed("ADMIN", "OPERATOR")
+@RolesAllowed("ADMIN")
 @Route(value = "transactions", layout = MainLayout::class)
 class TransactionsView(
     dcs:DatacenterService,
