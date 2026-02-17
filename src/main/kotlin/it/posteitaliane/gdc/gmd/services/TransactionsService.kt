@@ -139,8 +139,8 @@ class TransactionsService(
 
         db.update(
             LOG_TRANSACTION_SQL,
-            o.op.username, type, o.issued,
-            line.item, "${o.dc.short} - ${o.dc.fullName}", line.position,
+            o.uid, type, o.issued,
+            line.item, o.dc, line.position,
             line.amount, line.sn, line.pt
         )
 

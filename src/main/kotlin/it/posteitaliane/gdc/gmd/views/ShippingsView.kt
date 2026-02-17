@@ -25,13 +25,13 @@ class ShippingsView(
         grid.addColumn({it.order.number})
             .setHeader("Ordine")
 
-        grid.addColumn({"${it.order.dc.short} - ${it.order.dc.fullName}"})
+        grid.addColumn({ it.order.dc })
             .setHeader("Datacenter")
 
         grid.addColumn({"${it.order.type}"})
             .setHeader("Tipo")
 
-        grid.addColumn({it.order.supplier.name})
+        grid.addColumn({it.order.supplier})
             .setHeader("Fornitore")
 
         grid.setItems(shs.findAll())

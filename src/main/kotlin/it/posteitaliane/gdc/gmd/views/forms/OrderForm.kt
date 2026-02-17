@@ -287,15 +287,18 @@ class OrderForm(
 
         binder.writeBean(bean)
 
+        val op = "${op.lastName} ${op.firstName}"
         val order = Order(
             number = bean.number,
-            type = bean.type!!,
-            op = ops.findAll().first(),
+            uid = bean.operator?.username!!,
+            op = op,
+            dc = bean.datacenter!!.short,
+            dcname = bean.datacenter!!.fullName,
+            supplier = bean.supplier!!.name,
             issued = LocalDateTime.now(),
-            dc = bean.datacenter!!,
+            type = bean.type!!,
             subject = bean.subject!!,
-            supplier = bean.supplier!!,
-            status = Order.Status.COMPLETED
+            status = Order.Status.COMPLETED,
         ).apply {
             ref = ref
             remarks = bean.remarks
@@ -317,12 +320,12 @@ class OrderForm(
 
         val op = OrderPresentation(
             number = o.number,
-            operator = o.op,
+            operator = ops.findAll().filter { it.username == o.uid }.first(),
             type = o.type,
             subject = o.subject,
             ref = o.ref,
-            supplier = o.supplier,
-            datacenter = o.dc
+            supplier = sups.findByName(o.supplier),
+            datacenter = dcs.findByShortName(o.dc)
         )
 
         binder.bean = op

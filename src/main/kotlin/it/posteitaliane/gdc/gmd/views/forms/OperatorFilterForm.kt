@@ -57,7 +57,7 @@ class OperatorFilterForm<ModelType>(
 
     fun makeDate(): List<Component> {
         fromField = DatePicker().apply {
-            value = LocalDate.now().minus(1L, ChronoUnit.YEARS)
+            value = LocalDate.now().minus(1L, ChronoUnit.MONTHS)
             placeholder = "DAL"
             isRequired = false
             addValueChangeListener {

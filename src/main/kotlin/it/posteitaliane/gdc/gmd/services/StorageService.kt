@@ -238,7 +238,7 @@ class StorageService(
         try {
 
             val s = if(line.isUnique.not())
-                findForCount(line.item, line.order.dc.short, line.position)
+                findForCount(line.item, line.order.dc, line.position)
             else findByPt(line.pt) ?: findBySn(line.sn)
 
             when(line.order.type) {
@@ -246,13 +246,13 @@ class StorageService(
                     if (s == null) {
                         db.update(
                             CREATE_STORAGE_SQL,
-                            line.item, line.order.dc.short, line.position, line.amount, line.sn?.uppercase(), line.pt
+                            line.item, line.order.dc, line.position, line.amount, line.sn?.uppercase(), line.pt
                         )
                     } else {
                         s.amount += line.amount
                         db.update(
                             UPDATE_STORAGE_SQL,
-                            s.amount, line.item, line.order.dc.short, line.position
+                            s.amount, line.item, line.order.dc, line.position
                         )
                     }
 
@@ -268,7 +268,7 @@ class StorageService(
                     if(s.amount == line.amount) {
                         db.update(
                             DELETE_STORAGE_SQL,
-                            line.item, line.order.dc.short, line.position
+                            line.item, line.order.dc, line.position
                         )
                         return@execute Result(s)
                     }
@@ -278,7 +278,7 @@ class StorageService(
                     s.amount -= line.amount
                     db.update(
                         UPDATE_STORAGE_SQL,
-                        s.amount, line.item, line.order.dc.short, line.position
+                        s.amount, line.item, line.order.dc, line.position
                     )
 
                     return@execute Result(s)

@@ -23,7 +23,7 @@ class FilesService(
     private val dateFormatter:DateTimeFormatter = DateTimeFormatter.ofPattern("dd_MM_yyyy_hhmmss")
 
     private fun generateFileName(o:Order) =
-        "${o.number}_${o.dc.short}_${o.op.username}_${o.type.name}_${o.issued.format(dateFormatter)}.pdf"
+        "${o.number}_${o.dc}_${o.uid}_${o.type.name}_${o.issued.format(dateFormatter)}.pdf"
 
     fun copyTemp(username:String, instream:InputStream) : String {
 

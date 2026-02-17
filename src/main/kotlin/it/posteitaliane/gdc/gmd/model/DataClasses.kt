@@ -78,18 +78,20 @@ data class Supplier(
 }
 
 data class Order(
-    var number:Int=-1,
-    val op:Operator,
-    val dc: Datacenter,
-    var supplier:Supplier,
-    val issued:LocalDateTime,
+    var number: Int = -1,
+    val uid: String,
+    val op: String,
+    val dc: String,
+    var supplier: String,
+    val issued: LocalDateTime,
     val type: Type,
     val subject: Subject,
-    var status: Status=Status.PENDING
+    var status: Status = Status.PENDING,
+    val dcname: String
 ) {
     val lines:MutableList<OrderLine> = mutableListOf()
 
-    var ref:String = "${op.firstName} ${op.lastName}"
+    var ref:String = op
 
     var remarks:String?=null
 

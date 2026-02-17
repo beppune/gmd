@@ -3,6 +3,7 @@ package it.posteitaliane.gdc.gmd.services.specs
 import it.posteitaliane.gdc.gmd.config.GMDConfig
 import it.posteitaliane.gdc.gmd.model.Order
 import it.posteitaliane.gdc.gmd.model.OrderLine
+import it.posteitaliane.gdc.gmd.services.DatacenterService
 import it.posteitaliane.gdc.gmd.services.StorageService
 import it.posteitaliane.gdc.gmd.services.SupplierService
 import org.springframework.stereotype.Service
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service
 @Service
 class SpecService(
     private val config:GMDConfig,
-
+    private val dcs: DatacenterService,
     private val sups:SupplierService,
     private val ss:StorageService
 ) {
@@ -53,14 +54,14 @@ class SpecService(
     }
 
     private val AMEND_INTERNAL_SUPPLIER:Order.()->Unit = {
-        supplier = sups.findByName(config.firmName)!!
+        supplier = sups.findByName(config.firmName)!!.name
     }
 
     private val ITEM_MUST_NOT_BE_NULL_OR_EMPTY:OrderPredicate = {
         lines.map(OrderLine::item).all(String::isNotBlank)
     }
 
-    private val DC_MUST_BE_ACTIVE: OrderPredicate = { dc.operating }
+    private val DC_MUST_BE_ACTIVE: OrderPredicate = { dcs.findByShortName(dc)?.operating!! }
 
     val INBOUND_INTERNAL_SPEC = OrderSpec()
         .amend(AMEND_INTERNAL_SUPPLIER)

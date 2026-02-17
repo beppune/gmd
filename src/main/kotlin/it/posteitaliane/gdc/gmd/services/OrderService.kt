@@ -2,7 +2,6 @@ package it.posteitaliane.gdc.gmd.services
 
 import it.posteitaliane.gdc.gmd.model.Order
 import it.posteitaliane.gdc.gmd.model.OrderLine
-import it.posteitaliane.gdc.gmd.services.TransactionsService.Companion.dateTimeFormatter
 import it.posteitaliane.gdc.gmd.services.specs.SpecService
 import org.slf4j.Logger
 import org.springframework.dao.DataAccessException
@@ -34,9 +33,11 @@ class OrderService(
     val orderMapper = RowMapper { rs, _ ->
         Order(
             number = rs.getInt("id"),
-            op = ops.findAll().find { it.username == rs.getString("operator") }!!,
-            dc = dcs.findByShortName(rs.getString("datacenter") )!!,
-            supplier = sups.findByName(rs.getString("supplier"))!!,
+            uid = rs.getString("operator"),
+            op = rs.getString("opfullname"),
+            dc = rs.getString("datacenter"),
+            dcname = rs.getString("dcfullname"),
+            supplier = rs.getString("supplier"),
             issued = rs.getTimestamp("issued").toLocalDateTime(),
             type = Order.Type.valueOf(rs.getString("type")),
             subject = Order.Subject.valueOf(rs.getString("subject")),
@@ -62,17 +63,18 @@ class OrderService(
     }
 
     private val  dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    private val QUERY_ALL =
-        "SELECT id,operator,datacenter,supplier,issued,type,subject,status,ref,remarks FROM ORDERS"
-
-    private val QUERY_SEARCH_KEY = """
-        SELECT id,operator,datacenter,supplier,issued,type,subject,status,ref,remarks FROM ORDERS 
-        JOIN OPERATORS ON uid=operator 
-        JOIN DCS ON shortname=datacenter 
+    private val QUERY_ALL = """
+        SELECT
+            id,operator,datacenter,supplier,issued,type,subject,status,ref,remarks,
+            CONCAT(lastname, ' ', firstname) AS opfullname,
+            REPLACE(fullname, 'DC ', '') AS dcfullname
+        FROM ORDERS 
+                JOIN OPERATORS ON uid=operator 
+                JOIN DCS ON shortname=datacenter 
     """.trimIndent()
 
     private val QUERY_BY_ID = """
-        $QUERY_SEARCH_KEY 
+        $QUERY_ALL 
         WHERE id = ?
     """.trimIndent()
 
@@ -235,7 +237,7 @@ class OrderService(
         items: List<String>, pos: List<String>, sn: String? = null, pt: String? = null,
         sortBy: String?=null, asc: Boolean=true): List<Order> {
         val query = queryBuilder(
-            q = QUERY_SEARCH_KEY, offset, limit,
+            q = QUERY_ALL, offset, limit,
             operators, dcs, from, to, type, subject, status, ref,
             items, pos, sn, pt, sortBy, asc
         )
@@ -287,9 +289,9 @@ class OrderService(
                 if( o.number == -1 ) { //if New
                     db.update(
                         QUERY_SUBMIT_ORDER,
-                        o.op.username,
-                        o.dc.short,
-                        o.supplier.name,
+                        o.uid,
+                        o.dc,
+                        o.supplier,
                         LocalDateTime.now(),
                         o.type.name,
                         o.subject.name,
@@ -305,7 +307,7 @@ class OrderService(
 
                     db.update(
                         QUERY_UPDATE_ORDER,
-                        o.op.username, o.dc.short, o.supplier.name, LocalDateTime.now(),
+                        o.uid, o.dc, o.supplier, LocalDateTime.now(),
                         o.type.name, o.subject.name, o.status.name, o.ref, REMARKS, o.number
                     )
                 }
@@ -317,7 +319,7 @@ class OrderService(
                     db.update(
                         QUERY_SUBMIT_LINE,
                         o.number,
-                        o.dc.short,
+                        o.dc,
                         o.lines[i].item,
                         o.lines[i].position,
                         o.lines[i].amount,
