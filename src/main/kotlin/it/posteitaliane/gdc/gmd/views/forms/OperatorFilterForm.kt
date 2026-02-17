@@ -89,10 +89,13 @@ class OperatorFilterForm<ModelType>(
     /* Datacenters */
     private lateinit var dcsField: CheckboxGroup<Datacenter>
 
-    fun makeDcs(): CheckboxGroup<Datacenter> {
+    fun makeDcs(prefill:List<Datacenter>?=null): CheckboxGroup<Datacenter> {
         dcsField = CheckboxGroup<Datacenter>().apply {
             setItems(dcs.findAll())
             itemLabelGenerator = ItemLabelGenerator { it.fullName.replace("DC ","") }
+            if (!prefill.isNullOrEmpty()) {
+                value = prefill.toSet()
+            }
 
             addValueChangeListener {
                 filter.dcs.clear()

@@ -30,6 +30,7 @@ import it.posteitaliane.gdc.gmd.model.OrderLine
 import it.posteitaliane.gdc.gmd.services.DatacenterService
 import it.posteitaliane.gdc.gmd.services.OperatorService
 import it.posteitaliane.gdc.gmd.services.OrderService
+import it.posteitaliane.gdc.gmd.services.SecurityService
 import it.posteitaliane.gdc.gmd.services.StorageService
 import it.posteitaliane.gdc.gmd.services.SupplierService
 import it.posteitaliane.gdc.gmd.views.MainLayout
@@ -46,6 +47,7 @@ class OrdersView(
     ss: StorageService,
     sups: SupplierService,
     ops: OperatorService,
+    sec: SecurityService,
 ) : VerticalLayout() {
     private val isDetailsVisible:MutableList<Order> = mutableListOf()
 
@@ -133,7 +135,7 @@ class OrdersView(
 
             rowThree.apply {
                 add( makeItems() )
-                add( makeDcs() )
+                add( makeDcs(sec.op().permissions) )
                 add( makeShowOthersField() )
                 isVisible = true
             }
