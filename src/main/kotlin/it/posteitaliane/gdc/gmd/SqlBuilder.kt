@@ -1,11 +1,67 @@
 package it.posteitaliane.gdc.gmd
 
+interface Projection
 
-class SelectBuilder: JoinBuilder() {
+class SimpleProjection(private val s: String) : Projection {
+    override fun toString() = s
+}
 
-    fun select(vararg cols:String): JoinBuilder {
+fun String.q(): String {
+    return "'${this}'"
+}
+
+fun String.dq(): String {
+    return "\"${this}\""
+}
+
+fun String.toProjection() = SimpleProjection(this)
+
+class ConcatProjection(vararg ps: SimpleProjection): Projection {
+    private val list: List<Projection> = ps.toList()
+    override fun toString(): String {
+        val sb = StringBuilder()
+        list.joinToString(
+            prefix = "CONCAT(",
+            separator = ", ",
+            postfix = ")",
+            transform = {
+                when {
+                    it.toString().isBlank() -> "' '"
+                    else -> it.toString()
+                }
+            }
+        ).also(sb::append)
+        return sb.toString()
+    }
+}
+
+class AsProjection(private val s: Projection, private val a:String) : Projection {
+    override fun toString() = "$s AS $a"
+}
+
+fun CONCAT(vararg ps: String): ConcatProjection {
+    val l = ps.map(String::toProjection)
+    return ConcatProjection(*l.toTypedArray())
+}
+
+infix fun Projection.AS(a:String) = AsProjection(this, a)
+
+fun select(vararg pr: Any): JoinBuilder {
+    val list = mutableListOf<String>()
+    pr.forEach {
+        when(it) {
+            is String -> list.add(it.trim())
+            is Projection -> list.add( it.toString() )
+        }
+    }
+
+    return SelectBuilder(*list.toTypedArray())
+}
+
+class SelectBuilder(vararg cols:String): JoinBuilder() {
+
+    init {
         cols.forEach(columns::add)
-        return this
     }
 
     override fun build(pretty: Boolean, builder: StringBuilder): String {
