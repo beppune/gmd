@@ -1,6 +1,8 @@
 package it.posteitaliane.gdc.gmd.sqlfun
 
 import it.posteitaliane.gdc.gmd.sql.AsProjection
+import it.posteitaliane.gdc.gmd.sql.InFilter
+import it.posteitaliane.gdc.gmd.sql.LikeFilter
 import it.posteitaliane.gdc.gmd.sql.toProjection
 
 infix fun String.AS(s:String): AsProjection {
@@ -11,17 +13,12 @@ infix fun String.ON( p:Pair<String,String> ): String {
     return "$this ON(${p.first} = ${p.second})"
 }
 
-infix fun String.LIKE( s:String? ): String? {
+infix fun String.LIKE( s:String? ): LikeFilter? {
     if (s == null) return null
-    return "$this LIKE '$s%'"
+    return LikeFilter(this, s)
 }
 
-infix fun String.IN( els:List<String>?): String? {
+infix fun String.IN(els:List<String>?): InFilter? {
     if(els.isNullOrEmpty()) return null
-    return els.joinToString(
-        prefix = "$this IN (",
-        postfix = ")",
-        separator = ", ",
-        transform = { "'$it'" }
-    )
+    return InFilter(this, els)
 }

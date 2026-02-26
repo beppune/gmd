@@ -143,8 +143,8 @@ open class WhereBuilder {
         return builder.toString()
     }
 
-    open fun where(vararg f: String?): WhereBuilder {
-        f.filterNotNull().forEach(filters::add)
+    open fun where(vararg f: Filter?): WhereBuilder {
+        f.filterNotNull().map(Filter::toString).forEach(filters::add)
         return this
     }
 }

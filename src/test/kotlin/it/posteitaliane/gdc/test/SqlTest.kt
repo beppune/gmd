@@ -70,6 +70,9 @@ class SqlTest {
         select( CONCAT("op", " ", "first_name", " quoted ".q(), " double quoted ".dq() )  AS "hello", "ciao" )
             .build().also(::println)
 
-        select(REPLACE("colname", "DC_", "FF_") AS "newname" ).build().also(::println)
+        select(REPLACE("colname", "DC_", "FF_") AS "newname" )
+            .from("table")
+            .where( "colname" LIKE "DC_" )
+            .build().also(::println)
     }
 }
