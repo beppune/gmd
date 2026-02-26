@@ -4,6 +4,7 @@ import it.posteitaliane.gdc.gmd.AS
 import it.posteitaliane.gdc.gmd.AsProjection
 import it.posteitaliane.gdc.gmd.CONCAT
 import it.posteitaliane.gdc.gmd.ConcatProjection
+import it.posteitaliane.gdc.gmd.REPLACE
 import it.posteitaliane.gdc.gmd.SelectBuilder
 import it.posteitaliane.gdc.gmd.dq
 import it.posteitaliane.gdc.gmd.q
@@ -12,7 +13,23 @@ import it.posteitaliane.gdc.gmd.sqlfun.*
 import it.posteitaliane.gdc.gmd.toProjection
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+/*
 
+SELECT
+	id,operator,datacenter,supplier,issued,type,subject,status,ref,remarks,
+	CONCAT(lastname, ' ', firstname) AS opfullname,
+	REPLACE(fullname, 'DC ', '') AS dcfullname
+FROM ORDERS
+	JOIN OPERATORS ON uid=operator
+	JOIN DCS ON shortname=datacenter
+WHERE
+	datacenter IN ( 'TOR', 'TOT' )
+    AND
+    operator IN ( 'EXTA1KD', 'FIN3G6X', 'FIN3HDM', 'AVF3Y1B' )
+    AND
+    EXISTS (SELECT 1 FROM orders_lines WHERE pos IN ('A-P05') )
+
+ */
 class SqlTest {
 
     @Test
@@ -54,7 +71,9 @@ class SqlTest {
 
     @Test
     fun testProj() {
-        val p = select( CONCAT("op", " ", "first_name", " quoted ".q(), " double quoted ".dq() )  AS "hello", "ciao" )
+        select( CONCAT("op", " ", "first_name", " quoted ".q(), " double quoted ".dq() )  AS "hello", "ciao" )
             .build().also(::println)
+
+        select(REPLACE("colname", "DC_", "FF_") AS "newname" ).build().also(::println)
     }
 }

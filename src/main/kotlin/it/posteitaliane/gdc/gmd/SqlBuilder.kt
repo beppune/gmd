@@ -44,6 +44,11 @@ fun CONCAT(vararg ps: String): ConcatProjection {
     return ConcatProjection(*l.toTypedArray())
 }
 
+fun REPLACE(s:String, from:String, to:String) =
+    SimpleProjection(
+        "REPLACE($s, '$from', '$to')"
+    )
+
 infix fun Projection.AS(a:String) = AsProjection(this, a)
 
 fun select(vararg pr: Any): JoinBuilder {
