@@ -1,16 +1,12 @@
 package it.posteitaliane.gdc.test
 
-import it.posteitaliane.gdc.gmd.AS
-import it.posteitaliane.gdc.gmd.AsProjection
-import it.posteitaliane.gdc.gmd.CONCAT
-import it.posteitaliane.gdc.gmd.ConcatProjection
-import it.posteitaliane.gdc.gmd.REPLACE
-import it.posteitaliane.gdc.gmd.SelectBuilder
-import it.posteitaliane.gdc.gmd.dq
-import it.posteitaliane.gdc.gmd.q
-import it.posteitaliane.gdc.gmd.select
+import it.posteitaliane.gdc.gmd.sql.AS
+import it.posteitaliane.gdc.gmd.sql.CONCAT
+import it.posteitaliane.gdc.gmd.sql.REPLACE
+import it.posteitaliane.gdc.gmd.sql.dq
+import it.posteitaliane.gdc.gmd.sql.q
+import it.posteitaliane.gdc.gmd.sql.select
 import it.posteitaliane.gdc.gmd.sqlfun.*
-import it.posteitaliane.gdc.gmd.toProjection
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 /*

@@ -1,4 +1,4 @@
-package it.posteitaliane.gdc.gmd
+package it.posteitaliane.gdc.gmd.sql
 
 interface Projection
 

@@ -1,7 +1,7 @@
 package it.posteitaliane.gdc.gmd.sqlfun
 
-import it.posteitaliane.gdc.gmd.AsProjection
-import it.posteitaliane.gdc.gmd.toProjection
+import it.posteitaliane.gdc.gmd.sql.AsProjection
+import it.posteitaliane.gdc.gmd.sql.toProjection
 
 infix fun String.AS(s:String): AsProjection {
     return AsProjection( this.toProjection(), s )
