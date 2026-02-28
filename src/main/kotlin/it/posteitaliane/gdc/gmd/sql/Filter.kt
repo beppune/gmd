@@ -15,3 +15,11 @@ class InFilter(private val left:String, private val right:List<String>) : Filter
             transform = { "'$it'" }
         )
 }
+
+fun <T : Filter> NOT(f:Filter?): T? {
+    if(f == null) return null
+
+    return object: Filter {
+        override fun toString(): String = "NOT ($f)"
+    } as T?
+}
