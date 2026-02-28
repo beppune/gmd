@@ -20,4 +20,10 @@ class NotFilter(private val f:Filter) : Filter {
     override fun toString(): String = "NOT ($f)"
 }
 
+class ExistsFilter(private val w: WhereBuilder) : Filter {
+    override fun toString(): String = "EXISTS(${w.build()})"
+}
+
+fun EXISTS( w: WhereBuilder? ) = w?.let { ExistsFilter(w) }
+
 fun NOT(f:Filter?) = f?.let { NotFilter(f) }
